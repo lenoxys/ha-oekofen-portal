@@ -226,9 +226,13 @@ class OkofenDashboard extends HTMLElement {
   }
 
   set hass(hass) {
+    const lang = hass.locale?.language || hass.language;  // the language of the user's profile
+    const changed = this._userLang && lang !== this._userLang;
     this._hass = hass;
+    this._userLang = lang;
     this.toggleAttribute('dark', !!(hass.themes && hass.themes.darkMode));
     if (!this._timer) { this._poll(); this._timer = setInterval(() => this._poll(), 15000); }
+    else if (changed) this._poll();
   }
 
   set narrow(_) {}
@@ -276,8 +280,8 @@ class OkofenDashboard extends HTMLElement {
 
   async _poll() {
     try {
-      const res = await this._hass.callWS({type: 'okofen_portal/dashboard'});
-      if (!this._t) { this._t = res.strings; this._lang = res.language; this._build(); }
+      const res = await this._hass.callWS({type: 'okofen_portal/dashboard', language: this._userLang});
+      if (!this._t || res.language !== this._lang) { this._t = res.strings; this._lang = res.language; this._build(); }
       const v = res.values || {}, w = res.weather || {};
       this._cur = {
         coll: v.coll, ecsP: v.ecs_probe, top: v.tank_top, mid: v.tank_mid, bot: v.tank_bottom, solarPump: v.solar_pump,
