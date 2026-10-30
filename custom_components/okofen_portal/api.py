@@ -80,25 +80,34 @@ class OekofenPortalClient:
         return found.group(1), found.group(2)
 
     async def async_login(self) -> None:
-        """Get a bearer token (OAuth2 password grant, like the web app)."""
-        if self._client is None:
-            self._client = await self._discover_client()
-        form = aiohttp.FormData(default_to_multipart=True)
-        form.add_field("grant_type", "password")
-        form.add_field("client_id", self._client[0])
-        form.add_field("client_secret", self._client[1])
-        form.add_field("username", self._username)
-        form.add_field("password", self._password)
-        try:
-            async with self._session.post(
-                f"{API}/v1/oauth2/token", data=form, headers=_HEADERS, timeout=_TIMEOUT
-            ) as resp:
-                if resp.status in (400, 401, 403):
-                    raise OekofenAuthError("invalid credentials")
-                resp.raise_for_status()
-                self._token = (await resp.json(content_type=None))["access_token"]
-        except (aiohttp.ClientError, asyncio.TimeoutError, KeyError) as err:
-            raise OekofenConnectionError(str(err)) from err
+        """Get a bearer token (OAuth2 password grant, like the web app).
+
+        A refusal may mean a wrong password or a web app whose OAuth client changed:
+        the client is looked up again once before the refusal is reported as an auth error.
+        """
+        for attempt in (1, 2):
+            if self._client is None:
+                self._client = await self._discover_client()
+            form = aiohttp.FormData(default_to_multipart=True)
+            form.add_field("grant_type", "password")
+            form.add_field("client_id", self._client[0])
+            form.add_field("client_secret", self._client[1])
+            form.add_field("username", self._username)
+            form.add_field("password", self._password)
+            try:
+                async with self._session.post(
+                    f"{API}/v1/oauth2/token", data=form, headers=_HEADERS, timeout=_TIMEOUT
+                ) as resp:
+                    if resp.status in (400, 401, 403):
+                        if attempt == 1:
+                            self._client = None
+                            continue
+                        raise OekofenAuthError("invalid credentials")
+                    resp.raise_for_status()
+                    self._token = (await resp.json(content_type=None))["access_token"]
+                    return
+            except (aiohttp.ClientError, asyncio.TimeoutError, KeyError) as err:
+                raise OekofenConnectionError(str(err)) from err
 
     async def _request(
         self, method: str, url: str, text_body: str | None = None, **kwargs: Any
