@@ -30,7 +30,8 @@ def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConnection
     connection.send_result(
         msg["id"],
         {
-            "language": data.lang,
+            "language": data.texts.lang,
+            "strings": data.texts.panel(),
             "values": {
                 name: readings[key].value for name, key in DASHBOARD.items() if key in readings
             },

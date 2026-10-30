@@ -41,6 +41,9 @@ UNITS: dict[str, tuple[SensorDeviceClass, str]] = {
 }
 
 
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

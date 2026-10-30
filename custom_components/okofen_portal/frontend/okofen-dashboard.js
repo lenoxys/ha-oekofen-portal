@@ -3,38 +3,7 @@
  * The layout is one fixed reference scheme: buffer tank with a low solar coil, back-up boiler,
  * heating circuit with a mixing valve, instant hot water through a plate exchanger, and a pool
  * exchanger. Elements the controller does not report simply show "–". */
-const I18N = {
-  fr: {
-    title: 'Flux du chauffage solaire', sub: 'Données lues sur le portail ÖkoFEN', tank: 'Ballon tampon', coil: 'spirale solaire',
-    solarPump: 'pompe solaire', collectors: 'Capteurs solaires', boiler: "Chaudière d'appoint", boilerSub: 'pilotée par la régulation ÖkoFEN',
-    boilerPump: 'pompe chaudière', heating: 'Chauffage maison', mixValve: 'vanne 4 voies', hotWater: 'Eau chaude sanitaire',
-    coldWater: 'Eau froide sanitaire', magnet: 'aimant', poolPump: 'pompe piscine', pool: 'Piscine', poolExchanger: 'échangeur piscine',
-    legend: 'Légende (animation = circulation active)', lgSolar: 'fluide solaire', lgHot: 'eau chaude (ballon)', lgCold: 'retour froid',
-    lgWarm: 'chauffe côté usage', aria: "Schéma animé des flux d'énergie de l'installation", scenario: 'Affichage',
-    live: 'Valeurs réelles', summer: 'Aperçu: été, surplus vers la piscine', winter: 'Aperçu: hiver, chauffage + appoint',
-    draw: "Tirage d'eau chaude (simulé)", refresh: 'Actualiser', probe: 'ECS', top: 'Haut', mid: 'Milieu', bot: 'Bas', off: 'arrêt',
-    mixer: ['arrêt', 'ouverture', 'fermeture'], motor: 'motorisée', burnerOn: 'Brûleur: MARCHE', burnerOff: 'Brûleur: arrêt',
-    flowTxt: 'départ', outdoor: 'Extérieur', updated: 'mis à jour', error: 'données indisponibles',
-    chips: ['Capteurs', 'Sonde ECS (haute)', 'Ballon haut', 'Ballon milieu', 'Ballon bas', 'Pompe solaire', 'Piscine', 'Pompe piscine',
-            'Départ chauffage', 'Contact brûleur', 'T chaudière', 'Ambiance'],
-    note: "Eau chaude: production à la demande; l'aimant du contacteur de débit active la pompe de circulation du kit (aucune mesure de ce tirage: l'animation est simulée par la case à cocher).",
-  },
-  en: {
-    title: 'Solar heating flows', sub: 'Data read from the ÖkoFEN portal', tank: 'Buffer tank', coil: 'solar coil',
-    solarPump: 'solar pump', collectors: 'Solar collectors', boiler: 'Back-up boiler', boilerSub: 'driven by the ÖkoFEN controller',
-    boilerPump: 'boiler pump', heating: 'House heating', mixValve: '4-way valve', hotWater: 'Domestic hot water',
-    coldWater: 'Cold water', magnet: 'magnet', poolPump: 'pool pump', pool: 'Pool', poolExchanger: 'pool exchanger',
-    legend: 'Legend (animation = active circulation)', lgSolar: 'solar fluid', lgHot: 'hot water (tank)', lgCold: 'cold return',
-    lgWarm: 'heated on the user side', aria: 'Animated schematic of the energy flows of the installation', scenario: 'View',
-    live: 'Real values', summer: 'Preview: summer, surplus to the pool', winter: 'Preview: winter, heating + back-up',
-    draw: 'Hot water draw (simulated)', refresh: 'Refresh', probe: 'DHW', top: 'Top', mid: 'Middle', bot: 'Bottom', off: 'off',
-    mixer: ['stopped', 'opening', 'closing'], motor: 'motorised', burnerOn: 'Burner: ON', burnerOff: 'Burner: off',
-    flowTxt: 'flow', outdoor: 'Outdoor', updated: 'updated', error: 'data unavailable',
-    chips: ['Collectors', 'DHW probe (top)', 'Tank top', 'Tank middle', 'Tank bottom', 'Solar pump', 'Pool', 'Pool pump',
-            'Heating flow', 'Burner contact', 'Boiler temp.', 'Room'],
-    note: 'Hot water: produced on demand; the flow-switch magnet starts the kit circulation pump (the draw is not measured: the animation is simulated by the checkbox).',
-  },
-};
+// The texts come from i18n/<language>.json through the websocket command (key "strings").
 const SCENARIOS = {
   summer: {contact: 0, boilT: 48, bPump: 0, mixer: 0, coll: 120, ecsP: 70.5, top: 70, mid: 66, bot: 55, solarPump: 60, heat: false, flow: 8, pool: 24, poolPump: 40, out: 25, room: 23.5},
   winter: {contact: 1, boilT: 68, bPump: 60, mixer: 1, coll: 8, ecsP: 58.5, top: 58, mid: 52, bot: 40, solarPump: 0, heat: true, flow: 45, pool: 9, poolPump: 0, out: 3, room: 20.5},
@@ -236,8 +205,6 @@ class OkofenDashboard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
-    const lang = String(hass.language || 'en').startsWith('fr') ? 'fr' : 'en';
-    if (lang !== this._lang) { this._lang = lang; this._build(); }
     this.toggleAttribute('dark', !!(hass.themes && hass.themes.darkMode));
     if (!this._timer) { this._poll(); this._timer = setInterval(() => this._poll(), 15000); }
   }
@@ -251,7 +218,7 @@ class OkofenDashboard extends HTMLElement {
   _q(id) { return this.shadowRoot.getElementById(id); }
 
   _build() {
-    const t = I18N[this._lang];
+    const t = this._t;
     this.shadowRoot.innerHTML = `<style>${CSS}</style>
 <main>
 <h1>${t.title}</h1>
@@ -282,13 +249,23 @@ class OkofenDashboard extends HTMLElement {
   }
 
   async _poll() {
-    const t = I18N[this._lang] || I18N.en;
+    let t = this._t || {};
+    let v = {};
+    try {
+      const res = await this._hass.callWS({type: 'okofen_portal/dashboard'});
+      v = res.values || {};
+      if (!this._t) { this._t = t = res.strings; this._lang = res.language; this._build(); }
+    } catch (e) {
+      this._cur = {};
+      this._src = t.error || '';
+      if (this._t) this._render();
+      return;
+    }
     if (this._scenario !== 'live') {
       this._cur = {...SCENARIOS[this._scenario]};
       this._src = '';
     } else {
       try {
-        const v = (await this._hass.callWS({type: 'okofen_portal/dashboard'})).values || {};
         this._cur = {
           coll: v.coll, ecsP: v.ecs_probe, top: v.tank_top, mid: v.tank_mid, bot: v.tank_bottom, solarPump: v.solar_pump,
           bPump: v.boiler_pump, contact: v.burner, boilT: v.boiler_temp, heat: v.heating_pump > 0, flow: v.flow, pool: v.pool,
@@ -315,8 +292,8 @@ class OkofenDashboard extends HTMLElement {
   _stop(id, color) { const el = this._q(id); if (el) el.setAttribute('stop-color', color); }
 
   _render() {
-    if (!this._q('src')) return;
-    const t = I18N[this._lang], s = this._cur, draw = this._draw;
+    if (!this._t || !this._q('src')) return;
+    const t = this._t, s = this._cur, draw = this._draw;
     this._q('src').textContent = this._src;
     this._stop('gE', col(s.ecsP)); this._stop('g0', col(s.top)); this._stop('g1', col(s.mid)); this._stop('g2', col(s.bot));
     this._stop('pg0', col(s.pool == null ? null : s.pool + 6)); this._stop('pg1', col(s.pool == null ? null : s.pool - 4));

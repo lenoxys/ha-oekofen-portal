@@ -23,7 +23,7 @@ from .dashboard import async_setup_dashboard
 from .coordinator import OekofenCoordinator
 from .docs import Docs, async_fetch_docs
 from .entity import main_device_info
-from .names import build_names
+from .names import Texts
 from .presence import FLAG_KEYS, hidden_groups
 from .settings import SETTING_KEYS
 from .weather_parse import WEATHER_KEYS
@@ -49,7 +49,7 @@ class OekofenData:
 
     fast: OekofenCoordinator
     slow: OekofenCoordinator
-    lang: str
+    texts: Texts
     docs: Docs
     names: dict[str, str]
     hidden: set[str]
@@ -105,7 +105,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     )
     await fast.async_config_entry_first_refresh()
     await slow.async_config_entry_first_refresh()
-    lang = "fr" if hass.config.language.startswith("fr") else "en"
+    texts = await hass.async_add_executor_job(Texts.load, hass.config.language)
     readings = {k: r for k, r in {**fast.data, **slow.data}.items() if kind(r) != "text"}
     # the portal answers for circuits the controller does not have: leave those out
     hidden = hidden_groups(await client.async_read(FLAG_KEYS), readings)
@@ -113,15 +113,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     entry.runtime_data = OekofenData(
         fast,
         slow,
-        lang,
-        await _load_docs(hass, session, lang),
-        build_names(shown, lang),
+        texts,
+        await _load_docs(hass, session, texts.lang),
+        texts.build_names(shown),
         hidden,
     )
     registry = dr.async_get(hass)
     # main device first, so the per-circuit devices can point at it
     registry.async_get_or_create(
-        config_entry_id=entry.entry_id, **main_device_info(entry.entry_id, lang)
+        config_entry_id=entry.entry_id, **main_device_info(entry.entry_id, texts)
     )
     # devices created by earlier versions for equipment that is not there
     for device in dr.async_entries_for_config_entry(registry, entry.entry_id):

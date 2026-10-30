@@ -17,11 +17,13 @@ from homeassistant.util import dt as dt_util
 from . import OekofenConfigEntry
 from .const import DOMAIN
 from .coordinator import OekofenCoordinator
-from .names import group_description, group_title
 from .weather_parse import WEATHER_KEYS, parse_forecast
 
 TEMP_KEY = "LOCAL.L_weather_temp"
 CLOUDS_KEY = "LOCAL.L_weather_clouds"
+
+
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(
@@ -45,13 +47,13 @@ class OekofenWeather(CoordinatorEntity[OekofenCoordinator], WeatherEntity):
     def __init__(self, coordinator: OekofenCoordinator) -> None:
         super().__init__(coordinator)
         entry = coordinator.config_entry
-        lang = entry.runtime_data.lang
+        texts = entry.runtime_data.texts
         self._attr_unique_id = f"{entry.entry_id}_weather"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{entry.entry_id}_weather")},
             manufacturer="ÖkoFEN",
-            name=f"ÖkoFEN {group_title('weather', lang)}",
-            model=group_description("weather", lang),
+            name=f"ÖkoFEN {texts.group_title('weather')}",
+            model=texts.group_description("weather"),
             via_device=(DOMAIN, entry.entry_id),
         )
 

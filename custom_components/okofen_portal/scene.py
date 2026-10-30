@@ -19,6 +19,9 @@ from .presets import PRESETS
 PARALLEL_UPDATES = 1
 
 
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
@@ -41,7 +44,7 @@ class OekofenScene(Scene):
         self._name = name
         self._attr_translation_key = name
         self._attr_unique_id = f"{entry.entry_id}_scene_{name}"
-        self._attr_device_info = main_device_info(entry.entry_id, entry.runtime_data.lang)
+        self._attr_device_info = main_device_info(entry.entry_id, entry.runtime_data.texts)
 
     async def async_activate(self, **kwargs: Any) -> None:
         data = self._entry.runtime_data

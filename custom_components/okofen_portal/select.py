@@ -15,6 +15,9 @@ from .entity import OekofenEntity, visible
 from .settings import SETTINGS, Setting
 
 
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

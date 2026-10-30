@@ -14,7 +14,7 @@ from .const import COVERED_BY_WEATHER, CURATED, DOMAIN, TRANSLATED
 from .api import OekofenError
 from .control import prepare
 from .coordinator import OekofenCoordinator
-from .names import entity_description, group_description, group_title
+from .names import Texts
 
 
 def describe(
@@ -37,13 +37,13 @@ def visible(data, key: str) -> bool:
     return group_of(key)[0] not in data.hidden and key not in COVERED_BY_WEATHER
 
 
-def main_device_info(entry_id: str, lang: str) -> DeviceInfo:
+def main_device_info(entry_id: str, texts: Texts) -> DeviceInfo:
     """The main ÖkoFEN device, home of the controller's general values."""
     return DeviceInfo(
         identifiers={(DOMAIN, entry_id)},
         manufacturer="ÖkoFEN",
         name="ÖkoFEN",
-        model=group_description("system", lang),
+        model=texts.group_description("system"),
     )
 
 
@@ -60,18 +60,18 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
         self._attr_unique_id = f"{entry_id}_{key}"
         group_id, _ = group_of(key)
         if group_id == "system":
-            self._attr_device_info = main_device_info(entry_id, data.lang)
+            self._attr_device_info = main_device_info(entry_id, data.texts)
         else:  # one device per circuit / function, under the main ÖkoFEN device
             self._attr_device_info = DeviceInfo(
                 identifiers={(DOMAIN, f"{entry_id}_{group_id}")},
                 manufacturer="ÖkoFEN",
-                name=f"ÖkoFEN {group_title(group_id, data.lang)}",
-                model=group_description(group_id, data.lang),
+                name=f"ÖkoFEN {data.texts.group_title(group_id)}",
+                model=data.texts.group_description(group_id),
                 via_device=(DOMAIN, entry_id),
             )
         # ÖkoFEN's own help text when the portal has one, otherwise our explanation
         self._attr_extra_state_attributes = {
-            "description": data.docs.help.get(key) or entity_description(key, data.lang),
+            "description": data.docs.help.get(key) or data.texts.entity_description(key),
             "portal_variable": key,
         }
 

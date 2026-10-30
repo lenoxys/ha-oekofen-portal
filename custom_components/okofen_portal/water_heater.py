@@ -24,6 +24,9 @@ OPERATION_BY_INDEX = {0: STATE_OFF, 1: STATE_AUTO, 2: STATE_PERFORMANCE}  # off,
 INDEX_BY_OPERATION = {value: index for index, value in OPERATION_BY_INDEX.items()}
 
 
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

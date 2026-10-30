@@ -20,6 +20,9 @@ from .settings import SETTING_KEYS
 BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
 
 
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

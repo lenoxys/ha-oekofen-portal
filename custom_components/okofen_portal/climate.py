@@ -29,6 +29,9 @@ INDEX_BY_HVAC = {HVACMode.OFF: 0, HVACMode.AUTO: 1, HVACMode.HEAT: 2}
 INDEX_BY_PRESET = {PRESET_COMFORT: 2, PRESET_ECO: 3}
 
 
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

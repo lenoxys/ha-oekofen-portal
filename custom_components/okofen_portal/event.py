@@ -16,6 +16,9 @@ BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
 BOILER_TEMP_KEY = "LOCAL.L_ke_temp_ist"
 
 
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

@@ -56,7 +56,7 @@ async def main() -> None:
                 continue
             inside = (
                 settings.check_number(s, float(r.value)) is None
-                if s.platform == "number"
+                if not s.options
                 else int(r.value) in s.options
             )
             print(f"  {s.key} = {r.value!r} {r.unit} (÷{r.divisor:g}) {'dans les bornes' if inside else 'HORS BORNES'}")

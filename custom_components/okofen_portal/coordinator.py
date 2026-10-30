@@ -41,6 +41,7 @@ class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
             config_entry=entry,
             name=f"{DOMAIN} {label}",
             update_interval=interval,
+            always_update=False,
         )
         self.client = client
         self.names = names
