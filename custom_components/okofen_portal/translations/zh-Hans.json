@@ -1,0 +1,176 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ÖkoFEN 门户",
+        "description": "请使用您的 my.oekofen.info 账户登录。可选择性地填写控制器的本地地址（例如 192.168.0.10）及其本地密码，或粘贴 Touch 上显示的完整 URL（http://192.168.0.10:4321/<password>/all）：此时快速变化的数值将每 10 秒从本地读取，门户仅用于其余数据。",
+        "data": {
+          "username": "用户名",
+          "password": "密码",
+          "local_host": "本地地址或完整 URL（可选）",
+          "local_password": "本地密码（可选）"
+        }
+      },
+      "reauth_confirm": {
+        "title": "重新登录",
+        "data": {
+          "password": "密码"
+        }
+      },
+      "reconfigure": {
+        "title": "更改账户",
+        "description": "必须保持为同一套设备。本地地址留空则仅使用门户。",
+        "data": {
+          "username": "用户名",
+          "password": "密码",
+          "local_host": "本地地址或完整 URL（可选）",
+          "local_password": "本地密码（可选）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "连接失败",
+      "invalid_auth": "身份验证无效",
+      "cannot_connect_local": "无法访问本地接口（请检查地址、端口 4321 和本地密码）"
+    },
+    "abort": {
+      "already_configured": "该账户已配置",
+      "reauth_successful": "重新验证成功",
+      "reconfigure_successful": "重新配置成功",
+      "unique_id_mismatch": "该账户属于另一套设备"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "burner": {
+        "name": "燃烧器"
+      },
+      "boiler_valve": {
+        "name": "锅炉水泵/阀门输出"
+      },
+      "pump_running": {
+        "name": "水泵运行中"
+      }
+    },
+    "sensor": {
+      "boiler_temperature": {
+        "name": "锅炉温度"
+      },
+      "boiler_setpoint": {
+        "name": "锅炉设定值"
+      },
+      "heating_mixer": {
+        "name": "采暖混水阀",
+        "state": {
+          "stopped": "停止",
+          "opening": "开启中",
+          "closing": "关闭中"
+        }
+      },
+      "forecast_day": {
+        "name": "预报日",
+        "state": {
+          "today": "今天",
+          "tomorrow": "明天"
+        }
+      }
+    },
+    "number": {
+      "solar_discharge_heating_start": {
+        "name": "太阳能释热采暖：启动（缓冲水箱顶部）"
+      },
+      "solar_discharge_heating_stop": {
+        "name": "太阳能释热采暖：停止"
+      },
+      "solar_discharge_hot_water_start": {
+        "name": "太阳能释热生活热水：启动"
+      },
+      "solar_discharge_hot_water_stop": {
+        "name": "太阳能释热生活热水：停止"
+      },
+      "heating_overshoot": {
+        "name": "缓冲水箱高于供水设定值的超调量"
+      },
+      "flow_temperature_max": {
+        "name": "采暖供水温度上限"
+      },
+      "flow_temperature_min": {
+        "name": "采暖供水温度下限"
+      },
+      "curve_base_point": {
+        "name": "采暖曲线基点"
+      },
+      "curve_slope": {
+        "name": "采暖曲线斜率"
+      },
+      "heating_limit_comfort": {
+        "name": "采暖极限室外温度（舒适）"
+      },
+      "heating_limit_setback": {
+        "name": "采暖极限室外温度（降温）"
+      }
+    },
+    "select": {
+      "solar_discharge_heating_mode": {
+        "name": "太阳能释热采暖模式",
+        "state": {
+          "schedule": "时间程序",
+          "solar_pump": "太阳能循环泵"
+        }
+      },
+      "season_mode": {
+        "name": "夏季/冬季模式",
+        "state": {
+          "winter": "冬季（采暖 + 生活热水）",
+          "summer": "夏季（仅生活热水）"
+        }
+      },
+      "eco_mode_heating": {
+        "name": "节能模式（采暖）",
+        "state": {
+          "off": "关闭",
+          "comfort": "舒适",
+          "intermediate": "中等",
+          "ecological": "节能"
+        }
+      },
+      "eco_mode_hot_water": {
+        "name": "节能模式（生活热水）",
+        "state": {
+          "off": "关闭",
+          "comfort": "舒适",
+          "intermediate": "中等",
+          "ecological": "节能"
+        }
+      }
+    },
+    "event": {
+      "burner_event": {
+        "name": "燃烧器",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "已启动",
+              "stopped": "已停止"
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "solar_priority": {
+        "name": "太阳能优先"
+      },
+      "default": {
+        "name": "默认值"
+      }
+    },
+    "water_heater": {
+      "hot_water": {
+        "state": {
+          "auto": "自动"
+        }
+      }
+    }
+  }
+}

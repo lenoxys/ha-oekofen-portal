@@ -1,0 +1,176 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ÖkoFEN-Portal",
+        "description": "Melde dich mit deinem my.oekofen.info-Konto an. Optional kannst du die lokale Adresse der Regelung (z. B. 192.168.0.10) und das lokale Passwort angeben oder die vollständige vom Touch angezeigte URL einfügen (http://192.168.0.10:4321/<password>/all): Die schnellen Werte werden dann alle 10 s lokal gelesen und das Portal nur noch für den Rest verwendet.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort",
+          "local_host": "Lokale Adresse oder vollständige URL (optional)",
+          "local_password": "Lokales Passwort (optional)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut anmelden",
+        "data": {
+          "password": "Passwort"
+        }
+      },
+      "reconfigure": {
+        "title": "Konto ändern",
+        "description": "Die Anlage muss dieselbe bleiben. Lass die lokale Adresse leer, um nur das Portal zu verwenden.",
+        "data": {
+          "username": "Benutzername",
+          "password": "Passwort",
+          "local_host": "Lokale Adresse oder vollständige URL (optional)",
+          "local_password": "Lokales Passwort (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "invalid_auth": "Ungültige Authentifizierung",
+      "cannot_connect_local": "Die lokale Schnittstelle ist nicht erreichbar (Adresse, Port 4321 und lokales Passwort)"
+    },
+    "abort": {
+      "already_configured": "Konto ist bereits konfiguriert",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich",
+      "reconfigure_successful": "Neukonfiguration erfolgreich",
+      "unique_id_mismatch": "Dieses Konto gehört zu einer anderen Anlage"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "burner": {
+        "name": "Brenner"
+      },
+      "boiler_valve": {
+        "name": "Ausgang Kesselpumpe/-ventil"
+      },
+      "pump_running": {
+        "name": "Pumpe läuft"
+      }
+    },
+    "sensor": {
+      "boiler_temperature": {
+        "name": "Kesseltemperatur"
+      },
+      "boiler_setpoint": {
+        "name": "Kessel-Solltemperatur"
+      },
+      "heating_mixer": {
+        "name": "Heizkreis-Mischer",
+        "state": {
+          "stopped": "Steht",
+          "opening": "Öffnet",
+          "closing": "Schließt"
+        }
+      },
+      "forecast_day": {
+        "name": "Prognosetag",
+        "state": {
+          "today": "Heute",
+          "tomorrow": "Morgen"
+        }
+      }
+    },
+    "number": {
+      "solar_discharge_heating_start": {
+        "name": "Solarheizen Heizkreis: Start (Puffer oben)"
+      },
+      "solar_discharge_heating_stop": {
+        "name": "Solarheizen Heizkreis: Stopp"
+      },
+      "solar_discharge_hot_water_start": {
+        "name": "Solarheizen Warmwasser: Start"
+      },
+      "solar_discharge_hot_water_stop": {
+        "name": "Solarheizen Warmwasser: Stopp"
+      },
+      "heating_overshoot": {
+        "name": "Puffer-Überhöhung über Vorlauf-Soll"
+      },
+      "flow_temperature_max": {
+        "name": "Heizkreis-Vorlauftemperatur max."
+      },
+      "flow_temperature_min": {
+        "name": "Heizkreis-Vorlauftemperatur min."
+      },
+      "curve_base_point": {
+        "name": "Heizkurve Fußpunkt"
+      },
+      "curve_slope": {
+        "name": "Heizkurve Steigung"
+      },
+      "heating_limit_comfort": {
+        "name": "Heizgrenze Außentemperatur (Komfort)"
+      },
+      "heating_limit_setback": {
+        "name": "Heizgrenze Außentemperatur (Absenkung)"
+      }
+    },
+    "select": {
+      "solar_discharge_heating_mode": {
+        "name": "Betriebsart Solarheizen Heizkreis",
+        "state": {
+          "schedule": "Zeitprogramm",
+          "solar_pump": "Solarpumpe"
+        }
+      },
+      "season_mode": {
+        "name": "Sommer-/Winterbetrieb",
+        "state": {
+          "winter": "Winter (Heizen + Warmwasser)",
+          "summer": "Sommer (nur Warmwasser)"
+        }
+      },
+      "eco_mode_heating": {
+        "name": "Öko-Modus (Heizung)",
+        "state": {
+          "off": "Aus",
+          "comfort": "Komfort",
+          "intermediate": "Mittel",
+          "ecological": "Ökologisch"
+        }
+      },
+      "eco_mode_hot_water": {
+        "name": "Öko-Modus (Warmwasser)",
+        "state": {
+          "off": "Aus",
+          "comfort": "Komfort",
+          "intermediate": "Mittel",
+          "ecological": "Ökologisch"
+        }
+      }
+    },
+    "event": {
+      "burner_event": {
+        "name": "Brenner",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "Gestartet",
+              "stopped": "Gestoppt"
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "solar_priority": {
+        "name": "Solarvorrang"
+      },
+      "default": {
+        "name": "Standardwerte"
+      }
+    },
+    "water_heater": {
+      "hot_water": {
+        "state": {
+          "auto": "Automatik"
+        }
+      }
+    }
+  }
+}

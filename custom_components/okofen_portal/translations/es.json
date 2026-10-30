@@ -1,0 +1,176 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Portal ÖkoFEN",
+        "description": "Inicia sesión con tu cuenta de my.oekofen.info. Opcionalmente, añade la dirección local del regulador (p. ej. 192.168.0.10) y su contraseña local, o pega la URL completa que muestra el Touch (http://192.168.0.10:4321/<password>/all): los valores rápidos se leen entonces en local cada 10 s y el portal solo se usa para el resto.",
+        "data": {
+          "username": "Usuario",
+          "password": "Contraseña",
+          "local_host": "Dirección local o URL completa (opcional)",
+          "local_password": "Contraseña local (opcional)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Iniciar sesión de nuevo",
+        "data": {
+          "password": "Contraseña"
+        }
+      },
+      "reconfigure": {
+        "title": "Cambiar la cuenta",
+        "description": "La instalación debe seguir siendo la misma. Deja la dirección local vacía para usar solo el portal.",
+        "data": {
+          "username": "Usuario",
+          "password": "Contraseña",
+          "local_host": "Dirección local o URL completa (opcional)",
+          "local_password": "Contraseña local (opcional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No se pudo conectar",
+      "invalid_auth": "Autenticación no válida",
+      "cannot_connect_local": "No se pudo acceder a la interfaz local (dirección, puerto 4321 y contraseña local)"
+    },
+    "abort": {
+      "already_configured": "La cuenta ya está configurada",
+      "reauth_successful": "La reautenticación se realizó correctamente",
+      "reconfigure_successful": "La reconfiguración se realizó correctamente",
+      "unique_id_mismatch": "Esta cuenta pertenece a otra instalación"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "burner": {
+        "name": "Quemador"
+      },
+      "boiler_valve": {
+        "name": "Salida de bomba/válvula de la caldera"
+      },
+      "pump_running": {
+        "name": "Bomba en marcha"
+      }
+    },
+    "sensor": {
+      "boiler_temperature": {
+        "name": "Temperatura de la caldera"
+      },
+      "boiler_setpoint": {
+        "name": "Consigna de la caldera"
+      },
+      "heating_mixer": {
+        "name": "Válvula mezcladora de calefacción",
+        "state": {
+          "stopped": "Parada",
+          "opening": "Abriendo",
+          "closing": "Cerrando"
+        }
+      },
+      "forecast_day": {
+        "name": "Día de la previsión",
+        "state": {
+          "today": "Hoy",
+          "tomorrow": "Mañana"
+        }
+      }
+    },
+    "number": {
+      "solar_discharge_heating_start": {
+        "name": "Descarga solar calefacción: inicio (parte alta del depósito)"
+      },
+      "solar_discharge_heating_stop": {
+        "name": "Descarga solar calefacción: parada"
+      },
+      "solar_discharge_hot_water_start": {
+        "name": "Descarga solar agua caliente: inicio"
+      },
+      "solar_discharge_hot_water_stop": {
+        "name": "Descarga solar agua caliente: parada"
+      },
+      "heating_overshoot": {
+        "name": "Sobreelevación del depósito sobre la consigna de ida"
+      },
+      "flow_temperature_max": {
+        "name": "Temperatura de ida de calefacción máx."
+      },
+      "flow_temperature_min": {
+        "name": "Temperatura de ida de calefacción mín."
+      },
+      "curve_base_point": {
+        "name": "Punto base de la curva de calefacción"
+      },
+      "curve_slope": {
+        "name": "Pendiente de la curva de calefacción"
+      },
+      "heating_limit_comfort": {
+        "name": "Temperatura exterior límite de calefacción (confort)"
+      },
+      "heating_limit_setback": {
+        "name": "Temperatura exterior límite de calefacción (reducción)"
+      }
+    },
+    "select": {
+      "solar_discharge_heating_mode": {
+        "name": "Modo de descarga solar de calefacción",
+        "state": {
+          "schedule": "Horario",
+          "solar_pump": "Bomba solar"
+        }
+      },
+      "season_mode": {
+        "name": "Modo verano / invierno",
+        "state": {
+          "winter": "Invierno (calefacción + agua caliente)",
+          "summer": "Verano (solo agua caliente)"
+        }
+      },
+      "eco_mode_heating": {
+        "name": "Modo eco (calefacción)",
+        "state": {
+          "off": "Apagado",
+          "comfort": "Confort",
+          "intermediate": "Intermedio",
+          "ecological": "Ecológico"
+        }
+      },
+      "eco_mode_hot_water": {
+        "name": "Modo eco (agua caliente)",
+        "state": {
+          "off": "Apagado",
+          "comfort": "Confort",
+          "intermediate": "Intermedio",
+          "ecological": "Ecológico"
+        }
+      }
+    },
+    "event": {
+      "burner_event": {
+        "name": "Quemador",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "Arrancado",
+              "stopped": "Parado"
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "solar_priority": {
+        "name": "Prioridad solar"
+      },
+      "default": {
+        "name": "Valores predeterminados"
+      }
+    },
+    "water_heater": {
+      "hot_water": {
+        "state": {
+          "auto": "Automático"
+        }
+      }
+    }
+  }
+}

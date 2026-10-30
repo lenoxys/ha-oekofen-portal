@@ -1,0 +1,176 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ÖkoFEN ポータル",
+        "description": "my.oekofen.info のアカウントでサインインします。必要に応じて、コントローラーのローカルアドレス（例：192.168.0.10）とローカルパスワード、またはTouchに表示される完全なURL（http://192.168.0.10:4321/<password>/all）を入力してください。入力すると、高速な値は10秒ごとにローカルで読み取られ、ポータルはそれ以外の値にのみ使用されます。",
+        "data": {
+          "username": "ユーザー名",
+          "password": "パスワード",
+          "local_host": "ローカルアドレスまたは完全なURL（任意）",
+          "local_password": "ローカルパスワード（任意）"
+        }
+      },
+      "reauth_confirm": {
+        "title": "再度サインイン",
+        "data": {
+          "password": "パスワード"
+        }
+      },
+      "reconfigure": {
+        "title": "アカウントの変更",
+        "description": "同じ設備のアカウントである必要があります。ポータルのみを使用する場合は、ローカルアドレスを空のままにしてください。",
+        "data": {
+          "username": "ユーザー名",
+          "password": "パスワード",
+          "local_host": "ローカルアドレスまたは完全なURL（任意）",
+          "local_password": "ローカルパスワード（任意）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "接続に失敗しました",
+      "invalid_auth": "認証が無効です",
+      "cannot_connect_local": "ローカルインターフェースに接続できませんでした（アドレス、ポート4321、ローカルパスワードを確認してください）"
+    },
+    "abort": {
+      "already_configured": "このアカウントはすでに設定されています",
+      "reauth_successful": "再認証に成功しました",
+      "reconfigure_successful": "再設定に成功しました",
+      "unique_id_mismatch": "このアカウントは別の設備に属しています"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "burner": {
+        "name": "バーナー"
+      },
+      "boiler_valve": {
+        "name": "ボイラーポンプ/バルブ出力"
+      },
+      "pump_running": {
+        "name": "ポンプ運転中"
+      }
+    },
+    "sensor": {
+      "boiler_temperature": {
+        "name": "ボイラー温度"
+      },
+      "boiler_setpoint": {
+        "name": "ボイラー設定値"
+      },
+      "heating_mixer": {
+        "name": "暖房ミキシングバルブ",
+        "state": {
+          "stopped": "停止",
+          "opening": "開",
+          "closing": "閉"
+        }
+      },
+      "forecast_day": {
+        "name": "予報日",
+        "state": {
+          "today": "今日",
+          "tomorrow": "明日"
+        }
+      }
+    },
+    "number": {
+      "solar_discharge_heating_start": {
+        "name": "ソーラー放熱暖房：開始（バッファ上部）"
+      },
+      "solar_discharge_heating_stop": {
+        "name": "ソーラー放熱暖房：停止"
+      },
+      "solar_discharge_hot_water_start": {
+        "name": "ソーラー放熱給湯：開始"
+      },
+      "solar_discharge_hot_water_stop": {
+        "name": "ソーラー放熱給湯：停止"
+      },
+      "heating_overshoot": {
+        "name": "往き設定値に対するバッファ温度上乗せ"
+      },
+      "flow_temperature_max": {
+        "name": "暖房往き温度 最大"
+      },
+      "flow_temperature_min": {
+        "name": "暖房往き温度 最小"
+      },
+      "curve_base_point": {
+        "name": "暖房カーブ基点"
+      },
+      "curve_slope": {
+        "name": "暖房カーブ傾き"
+      },
+      "heating_limit_comfort": {
+        "name": "暖房限界外気温度（快適）"
+      },
+      "heating_limit_setback": {
+        "name": "暖房限界外気温度（夜間低減）"
+      }
+    },
+    "select": {
+      "solar_discharge_heating_mode": {
+        "name": "ソーラー放熱暖房モード",
+        "state": {
+          "schedule": "スケジュール",
+          "solar_pump": "ソーラーポンプ"
+        }
+      },
+      "season_mode": {
+        "name": "夏/冬モード",
+        "state": {
+          "winter": "冬（暖房 + 給湯）",
+          "summer": "夏（給湯のみ）"
+        }
+      },
+      "eco_mode_heating": {
+        "name": "エコモード（暖房）",
+        "state": {
+          "off": "オフ",
+          "comfort": "快適",
+          "intermediate": "中間",
+          "ecological": "エコ"
+        }
+      },
+      "eco_mode_hot_water": {
+        "name": "エコモード（給湯）",
+        "state": {
+          "off": "オフ",
+          "comfort": "快適",
+          "intermediate": "中間",
+          "ecological": "エコ"
+        }
+      }
+    },
+    "event": {
+      "burner_event": {
+        "name": "バーナー",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "起動",
+              "stopped": "停止"
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "solar_priority": {
+        "name": "ソーラー優先"
+      },
+      "default": {
+        "name": "既定値"
+      }
+    },
+    "water_heater": {
+      "hot_water": {
+        "state": {
+          "auto": "自動"
+        }
+      }
+    }
+  }
+}
