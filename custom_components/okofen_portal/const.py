@@ -6,6 +6,9 @@ DOMAIN = "okofen_portal"
 FAST_INTERVAL = timedelta(seconds=30)
 SLOW_INTERVAL = timedelta(minutes=5)
 LOCAL_INTERVAL = timedelta(seconds=10)  # local interface: one request per cycle, the controller wants 2.5 s
+# portal unreachable: retry after 10, 20, 30, 60 s, then every 5 min for about an hour, then every 15 min
+RETRY_DELAYS = (10, 20, 30, 60, *[300] * 11)
+RETRY_MAX = 900
 CONF_LOCAL_HOST = "local_host"
 CONF_LOCAL_PASSWORD = "local_password"
 

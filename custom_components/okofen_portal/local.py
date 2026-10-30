@@ -10,12 +10,14 @@ from __future__ import annotations
 import asyncio
 import json
 from typing import Any
+from urllib.parse import urlsplit
 
 import aiohttp
 
 from .api import OekofenConnectionError, Reading
 
 PORT = 4321
+RATE_LIMIT = 2.6  # seconds: the controller refuses a request less than 2.5 s after the previous one
 _TIMEOUT = aiohttp.ClientTimeout(total=10)
 
 # portal variable -> (group, field, divisor, unit) of the local interface; the values are integers
@@ -40,21 +42,34 @@ MAP: dict[str, tuple[str, str, int, str]] = {
 }
 
 
+def local_url(host: str, password: str) -> str:
+    """The ``all`` URL from an address ("192.168.0.10", "192.168.0.10:4321") or the full URL shown
+    by the Touch ("http://192.168.0.10:4321/<password>/all"), whose password wins over ``password``."""
+    host = host.strip()
+    parts = urlsplit(host if "://" in host else f"http://{host}")
+    path = [p for p in parts.path.split("/") if p and p not in ("all", "all?")]
+    return f"http://{parts.hostname}:{parts.port or PORT}/{path[0] if path else password}/all"
+
+
 class OekofenLocalClient:
     """Read-only client of the local interface."""
 
     def __init__(self, session: aiohttp.ClientSession, host: str, password: str) -> None:
-        host = host.strip().removeprefix("http://").rstrip("/")
-        self._url = f"http://{host if ':' in host else f'{host}:{PORT}'}/{password}/all"
+        self._url = local_url(host, password)
         self._session = session
 
     async def async_read(self) -> dict[str, Reading]:
         """Every variable of ``MAP`` the controller answers for, under its portal name."""
         try:
-            async with self._session.get(self._url, timeout=_TIMEOUT) as resp:
-                resp.raise_for_status()
-                # the controller answers in latin-1 without saying so
-                data: dict[str, Any] = json.loads((await resp.read()).decode("latin-1"))
+            for _ in range(3):  # another client (e.g. the Pellematic integration) may have just asked
+                async with self._session.get(self._url, timeout=_TIMEOUT) as resp:
+                    resp.raise_for_status()
+                    # the controller answers in latin-1 without saying so
+                    text = (await resp.read()).decode("latin-1")
+                if not text.startswith("Wait at least"):
+                    break
+                await asyncio.sleep(RATE_LIMIT)
+            data: dict[str, Any] = json.loads(text)
         except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as err:
             raise OekofenConnectionError(f"local interface: {type(err).__name__}") from err
         if not isinstance(data, dict) or "system" not in data:  # e.g. "Wait at least 2500ms", wrong password

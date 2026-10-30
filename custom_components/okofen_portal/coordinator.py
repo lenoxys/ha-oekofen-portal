@@ -17,7 +17,7 @@ from .api import (
     OekofenPortalClient,
     Reading,
 )
-from .const import DOMAIN
+from .const import DOMAIN, RETRY_DELAYS, RETRY_MAX
 from .local import MAP, OekofenLocalClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,8 +47,23 @@ class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
         )
         self.client = client
         self.names = names
+        self._interval = interval
+        self._failures = 0
 
     async def _async_update_data(self) -> dict[str, Reading]:
+        """Read, and space out the next tries while the portal does not answer."""
+        try:
+            data = await self._read()
+        except UpdateFailed:
+            delay = RETRY_DELAYS[self._failures] if self._failures < len(RETRY_DELAYS) else RETRY_MAX
+            self._failures += 1
+            self.update_interval = timedelta(seconds=delay)
+            raise
+        self._failures = 0
+        self.update_interval = self._interval
+        return data
+
+    async def _read(self) -> dict[str, Reading]:
         try:
             return await self.client.async_read(self.names)
         except OekofenAuthError as err:
@@ -71,14 +86,14 @@ class HybridCoordinator(OekofenCoordinator):
         self._cloud: dict[str, Reading] = {}
         self._cloud_at: datetime | None = None
 
-    async def _async_update_data(self) -> dict[str, Reading]:
+    async def _read(self) -> dict[str, Reading]:
         now = dt_util.utcnow()
         try:
             local = await self._local.async_read()
         except OekofenConnectionError as err:
             _LOGGER.debug("Local interface unavailable, using the portal: %s", err)
             self._cloud_at = None
-            return await super()._async_update_data()
+            return await super()._read()
         if self._cloud_at is None or now - self._cloud_at >= self._cloud_interval:
             try:
                 self._cloud = await self.client.async_read(self._cloud_names)
