@@ -19,6 +19,7 @@ Every read-only variable of the controller that the portal returns (about 440 on
 | Boiler temperature | `L_ke_temp_ist`: sensor of the existing boiler |
 | Heating mixing valve (stopped / opening / closing) | `L_hk[0].mischer`: heating circuit 1 |
 
+- **one Home Assistant device per circuit or function** (Heating circuit 1, Hot water 1, Buffer 1, Solar circuit 1…, Existing boiler, Weather, Pellet boiler 1-4…), all under the main ÖkoFEN device; only the groups present on your controller get entities.
 - **all the others are created disabled** (diagnostic category): enable the ones you want in *Settings → Devices & services → ÖkoFEN Portal → entities*. Their names are the controller's own variable names (`hk[0] raumtemp ist`, `sk[1] pumpe`…); see [`catalog.json`](custom_components/okofen_portal/catalog.json).
 
 The burner contact and boiler temperature are shown on the controller's screen but are **not** available through the local API (`/all`), hence not in the local Home Assistant integrations. This integration is meant to **complement**, not replace, an integration of the local API such as `oekofen_pellematic_compact`.

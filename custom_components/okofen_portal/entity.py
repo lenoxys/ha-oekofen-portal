@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import Reading
-from .catalog import pretty
+from .catalog import group_of, pretty
 from .const import CURATED, DOMAIN
 from .coordinator import OekofenCoordinator
 
@@ -36,11 +36,18 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
         self._key = key
         entry_id = coordinator.config_entry.entry_id
         self._attr_unique_id = f"{entry_id}_{key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry_id)},
-            manufacturer="ÖkoFEN",
-            name="ÖkoFEN",
-        )
+        group_id, group_name = group_of(key)
+        if group_id == "system":
+            self._attr_device_info = DeviceInfo(
+                identifiers={(DOMAIN, entry_id)}, manufacturer="ÖkoFEN", name="ÖkoFEN"
+            )
+        else:  # one device per circuit / function, under the main ÖkoFEN device
+            self._attr_device_info = DeviceInfo(
+                identifiers={(DOMAIN, f"{entry_id}_{group_id}")},
+                manufacturer="ÖkoFEN",
+                name=f"ÖkoFEN {group_name}",
+                via_device=(DOMAIN, entry_id),
+            )
 
     @property
     def _reading(self) -> Reading | None:

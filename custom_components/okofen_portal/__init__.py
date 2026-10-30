@@ -7,11 +7,12 @@ from dataclasses import dataclass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import OekofenPortalClient
 from .catalog import load_catalog
-from .const import FAST_INTERVAL, FAST_VARIABLES, SLOW_INTERVAL
+from .const import DOMAIN, FAST_INTERVAL, FAST_VARIABLES, SLOW_INTERVAL
 from .coordinator import OekofenCoordinator
 from .settings import SETTING_KEYS
 
@@ -50,6 +51,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     await fast.async_config_entry_first_refresh()
     await slow.async_config_entry_first_refresh()
     entry.runtime_data = OekofenData(fast, slow)
+    # main device first, so the per-circuit devices can point at it
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, entry.entry_id)},
+        manufacturer="ÖkoFEN",
+        name="ÖkoFEN",
+    )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
