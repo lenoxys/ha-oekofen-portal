@@ -1,6 +1,7 @@
 {
   "domain": "okofen_portal",
   "name": "ÖkoFEN Portal",
+  "categories": ["climate.thermostats_heating"],
   "codeowners": ["@lenoxys"],
   "config_flow": true,
   "documentation": "https://github.com/lenoxys/ha-oekofen-portal",
