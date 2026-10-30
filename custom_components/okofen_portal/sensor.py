@@ -44,18 +44,23 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Create one sensor per numeric or multi-state variable the controller returned."""
-    entities: list[OekofenSensor] = []
-    for coordinator in (entry.runtime_data.fast, entry.runtime_data.slow):
+    data = entry.runtime_data
+    entities: list[SensorEntity] = []
+    for coordinator in (data.fast, data.slow):
         for key, reading in coordinator.data.items():
-            if kind(reading) in ("number", "enum"):
-                entities.append(OekofenSensor(coordinator, key, reading))
+            if kind(reading) == "number" and key in data.docs.status:
+                entities.append(OekofenStatusSensor(coordinator, key, data.names[key]))
+            elif kind(reading) in ("number", "enum"):
+                entities.append(OekofenSensor(coordinator, key, reading, data.names[key]))
     async_add_entities(entities)
 
 
 class OekofenSensor(OekofenEntity, SensorEntity):
     """A sensor read from one portal variable."""
 
-    def __init__(self, coordinator: OekofenCoordinator, key: str, reading: Reading) -> None:
+    def __init__(
+        self, coordinator: OekofenCoordinator, key: str, reading: Reading, name: str
+    ) -> None:
         super().__init__(coordinator, key)
         self._options: tuple[str, ...] | None = None
         if kind(reading) == "enum":
@@ -65,6 +70,7 @@ class OekofenSensor(OekofenEntity, SensorEntity):
             self.entity_description = describe(
                 key,
                 SensorEntityDescription,
+                name,
                 device_class=SensorDeviceClass.ENUM,
                 options=list(self._options),
             )
@@ -73,6 +79,7 @@ class OekofenSensor(OekofenEntity, SensorEntity):
             self.entity_description = describe(
                 key,
                 SensorEntityDescription,
+                name,
                 device_class=device_class,
                 native_unit_of_measurement=unit,
                 state_class=(
@@ -91,3 +98,25 @@ class OekofenSensor(OekofenEntity, SensorEntity):
             index = int(reading.value)
             return self._options[index] if 0 <= index < len(self._options) else None
         return reading.value
+
+
+class OekofenStatusSensor(OekofenEntity, SensorEntity):
+    """A status word shown as ÖkoFEN's own text (each bit of the number is one message)."""
+
+    def __init__(self, coordinator: OekofenCoordinator, key: str, name: str) -> None:
+        super().__init__(coordinator, key)
+        self.entity_description = describe(key, SensorEntityDescription, name)
+
+    @property
+    def native_value(self) -> str | None:
+        reading = self._reading
+        if reading is None:
+            return None
+        raw = int(reading.value)
+        return self.coordinator.config_entry.runtime_data.docs.decode(self._key, raw) or str(raw)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | int]:
+        reading = self._reading
+        raw = {} if reading is None else {"raw": int(reading.value)}
+        return {**self._attr_extra_state_attributes, **raw}

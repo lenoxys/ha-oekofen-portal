@@ -22,8 +22,9 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Create one binary sensor per two-state variable the controller returned."""
+    names = entry.runtime_data.names
     async_add_entities(
-        OekofenBinarySensor(coordinator, key)
+        OekofenBinarySensor(coordinator, key, names[key])
         for coordinator in (entry.runtime_data.fast, entry.runtime_data.slow)
         for key, reading in coordinator.data.items()
         if kind(reading) == "binary"
@@ -33,11 +34,12 @@ async def async_setup_entry(
 class OekofenBinarySensor(OekofenEntity, BinarySensorEntity):
     """A two-state variable, on when its value is 1."""
 
-    def __init__(self, coordinator: OekofenCoordinator, key: str) -> None:
+    def __init__(self, coordinator: OekofenCoordinator, key: str, name: str) -> None:
         super().__init__(coordinator, key)
         self.entity_description = describe(
             key,
             BinarySensorEntityDescription,
+            name,
             device_class=BinarySensorDeviceClass.RUNNING if key == BURNER_KEY else None,
         )
 

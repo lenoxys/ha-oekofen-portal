@@ -24,6 +24,15 @@ Every read-only variable of the controller that the portal returns (about 440 on
 
 The burner contact and boiler temperature are shown on the controller's screen but are **not** available through the local API (`/all`), hence not in the local Home Assistant integrations. This integration is meant to **complement**, not replace, an integration of the local API such as `oekofen_pellematic_compact`.
 
+## Readable names, descriptions and status
+
+- **One Home Assistant device per circuit or function** (Heating circuit 1, Hot water 1, Buffer 1, Solar circuit 1…, Existing boiler, Weather…), each with a short description in its *model* field.
+- **Entity names are translated** (English or French, following Home Assistant's language) from the controller's German variable names: `raumtemp_ist` becomes *Room temperature (actual)* / *Température de la pièce (mesure)*. Words that are not in the glossary stay as they are.
+- **Every entity has a `description` attribute** (and a `portal_variable` attribute with the controller's own name). For the writable settings it is ÖkoFEN's own help text.
+- **Status words are decoded**: the controller's `status` numbers (for example `512` on the buffer tank) are shown as ÖkoFEN's own messages, such as *Demande marche OFF*; each set bit is one message, and the raw number stays in the `raw` attribute.
+
+ÖkoFEN's labels and help texts are **downloaded from the portal's public files when the integration starts** (and cached by Home Assistant for a week); none of them is stored in this repository. If the portal cannot be reached, names and descriptions fall back to the built-in glossary and status words are shown as numbers.
+
 ## Settings you can change (v0.3)
 
 A short **allow-list** of settings is exposed as `number` / `select` entities (configuration category). Every number has bounds, nothing outside the list can be written, and safety settings (collector protection, maximum boiler temperatures) are deliberately not included. Values are written to the controller through the portal; the controller confirms each write.
@@ -65,7 +74,7 @@ OEKOFEN_USER=you@example.com OEKOFEN_PASSWORD=... python scripts/check_api.py
 
 ## Français
 
-Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régulations ÖkoFEN Touch n'expose pas: contact brûleur et température de la chaudière existante, statut de la vanne mélangeuse du circuit de chauffage 1. API non officielle, avec votre propre compte. Installation par HACS (dépôt personnalisé, type *Intégration*), puis ajout de l'intégration avec vos identifiants my.oekofen.info. Version 0.3: lecture de toutes les variables en lecture du portail (environ 440 entités, la plupart désactivées par défaut) et écriture d'une liste autorisée de réglages avec bornes (décharge solaire, courbe de chauffe, marge du ballon, mode été/hiver).
+Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régulations ÖkoFEN Touch n'expose pas: contact brûleur et température de la chaudière existante, statut de la vanne mélangeuse du circuit de chauffage 1. API non officielle, avec votre propre compte. Installation par HACS (dépôt personnalisé, type *Intégration*), puis ajout de l'intégration avec vos identifiants my.oekofen.info. Version 0.5: noms et descriptions lisibles, codes d'état décodés avec les libellés d'ÖkoFEN (téléchargés au démarrage depuis le portail), un appareil par circuit, lecture de toutes les variables en lecture du portail (environ 440 entités, la plupart désactivées par défaut) et écriture d'une liste autorisée de réglages avec bornes (décharge solaire, courbe de chauffe, marge du ballon, mode été/hiver).
 
 ## License
 
