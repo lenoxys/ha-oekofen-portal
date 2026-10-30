@@ -1,0 +1,12 @@
+{
+  "domain": "okofen_portal",
+  "name": "ÖkoFEN Portal",
+  "codeowners": ["@lenoxys"],
+  "config_flow": true,
+  "documentation": "https://github.com/lenoxys/ha-oekofen-portal",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/lenoxys/ha-oekofen-portal/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

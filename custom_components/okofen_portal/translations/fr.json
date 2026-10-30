@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Portail ÖkoFEN",
+        "description": "Connectez-vous avec votre compte my.oekofen.info.",
+        "data": {
+          "username": "Identifiant",
+          "password": "Mot de passe"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Se reconnecter",
+        "data": {
+          "password": "Mot de passe"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Échec de la connexion",
+      "invalid_auth": "Authentification invalide"
+    },
+    "abort": {
+      "already_configured": "Ce compte est déjà configuré",
+      "reauth_successful": "Reconnexion réussie"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "burner": { "name": "Brûleur" }
+    },
+    "sensor": {
+      "boiler_temperature": { "name": "Température de la chaudière" },
+      "boiler_setpoint": { "name": "Consigne de la chaudière" },
+      "heating_mixer": {
+        "name": "Vanne mélangeuse du chauffage",
+        "state": {
+          "stopped": "Arrêt",
+          "opening": "Ouverture",
+          "closing": "Fermeture"
+        }
+      }
+    }
+  }
+}

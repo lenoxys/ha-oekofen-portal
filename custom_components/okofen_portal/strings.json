@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ÖkoFEN portal",
+        "description": "Sign in with your my.oekofen.info account.",
+        "data": {
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in again",
+        "data": {
+          "password": "[%key:common::config_flow::data::password%]"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_account%]",
+      "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "burner": { "name": "Burner" }
+    },
+    "sensor": {
+      "boiler_temperature": { "name": "Boiler temperature" },
+      "boiler_setpoint": { "name": "Boiler setpoint" },
+      "heating_mixer": {
+        "name": "Heating mixing valve",
+        "state": {
+          "stopped": "Stopped",
+          "opening": "Opening",
+          "closing": "Closing"
+        }
+      }
+    }
+  }
+}
