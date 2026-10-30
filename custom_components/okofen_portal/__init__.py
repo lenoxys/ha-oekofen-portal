@@ -17,10 +17,19 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .api import OekofenPortalClient
+from .local import OekofenLocalClient
 from .catalog import group_of, kind, load_catalog
-from .const import DOMAIN, FAST_INTERVAL, FAST_VARIABLES, SLOW_INTERVAL
+from .const import (
+    CONF_LOCAL_HOST,
+    CONF_LOCAL_PASSWORD,
+    DOMAIN,
+    FAST_INTERVAL,
+    FAST_VARIABLES,
+    LOCAL_INTERVAL,
+    SLOW_INTERVAL,
+)
 from .dashboard import async_setup_dashboard
-from .coordinator import OekofenCoordinator
+from .coordinator import HybridCoordinator, OekofenCoordinator
 from .docs import Docs, async_fetch_docs
 from .entity import main_device_info
 from .names import Texts
@@ -93,7 +102,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     session = async_get_clientsession(hass)
     client = OekofenPortalClient(session, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
     catalog = await hass.async_add_executor_job(load_catalog)
-    fast = OekofenCoordinator(hass, entry, client, FAST_VARIABLES, FAST_INTERVAL, "fast")
+    if entry.data.get(CONF_LOCAL_HOST):  # optional: local interface for the fast variables
+        fast = HybridCoordinator(
+            hass, entry, client, FAST_VARIABLES, LOCAL_INTERVAL, "fast",
+            local=OekofenLocalClient(session, entry.data[CONF_LOCAL_HOST], entry.data.get(CONF_LOCAL_PASSWORD, "")),
+            cloud_interval=FAST_INTERVAL,
+        )
+    else:
+        fast = OekofenCoordinator(hass, entry, client, FAST_VARIABLES, FAST_INTERVAL, "fast")
     # ponytail: reads the whole catalog every 5 min, restrict to enabled entities if the portal complains
     slow = OekofenCoordinator(
         hass,

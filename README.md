@@ -103,3 +103,7 @@ Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régul
 ## License
 
 MIT
+
+## Local interface (optional)
+
+The controller also has a local JSON interface (`http://<address>:4321/<local password>/all`, to enable on the controller). If you give its address and local password when adding or reconfiguring the integration, the fast values (collector, the four buffer sensors, pumps, flow and room temperatures, outdoor temperature: 15 variables) are read **locally every 10 seconds** instead of through the portal every 30 seconds. What the local interface does not give (burner contact, boiler temperature, mixing valve, status words, every other variable) still comes from the portal, and all writes go through the portal. If the local interface stops answering, the integration silently falls back to the portal. `scripts/check_local.py` compares both sources.

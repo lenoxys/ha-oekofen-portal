@@ -12,10 +12,16 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import OekofenAuthError, OekofenConnectionError, OekofenPortalClient
-from .const import DOMAIN
+from .const import CONF_LOCAL_HOST, CONF_LOCAL_PASSWORD, DOMAIN
+from .local import OekofenLocalClient
 
 STEP_USER_SCHEMA = vol.Schema(
-    {vol.Required(CONF_USERNAME): str, vol.Required(CONF_PASSWORD): str}
+    {
+        vol.Required(CONF_USERNAME): str,
+        vol.Required(CONF_PASSWORD): str,
+        vol.Optional(CONF_LOCAL_HOST): str,
+        vol.Optional(CONF_LOCAL_PASSWORD): str,
+    }
 )
 
 
@@ -31,11 +37,20 @@ class OekofenPortalConfigFlow(ConfigFlow, domain=DOMAIN):
         )
         try:
             await client.async_login()
-            return await client.async_plant_id(), None
+            plant_id = await client.async_plant_id()
         except OekofenAuthError:
             return None, "invalid_auth"
         except OekofenConnectionError:
             return None, "cannot_connect"
+        if data.get(CONF_LOCAL_HOST):  # optional local interface: check it answers
+            local = OekofenLocalClient(
+                async_get_clientsession(self.hass), data[CONF_LOCAL_HOST], data.get(CONF_LOCAL_PASSWORD, "")
+            )
+            try:
+                await local.async_read()
+            except OekofenConnectionError:
+                return None, "cannot_connect_local"
+        return plant_id, None
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -86,12 +101,20 @@ class OekofenPortalConfigFlow(ConfigFlow, domain=DOMAIN):
             if error is None:
                 await self.async_set_unique_id(plant_id)
                 self._abort_if_unique_id_mismatch()
-                return self.async_update_reload_and_abort(entry, data_updates=user_input)
+                # emptied optional fields must clear the stored values
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={CONF_LOCAL_HOST: "", CONF_LOCAL_PASSWORD: "", **user_input}
+                )
             errors["base"] = error
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=self.add_suggested_values_to_schema(
-                STEP_USER_SCHEMA, {CONF_USERNAME: entry.data[CONF_USERNAME]}
+                STEP_USER_SCHEMA,
+                {
+                    CONF_USERNAME: entry.data[CONF_USERNAME],
+                    CONF_LOCAL_HOST: entry.data.get(CONF_LOCAL_HOST, ""),
+                    CONF_LOCAL_PASSWORD: entry.data.get(CONF_LOCAL_PASSWORD, ""),
+                }
             ),
             errors=errors,
         )

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.util import dt as dt_util
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
@@ -17,6 +18,7 @@ from .api import (
     Reading,
 )
 from .const import DOMAIN
+from .local import MAP, OekofenLocalClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,3 +55,39 @@ class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
             raise ConfigEntryAuthFailed from err
         except OekofenConnectionError as err:
             raise UpdateFailed(f"Portal unreachable: {err}") from err
+
+
+class HybridCoordinator(OekofenCoordinator):
+    """The fast variables: the local interface often, the portal for what only it knows.
+
+    If the local interface does not answer, the whole list is read from the portal for that cycle.
+    """
+
+    def __init__(self, *args, local: OekofenLocalClient, cloud_interval: timedelta, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self._local = local
+        self._cloud_interval = cloud_interval
+        self._cloud_names = [n for n in self.names if n not in MAP]
+        self._cloud: dict[str, Reading] = {}
+        self._cloud_at: datetime | None = None
+
+    async def _async_update_data(self) -> dict[str, Reading]:
+        now = dt_util.utcnow()
+        try:
+            local = await self._local.async_read()
+        except OekofenConnectionError as err:
+            _LOGGER.debug("Local interface unavailable, using the portal: %s", err)
+            self._cloud_at = None
+            return await super()._async_update_data()
+        if self._cloud_at is None or now - self._cloud_at >= self._cloud_interval:
+            try:
+                self._cloud = await self.client.async_read(self._cloud_names)
+            except OekofenAuthError as err:
+                raise ConfigEntryAuthFailed from err
+            except OekofenConnectionError as err:
+                if not self._cloud:  # otherwise keep the last portal values until it answers again
+                    raise UpdateFailed(f"Portal unreachable: {err}") from err
+                _LOGGER.debug("Portal unreachable, keeping the last values: %s", err)
+            else:
+                self._cloud_at = now
+        return {**self._cloud, **local}

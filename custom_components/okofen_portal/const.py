@@ -5,6 +5,9 @@ from datetime import timedelta
 DOMAIN = "okofen_portal"
 FAST_INTERVAL = timedelta(seconds=30)
 SLOW_INTERVAL = timedelta(minutes=5)
+LOCAL_INTERVAL = timedelta(seconds=10)  # local interface: one request per cycle, the controller wants 2.5 s
+CONF_LOCAL_HOST = "local_host"
+CONF_LOCAL_PASSWORD = "local_password"
 
 # Variables that the local API does not give: enabled by default and polled fast.
 # key -> (translation key, enabled by default)

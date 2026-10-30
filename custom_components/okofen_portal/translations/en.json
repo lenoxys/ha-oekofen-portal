@@ -3,10 +3,12 @@
     "step": {
       "user": {
         "title": "ÖkoFEN portal",
-        "description": "Sign in with your my.oekofen.info account.",
+        "description": "Sign in with your my.oekofen.info account. Optionally add the controller's local address (e.g. 192.168.1.150) and its local password: the fast values are then read locally every 10 s and the portal is only used for the rest.",
         "data": {
           "username": "Username",
-          "password": "Password"
+          "password": "Password",
+          "local_host": "Local address (optional)",
+          "local_password": "Local password (optional)"
         }
       },
       "reauth_confirm": {
@@ -17,16 +19,19 @@
       },
       "reconfigure": {
         "title": "Change the account",
-        "description": "The installation must stay the same.",
+        "description": "The installation must stay the same. Leave the local address empty to use the portal only.",
         "data": {
           "username": "Username",
-          "password": "Password"
+          "password": "Password",
+          "local_host": "Local address (optional)",
+          "local_password": "Local password (optional)"
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect",
-      "invalid_auth": "Invalid authentication"
+      "invalid_auth": "Invalid authentication",
+      "cannot_connect_local": "Could not reach the local interface (address, port 4321 and local password)"
     },
     "abort": {
       "already_configured": "Account is already configured",

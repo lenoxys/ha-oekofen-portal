@@ -3,10 +3,12 @@
     "step": {
       "user": {
         "title": "Portail ÖkoFEN",
-        "description": "Connectez-vous avec votre compte my.oekofen.info.",
+        "description": "Connectez-vous avec votre compte my.oekofen.info. En option, ajoutez l'adresse locale de la régulation (ex. 192.168.1.150) et son mot de passe local : les valeurs rapides sont alors lues en local toutes les 10 s et le portail ne sert que pour le reste.",
         "data": {
           "username": "Identifiant",
-          "password": "Mot de passe"
+          "password": "Mot de passe",
+          "local_host": "Adresse locale (facultatif)",
+          "local_password": "Mot de passe local (facultatif)"
         }
       },
       "reauth_confirm": {
@@ -17,16 +19,19 @@
       },
       "reconfigure": {
         "title": "Changer le compte",
-        "description": "L'installation doit rester la même.",
+        "description": "L'installation doit rester la même. Laissez l'adresse locale vide pour n'utiliser que le portail.",
         "data": {
           "username": "Identifiant",
-          "password": "Mot de passe"
+          "password": "Mot de passe",
+          "local_host": "Adresse locale (facultatif)",
+          "local_password": "Mot de passe local (facultatif)"
         }
       }
     },
     "error": {
       "cannot_connect": "Échec de la connexion",
-      "invalid_auth": "Authentification invalide"
+      "invalid_auth": "Authentification invalide",
+      "cannot_connect_local": "Impossible de joindre l'interface locale (adresse, port 4321 et mot de passe local)"
     },
     "abort": {
       "already_configured": "Ce compte est déjà configuré",
