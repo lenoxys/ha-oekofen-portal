@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "ÖkoFEN portal",
-        "description": "Sign in with your my.oekofen.info account. Optionally add the controller's local address (e.g. 192.168.1.150) and its local password: the fast values are then read locally every 10 s and the portal is only used for the rest.",
+        "description": "Sign in with your my.oekofen.info account. Optionally add the controller's local address (e.g. 192.168.0.10) and its local password: the fast values are then read locally every 10 s and the portal is only used for the rest.",
         "data": {
           "username": "[%key:common::config_flow::data::username%]",
           "password": "[%key:common::config_flow::data::password%]",

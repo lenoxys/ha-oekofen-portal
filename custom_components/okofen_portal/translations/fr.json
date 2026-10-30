@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Portail ÖkoFEN",
-        "description": "Connectez-vous avec votre compte my.oekofen.info. En option, ajoutez l'adresse locale de la régulation (ex. 192.168.1.150) et son mot de passe local : les valeurs rapides sont alors lues en local toutes les 10 s et le portail ne sert que pour le reste.",
+        "description": "Connectez-vous avec votre compte my.oekofen.info. En option, ajoutez l'adresse locale de la régulation (ex. 192.168.0.10) et son mot de passe local : les valeurs rapides sont alors lues en local toutes les 10 s et le portail ne sert que pour le reste.",
         "data": {
           "username": "Identifiant",
           "password": "Mot de passe",

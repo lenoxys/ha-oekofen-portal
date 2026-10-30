@@ -1,6 +1,6 @@
 """Compare the local interface with the portal for the variables the integration reads locally.
 
-    OEKOFEN_USER=... OEKOFEN_PASSWORD=... OEKOFEN_LOCAL_HOST=192.168.1.150 OEKOFEN_LOCAL_PASSWORD=... \
+    OEKOFEN_USER=... OEKOFEN_PASSWORD=... OEKOFEN_LOCAL_HOST=192.168.0.10 OEKOFEN_LOCAL_PASSWORD=... \
         python scripts/check_local.py
 """
 
