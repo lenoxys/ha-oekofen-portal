@@ -12,8 +12,33 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.loader import async_get_integration
 
 from .const import DASHBOARD, DOMAIN
+from .weather_parse import WEATHER_KEYS
 
 PANEL_PATH = "okofen"
+
+
+def _weather(readings: dict) -> dict:
+    """Current sky from the controller's forecast: "ven., 30 oct. 20:56|10|0|7 km/h|01n|800|C|07:45|17:53"."""
+    first = readings.get(WEATHER_KEYS[0])
+    parts = str(first.value).split("|") if first is not None else []
+
+    def part(i: int) -> str | None:
+        return parts[i] if len(parts) > i else None
+
+    def value(key: str):
+        return readings[key].value if key in readings else None
+
+    code = part(5)
+    return {
+        "icon": part(4),  # OpenWeatherMap icon: 01d day, 01n night
+        "code": int(code) if code and code.isdigit() else None,
+        "clouds": value("LOCAL.L_weather_clouds"),
+        "wind": part(3),
+        "sunrise": part(7),
+        "sunset": part(8),
+        "forecast_temp": value("LOCAL.L_weather_forecast_temp"),
+        "forecast_clouds": value("LOCAL.L_weather_forecast_clouds"),
+    }
 STATIC_URL = f"/{DOMAIN}_static/okofen-dashboard.js"
 
 
@@ -35,6 +60,7 @@ def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConnection
             "values": {
                 name: readings[key].value for name, key in DASHBOARD.items() if key in readings
             },
+            "weather": _weather(readings),
         },
     )
 

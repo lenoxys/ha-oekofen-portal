@@ -39,6 +39,11 @@ DASHBOARD = {
     "burner": "LOCAL.L_ke_brennerkontakt_1",
     "boiler_temp": "LOCAL.L_ke_temp_ist",
     "mixer": "LOCAL.L_hk[0].mischer",
+    "tank_set": "LOCAL.L_pu[0].einschaltfuehler_soll",
+    "room_set": "LOCAL.L_hk[0].raumtemp_soll",
+    "flow_set": "LOCAL.L_hk[0].vorlauftemp_soll",
+    "ecs_set": "LOCAL.L_ww[0].temp_soll",
+    "ecs_pump": "LOCAL.L_ww[0].pumpe",  # hot water kit pump: a draw is running
 }
 # read every 30 s for the climate and water_heater entities of the first circuits
 CLIMATE_FAST = [
