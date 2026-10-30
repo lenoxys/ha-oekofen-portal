@@ -37,7 +37,7 @@
     "brennerkontakt": "contacto del quemador",
     "brennerlaufzeit": "tiempo de funcionamiento del quemador",
     "brennerstarts": "arranques del quemador",
-    "bsk": "compuerta cortafuegos",
+    "bsk": "antirretorno de llama",
     "cancel": "cancelar",
     "car": "vehículo",
     "cell": "celda",
@@ -187,7 +187,7 @@
     "smartpvgreenmode": "modo verde FV inteligente",
     "soc": "estado de carga",
     "soh": "estado de salud",
-    "solarheiz": "descarga solar",
+    "solarheiz": "calefacción solar",
     "soll": "consigna",
     "sollabweichungen": "desviaciones de consigna",
     "spannung": "tensión",
@@ -239,11 +239,11 @@
   "groups": {
     "hk": {
       "label": "Circuito de calefacción",
-      "description": "Circuito de calefacción: bomba, válvula mezcladora, temperaturas de ida y ambiente, curva de calefacción y ajustes de descarga solar."
+      "description": "Circuito de calefacción: bomba, válvula mezcladora, temperaturas de ida y ambiente, curva de calefacción y ajustes de calefacción solar."
     },
     "ww": {
       "label": "Agua caliente",
-      "description": "Circuito de agua caliente sanitaria: sondas, bomba y ajustes de descarga solar."
+      "description": "Circuito de agua caliente sanitaria: sondas, bomba y ajustes de calefacción solar."
     },
     "pu": {
       "label": "Depósito de inercia",
@@ -255,7 +255,7 @@
     },
     "boiler": {
       "label": "Caldera existente",
-      "description": "Caldera de respaldo (gasóleo, gas...) controlada por el regulador: temperatura, contacto del quemador y salida de bomba/válvula."
+      "description": "Caldera de apoyo (gasóleo, gas...) controlada por el regulador: temperatura, contacto del quemador y salida de bomba/válvula."
     },
     "weather": {
       "label": "Meteorología",
@@ -358,7 +358,7 @@
     "sub": "Datos leídos del portal ÖkoFEN",
     "tank": "Depósito de inercia",
     "collectors": "Colectores solares",
-    "boiler": "Caldera de respaldo",
+    "boiler": "Caldera de apoyo",
     "heating": "Calefacción vivienda",
     "hotWater": "Agua caliente (ACS)",
     "coldWater": "Agua fría",

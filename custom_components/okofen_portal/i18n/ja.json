@@ -37,7 +37,7 @@
     "brennerkontakt": "バーナー接点",
     "brennerlaufzeit": "バーナー運転時間",
     "brennerstarts": "バーナー起動回数",
-    "bsk": "防火ダンパー",
+    "bsk": "逆火防止ダンパー",
     "cancel": "キャンセル",
     "car": "車両",
     "cell": "セル",
@@ -187,7 +187,7 @@
     "smartpvgreenmode": "スマート太陽光グリーンモード",
     "soc": "充電率",
     "soh": "劣化度",
-    "solarheiz": "ソーラー放熱",
+    "solarheiz": "ソーラー暖房",
     "soll": "設定値",
     "sollabweichungen": "設定値偏差",
     "spannung": "電圧",
@@ -239,11 +239,11 @@
   "groups": {
     "hk": {
       "label": "暖房回路",
-      "description": "暖房回路：ポンプ、ミキシングバルブ、往き温度と室温、暖房カーブ、ソーラー放熱の設定。"
+      "description": "暖房回路：ポンプ、ミキシングバルブ、往き温度と室温、暖房カーブ、ソーラー暖房の設定。"
     },
     "ww": {
       "label": "給湯",
-      "description": "給湯回路：センサー、ポンプ、ソーラー放熱の設定。"
+      "description": "給湯回路：センサー、ポンプ、ソーラー暖房の設定。"
     },
     "pu": {
       "label": "バッファタンク",
@@ -325,11 +325,11 @@
     "LOCAL.L_sk[0].speichertemp_ist": "ソーラーコイルのあるタンク下部の温度。",
     "LOCAL.L_sk[0].pumpe": "太陽熱回路ポンプの回転数（%）。",
     "LOCAL.L_aussentemperatur_ist": "コントローラーが使用する外気温度。",
-    "LOCAL.hk[0].solarheiz_temp_ein": "ソーラー放熱：バッファ上部がこの温度に達し、晴天の予報がある場合に開始します。",
-    "LOCAL.hk[0].solarheiz_temp_aus": "ソーラー放熱：バッファがこの温度を下回ると停止します。これにより給湯の予備熱量を確保します。",
+    "LOCAL.hk[0].solarheiz_temp_ein": "ソーラー暖房：バッファ上部がこの温度に達し、晴天の予報がある場合に開始します。",
+    "LOCAL.hk[0].solarheiz_temp_aus": "ソーラー暖房：バッファがこの温度を下回ると停止します。これにより給湯の予備熱量を確保します。",
     "LOCAL.hk[0].solarheiz_mode": "スケジュール = タイムプログラムに従います。ソーラーポンプ = ソーラーポンプの運転中のみ。",
-    "LOCAL.ww[0].solarheiz_temp_ein": "給湯へのソーラー放熱：開始温度。",
-    "LOCAL.ww[0].solarheiz_temp_aus": "給湯へのソーラー放熱：停止温度。",
+    "LOCAL.ww[0].solarheiz_temp_ein": "給湯へのソーラー暖房：開始温度。",
+    "LOCAL.ww[0].solarheiz_temp_aus": "給湯へのソーラー暖房：停止温度。",
     "LOCAL.hk[0].ueberhoehung": "バッファの設定値は、往き設定値にこの余裕分を加えた値です。下げるとボイラーの起動が遅れます。",
     "LOCAL.hk[0].vorlauftemp_max": "暖房回路が要求できる最高往き温度（したがってバッファ設定値から温度上乗せを引いた値）。",
     "LOCAL.hk[0].vorlauftemp_min": "暖房回路の最低往き温度。",
@@ -358,7 +358,7 @@
     "sub": "ÖkoFENポータルから取得したデータ",
     "tank": "バッファタンク",
     "collectors": "太陽熱集熱器",
-    "boiler": "予備ボイラー",
+    "boiler": "補助ボイラー",
     "heating": "住宅暖房",
     "hotWater": "給湯",
     "coldWater": "給水",

@@ -187,7 +187,7 @@
     "smartpvgreenmode": "modo verde PV inteligente",
     "soc": "estado de carga",
     "soh": "estado de saúde",
-    "solarheiz": "descarga solar",
+    "solarheiz": "aquecimento solar",
     "soll": "valor nominal",
     "sollabweichungen": "desvios do valor nominal",
     "spannung": "tensão",
@@ -239,11 +239,11 @@
   "groups": {
     "hk": {
       "label": "Circuito de aquecimento",
-      "description": "Circuito de aquecimento: bomba, válvula misturadora, temperaturas de ida e ambiente, curva de aquecimento e parâmetros de descarga solar."
+      "description": "Circuito de aquecimento: bomba, válvula misturadora, temperaturas de ida e ambiente, curva de aquecimento e parâmetros de aquecimento solar."
     },
     "ww": {
       "label": "Água quente",
-      "description": "Circuito de água quente sanitária: sondas, bomba e parâmetros de descarga solar."
+      "description": "Circuito de água quente sanitária: sondas, bomba e parâmetros de aquecimento solar."
     },
     "pu": {
       "label": "Depósito de inércia",
@@ -356,9 +356,9 @@
   "panel": {
     "title": "Instalação ÖkoFEN",
     "sub": "Dados lidos do portal ÖkoFEN",
-    "tank": "Acumulador",
+    "tank": "Depósito de inércia",
     "collectors": "Coletores solares",
-    "boiler": "Caldeira apoio",
+    "boiler": "Caldeira de apoio",
     "heating": "Aquecimento",
     "hotWater": "Água quente sanitária",
     "coldWater": "Água fria",

@@ -112,7 +112,7 @@
     "injection": "馈入",
     "interne": "内部",
     "ist": "实际",
-    "kap": "容性",
+    "kap": "电容式",
     "kaskade": "级联",
     "ke": "现有锅炉",
     "kessel": "锅炉",
@@ -187,7 +187,7 @@
     "smartpvgreenmode": "智能光伏绿色模式",
     "soc": "荷电状态",
     "soh": "健康状态",
-    "solarheiz": "太阳能释热",
+    "solarheiz": "太阳能采暖",
     "soll": "设定值",
     "sollabweichungen": "设定值偏差",
     "spannung": "电压",
@@ -239,15 +239,15 @@
   "groups": {
     "hk": {
       "label": "采暖回路",
-      "description": "采暖回路：水泵、混水阀、供水温度与室温、采暖曲线及太阳能释热设置。"
+      "description": "采暖回路：水泵、混水阀、供水温度与室温、采暖曲线及太阳能采暖设置。"
     },
     "ww": {
       "label": "生活热水",
-      "description": "生活热水回路：传感器、水泵及太阳能释热设置。"
+      "description": "生活热水回路：传感器、水泵及太阳能采暖设置。"
     },
     "pu": {
-      "label": "缓冲水箱",
-      "description": "缓冲水箱：温度传感器、充热泵及对锅炉的请求。"
+      "label": "蓄热水箱",
+      "description": "蓄热水箱：温度传感器、充热泵及对锅炉的请求。"
     },
     "sk": {
       "label": "太阳能回路",
@@ -255,7 +255,7 @@
     },
     "boiler": {
       "label": "现有锅炉",
-      "description": "由控制器驱动的备用锅炉（燃油、燃气等）：温度、燃烧器触点及水泵/阀门输出。"
+      "description": "由控制器驱动的辅助锅炉（燃油、燃气等）：温度、燃烧器触点及水泵/阀门输出。"
     },
     "weather": {
       "label": "天气",
@@ -313,25 +313,25 @@
     "LOCAL.L_bestke_umschaltventil": "用于启动现有锅炉水泵或切换阀的干触点（端子 X24）。",
     "LOCAL.L_hk[0].mischer": "采暖回路的混水阀：停止、开启或关闭。三点控制，无位置反馈。",
     "LOCAL.L_hk[0].vorlauftemp_ist": "混水阀后测得的采暖供水温度。",
-    "LOCAL.L_hk[0].vorlauftemp_soll": "所需的采暖供水温度。缓冲水箱设定值为此值加上超调设置。8 °C = 采暖关闭。",
+    "LOCAL.L_hk[0].vorlauftemp_soll": "所需的采暖供水温度。蓄热水箱设定值为此值加上超调设置。8 °C = 采暖关闭。",
     "LOCAL.L_hk[0].raumtemp_ist": "由房间控制单元测得的室温。",
     "LOCAL.L_hk[0].raumtemp_soll": "此刻所需的室温（舒适或降温，已含远程偏移和节能模式）。",
     "LOCAL.L_hk[0].pumpe": "采暖回路水泵。",
-    "LOCAL.L_pu[0].einschaltfuehler_ist": "缓冲水箱顶部传感器（开启传感器）：低于其设定值时请求锅炉。",
-    "LOCAL.L_pu[0].ausschaltfuehler_ist": "缓冲水箱中部传感器（关闭传感器）：达到其设定值时锅炉停止。",
-    "LOCAL.L_pu[0].pumpe": "缓冲水箱充热泵，单位 %。",
-    "LOCAL.L_ww[0].einschaltfuehler_ist": "生活热水开启传感器（缓冲水箱最高处的传感器）。",
+    "LOCAL.L_pu[0].einschaltfuehler_ist": "蓄热水箱顶部传感器（开启传感器）：低于其设定值时请求锅炉。",
+    "LOCAL.L_pu[0].ausschaltfuehler_ist": "蓄热水箱中部传感器（关闭传感器）：达到其设定值时锅炉停止。",
+    "LOCAL.L_pu[0].pumpe": "蓄热水箱充热泵，单位 %。",
+    "LOCAL.L_ww[0].einschaltfuehler_ist": "生活热水开启传感器（蓄热水箱最高处的传感器）。",
     "LOCAL.L_sk[0].kollektortemp_ist": "太阳能集热器温度。",
     "LOCAL.L_sk[0].speichertemp_ist": "水箱底部温度，即太阳能盘管所在位置。",
     "LOCAL.L_sk[0].pumpe": "太阳能回路水泵转速，单位 %。",
     "LOCAL.L_aussentemperatur_ist": "控制器使用的室外温度。",
-    "LOCAL.hk[0].solarheiz_temp_ein": "太阳能释热：缓冲水箱顶部达到此温度且预报有阳光时启动。",
-    "LOCAL.hk[0].solarheiz_temp_aus": "太阳能释热：缓冲水箱低于此温度时停止，以保留生活热水储备。",
+    "LOCAL.hk[0].solarheiz_temp_ein": "太阳能采暖：蓄热水箱顶部达到此温度且预报有阳光时启动。",
+    "LOCAL.hk[0].solarheiz_temp_aus": "太阳能采暖：蓄热水箱低于此温度时停止，以保留生活热水储备。",
     "LOCAL.hk[0].solarheiz_mode": "时间程序 = 按时间程序运行。太阳能循环泵 = 仅在太阳能循环泵运行时。",
     "LOCAL.ww[0].solarheiz_temp_ein": "太阳能向生活热水释热：启动温度。",
     "LOCAL.ww[0].solarheiz_temp_aus": "太阳能向生活热水释热：停止温度。",
-    "LOCAL.hk[0].ueberhoehung": "缓冲水箱设定值为供水设定值加上此裕量。调低可延迟锅炉启动。",
-    "LOCAL.hk[0].vorlauftemp_max": "采暖回路可请求的最高供水温度（因此也是缓冲水箱设定值减去超调量）。",
+    "LOCAL.hk[0].ueberhoehung": "蓄热水箱设定值为供水设定值加上此裕量。调低可延迟锅炉启动。",
+    "LOCAL.hk[0].vorlauftemp_max": "采暖回路可请求的最高供水温度（因此也是蓄热水箱设定值减去超调量）。",
     "LOCAL.hk[0].vorlauftemp_min": "采暖回路的最低供水温度。",
     "LOCAL.hk[0].heizkurve_fusspunkt": "室外 15 °C 时的供水温度；改变它会使整条曲线平移。",
     "LOCAL.hk[0].heizkurve_steigung": "室外温度每变化 1 度时供水温度的变化量。",
@@ -356,9 +356,9 @@
   "panel": {
     "title": "ÖkoFEN 系统",
     "sub": "数据读取自 ÖkoFEN 门户",
-    "tank": "缓冲水箱",
+    "tank": "蓄热水箱",
     "collectors": "太阳能集热器",
-    "boiler": "备用锅炉",
+    "boiler": "辅助锅炉",
     "heating": "房屋采暖",
     "hotWater": "生活热水",
     "coldWater": "冷水",
