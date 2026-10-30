@@ -2,11 +2,28 @@
 
 from __future__ import annotations
 
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .api import Reading
+from .catalog import pretty
+from .const import CURATED, DOMAIN
 from .coordinator import OekofenCoordinator
+
+
+def describe(key: str, description_cls: type[EntityDescription], **extra) -> EntityDescription:
+    """Description for one variable: curated ones are named and enabled, the rest are diagnostics, disabled."""
+    curated = CURATED.get(key)
+    return description_cls(
+        key=key,
+        translation_key=curated[0] if curated else None,
+        name=None if curated else pretty(key),
+        entity_registry_enabled_default=curated[1] if curated else False,
+        entity_category=None if curated else EntityCategory.DIAGNOSTIC,
+        **extra,
+    )
 
 
 class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
@@ -26,6 +43,10 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
         )
 
     @property
+    def _reading(self) -> Reading | None:
+        return self.coordinator.data.get(self._key)
+
+    @property
     def available(self) -> bool:
         """Available when the last poll worked and returned this variable."""
-        return super().available and self._key in self.coordinator.data
+        return super().available and self._reading is not None

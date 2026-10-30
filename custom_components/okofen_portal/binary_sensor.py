@@ -1,4 +1,4 @@
-"""Binary sensors for the ÖkoFEN Portal integration."""
+"""Binary sensors for the ÖkoFEN Portal integration: two-state variables."""
 
 from __future__ import annotations
 
@@ -11,31 +11,37 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import OekofenConfigEntry
-from .const import VAR_BURNER
-from .entity import OekofenEntity
+from .catalog import kind
+from .coordinator import OekofenCoordinator
+from .entity import OekofenEntity, describe
 
-BURNER = BinarySensorEntityDescription(
-    key=VAR_BURNER,
-    translation_key="burner",
-    device_class=BinarySensorDeviceClass.RUNNING,
-)
+BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
 
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the binary sensors."""
-    async_add_entities([OekofenBinarySensor(entry.runtime_data, BURNER)])
+    """Create one binary sensor per two-state variable the controller returned."""
+    async_add_entities(
+        OekofenBinarySensor(coordinator, key)
+        for coordinator in (entry.runtime_data.fast, entry.runtime_data.slow)
+        for key, reading in coordinator.data.items()
+        if kind(reading) == "binary"
+    )
 
 
 class OekofenBinarySensor(OekofenEntity, BinarySensorEntity):
-    """The burner contact of the existing boiler."""
+    """A two-state variable, on when its value is 1."""
 
-    def __init__(self, coordinator, description: BinarySensorEntityDescription) -> None:
-        super().__init__(coordinator, description.key)
-        self.entity_description = description
+    def __init__(self, coordinator: OekofenCoordinator, key: str) -> None:
+        super().__init__(coordinator, key)
+        self.entity_description = describe(
+            key,
+            BinarySensorEntityDescription,
+            device_class=BinarySensorDeviceClass.RUNNING if key == BURNER_KEY else None,
+        )
 
     @property
     def is_on(self) -> bool | None:
-        value = self.coordinator.data.get(self._key)
-        return None if value is None else bool(value)
+        reading = self._reading
+        return None if reading is None else bool(reading.value)

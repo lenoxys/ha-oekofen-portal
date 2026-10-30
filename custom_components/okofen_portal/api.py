@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Any
+from typing import Any, NamedTuple
 
 import aiohttp
 
@@ -16,8 +16,16 @@ BASE = "https://my.oekofen.info"
 API = f"{BASE}/api/pwa"
 _HEADERS = {"Origin": BASE, "Referer": f"{BASE}/app/"}
 _CHUNK = 60  # variables per request
-_PREFIX = "CAPPL:LOCAL."
+_PREFIX = "CAPPL:"
 _TIMEOUT = aiohttp.ClientTimeout(total=30)
+
+
+class Reading(NamedTuple):
+    """One variable: value (divisor applied), unit text and, if any, its state labels."""
+
+    value: float | int | str
+    unit: str
+    states: tuple[str, ...] | None
 
 
 class OekofenError(Exception):
@@ -126,10 +134,13 @@ class OekofenPortalClient:
             self._plant_id = str(plants[0]["id"])
         return self._plant_id
 
-    async def async_read(self, names: list[str]) -> dict[str, float | int | str]:
-        """Read variables by their name, e.g. ``L_ke_temp_ist`` (no prefix)."""
+    async def async_read(self, names: list[str]) -> dict[str, Reading]:
+        """Read variables by catalog name, e.g. ``LOCAL.L_ke_temp_ist``.
+
+        Variables the controller does not have are left out of the result.
+        """
         plant = await self.async_plant_id()
-        out: dict[str, float | int | str] = {}
+        out: dict[str, Reading] = {}
         for i in range(0, len(names), _CHUNK):
             body = [_PREFIX + n for n in names[i : i + _CHUNK]]
             data = await self._request(
@@ -138,7 +149,12 @@ class OekofenPortalClient:
             for item in data.get("data", []):
                 if item.get("status") != "OK":
                     continue
-                out[item["name"].removeprefix(_PREFIX)] = _value(item)
+                states = item.get("formatTexts")
+                out[item["name"].removeprefix(_PREFIX)] = Reading(
+                    _value(item),
+                    item.get("unitText") or "",
+                    tuple(states.split("|")) if states else None,
+                )
         return out
 
 

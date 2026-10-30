@@ -27,7 +27,8 @@
   },
   "entity": {
     "binary_sensor": {
-      "burner": { "name": "Brûleur" }
+      "burner": { "name": "Brûleur" },
+      "boiler_valve": { "name": "Sortie pompe/vanne de la chaudière" }
     },
     "sensor": {
       "boiler_temperature": { "name": "Température de la chaudière" },

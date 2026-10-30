@@ -1,7 +1,8 @@
-"""Data update coordinator for the ÖkoFEN Portal integration."""
+"""Data update coordinators for the ÖkoFEN Portal integration."""
 
 from __future__ import annotations
 
+from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
@@ -13,32 +14,40 @@ from .api import (
     OekofenAuthError,
     OekofenConnectionError,
     OekofenPortalClient,
+    Reading,
 )
-from .const import DOMAIN, SCAN_INTERVAL, VARIABLES
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class OekofenCoordinator(DataUpdateCoordinator[dict[str, float | int | str]]):
-    """Poll the portal for the variables used by the entities."""
+class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
+    """Poll a fixed list of portal variables."""
 
     config_entry: ConfigEntry
 
     def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, client: OekofenPortalClient
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        client: OekofenPortalClient,
+        names: list[str],
+        interval: timedelta,
+        label: str,
     ) -> None:
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
-            name=DOMAIN,
-            update_interval=SCAN_INTERVAL,
+            name=f"{DOMAIN} {label}",
+            update_interval=interval,
         )
         self.client = client
+        self.names = names
 
-    async def _async_update_data(self) -> dict[str, float | int | str]:
+    async def _async_update_data(self) -> dict[str, Reading]:
         try:
-            return await self.client.async_read(VARIABLES)
+            return await self.client.async_read(self.names)
         except OekofenAuthError as err:
             raise ConfigEntryAuthFailed from err
         except OekofenConnectionError as err:

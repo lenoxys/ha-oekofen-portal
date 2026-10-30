@@ -27,7 +27,8 @@
   },
   "entity": {
     "binary_sensor": {
-      "burner": { "name": "Burner" }
+      "burner": { "name": "Burner" },
+      "boiler_valve": { "name": "Boiler pump/valve output" }
     },
     "sensor": {
       "boiler_temperature": { "name": "Boiler temperature" },
