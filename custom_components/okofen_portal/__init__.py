@@ -13,8 +13,9 @@ from .api import OekofenPortalClient
 from .catalog import load_catalog
 from .const import FAST_INTERVAL, FAST_VARIABLES, SLOW_INTERVAL
 from .coordinator import OekofenCoordinator
+from .settings import SETTING_KEYS
 
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.SENSOR]
+PLATFORMS = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SELECT, Platform.SENSOR]
 
 
 @dataclass
@@ -42,7 +43,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         hass,
         entry,
         client,
-        [n for n in catalog if n not in FAST_VARIABLES],
+        [n for n in catalog if n not in FAST_VARIABLES] + SETTING_KEYS,
         SLOW_INTERVAL,
         "slow",
     )

@@ -7,6 +7,7 @@ so it can be exercised on its own (see scripts/check_api.py).
 from __future__ import annotations
 
 import asyncio
+import json
 import re
 from typing import Any, NamedTuple
 
@@ -26,6 +27,7 @@ class Reading(NamedTuple):
     value: float | int | str
     unit: str
     states: tuple[str, ...] | None
+    divisor: float = 1.0
 
 
 class OekofenError(Exception):
@@ -98,17 +100,19 @@ class OekofenPortalClient:
         except (aiohttp.ClientError, asyncio.TimeoutError, KeyError) as err:
             raise OekofenConnectionError(str(err)) from err
 
-    async def _request(self, method: str, url: str, **kwargs: Any) -> Any:
+    async def _request(
+        self, method: str, url: str, text_body: str | None = None, **kwargs: Any
+    ) -> Any:
         if self._token is None:
             await self.async_login()
         for attempt in (1, 2):
+            headers = {**_HEADERS, "Authorization": f"Bearer {self._token}"}
+            if text_body is not None:  # writes are sent as text/plain, like the web app does
+                headers["Content-Type"] = "text/plain"
+                kwargs["data"] = text_body.encode()
             try:
                 async with self._session.request(
-                    method,
-                    url,
-                    headers={**_HEADERS, "Authorization": f"Bearer {self._token}"},
-                    timeout=_TIMEOUT,
-                    **kwargs,
+                    method, url, headers=headers, timeout=_TIMEOUT, **kwargs
                 ) as resp:
                     if resp.status == 401:
                         if attempt == 2:
@@ -154,8 +158,21 @@ class OekofenPortalClient:
                     _value(item),
                     item.get("unitText") or "",
                     tuple(states.split("|")) if states else None,
+                    float(item.get("divisor") or 1),
                 )
         return out
+
+    async def async_write(self, name: str, raw: int) -> None:
+        """Write one setting. ``raw`` is the portal's own integer (a temperature in tenths of a degree...)."""
+        plant = await self.async_plant_id()
+        data = await self._request(
+            "PUT",
+            f"{API}/v1/plants/{plant}/remotecontrol/variables",
+            text_body=json.dumps([{_PREFIX + name: str(int(raw))}]),
+        )
+        results = data.get("data", [])
+        if data.get("status") != "success" or not results or results[0].get("status") != "OK":
+            raise OekofenError(f"write of {name} refused: {data.get('message', 'unknown')}")
 
 
 def _value(item: dict[str, Any]) -> float | int | str:

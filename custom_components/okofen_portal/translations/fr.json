@@ -27,18 +27,77 @@
   },
   "entity": {
     "binary_sensor": {
-      "burner": { "name": "Brûleur" },
-      "boiler_valve": { "name": "Sortie pompe/vanne de la chaudière" }
+      "burner": {
+        "name": "Brûleur"
+      },
+      "boiler_valve": {
+        "name": "Sortie pompe/vanne de la chaudière"
+      }
     },
     "sensor": {
-      "boiler_temperature": { "name": "Température de la chaudière" },
-      "boiler_setpoint": { "name": "Consigne de la chaudière" },
+      "boiler_temperature": {
+        "name": "Température de la chaudière"
+      },
+      "boiler_setpoint": {
+        "name": "Consigne de la chaudière"
+      },
       "heating_mixer": {
         "name": "Vanne mélangeuse du chauffage",
         "state": {
           "stopped": "Arrêt",
           "opening": "Ouverture",
           "closing": "Fermeture"
+        }
+      }
+    },
+    "number": {
+      "solar_discharge_heating_start": {
+        "name": "Décharge solaire chauffage: démarrage (haut du ballon)"
+      },
+      "solar_discharge_heating_stop": {
+        "name": "Décharge solaire chauffage: arrêt"
+      },
+      "solar_discharge_hot_water_start": {
+        "name": "Décharge solaire eau chaude: démarrage"
+      },
+      "solar_discharge_hot_water_stop": {
+        "name": "Décharge solaire eau chaude: arrêt"
+      },
+      "heating_overshoot": {
+        "name": "Surélévation du ballon au-dessus de la consigne de départ"
+      },
+      "flow_temperature_max": {
+        "name": "Départ chauffage maximum"
+      },
+      "flow_temperature_min": {
+        "name": "Départ chauffage minimum"
+      },
+      "curve_base_point": {
+        "name": "Pied de la courbe de chauffe"
+      },
+      "curve_slope": {
+        "name": "Pente de la courbe de chauffe"
+      },
+      "heating_limit_comfort": {
+        "name": "Limite de température extérieure du chauffage (confort)"
+      },
+      "heating_limit_setback": {
+        "name": "Limite de température extérieure du chauffage (réduit)"
+      }
+    },
+    "select": {
+      "solar_discharge_heating_mode": {
+        "name": "Mode de la décharge solaire du chauffage",
+        "state": {
+          "schedule": "Programme",
+          "solar_pump": "Pompe solaire"
+        }
+      },
+      "season_mode": {
+        "name": "Mode été / hiver",
+        "state": {
+          "winter": "Hiver (chauffage + eau chaude)",
+          "summer": "Été (eau chaude seule)"
         }
       }
     }

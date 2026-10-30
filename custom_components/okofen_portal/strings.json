@@ -27,18 +27,77 @@
   },
   "entity": {
     "binary_sensor": {
-      "burner": { "name": "Burner" },
-      "boiler_valve": { "name": "Boiler pump/valve output" }
+      "burner": {
+        "name": "Burner"
+      },
+      "boiler_valve": {
+        "name": "Boiler pump/valve output"
+      }
     },
     "sensor": {
-      "boiler_temperature": { "name": "Boiler temperature" },
-      "boiler_setpoint": { "name": "Boiler setpoint" },
+      "boiler_temperature": {
+        "name": "Boiler temperature"
+      },
+      "boiler_setpoint": {
+        "name": "Boiler setpoint"
+      },
       "heating_mixer": {
         "name": "Heating mixing valve",
         "state": {
           "stopped": "Stopped",
           "opening": "Opening",
           "closing": "Closing"
+        }
+      }
+    },
+    "number": {
+      "solar_discharge_heating_start": {
+        "name": "Solar discharge heating: start (buffer top)"
+      },
+      "solar_discharge_heating_stop": {
+        "name": "Solar discharge heating: stop"
+      },
+      "solar_discharge_hot_water_start": {
+        "name": "Solar discharge hot water: start"
+      },
+      "solar_discharge_hot_water_stop": {
+        "name": "Solar discharge hot water: stop"
+      },
+      "heating_overshoot": {
+        "name": "Buffer overshoot above flow setpoint"
+      },
+      "flow_temperature_max": {
+        "name": "Heating flow temperature max"
+      },
+      "flow_temperature_min": {
+        "name": "Heating flow temperature min"
+      },
+      "curve_base_point": {
+        "name": "Heating curve base point"
+      },
+      "curve_slope": {
+        "name": "Heating curve slope"
+      },
+      "heating_limit_comfort": {
+        "name": "Heating limit outdoor temperature (comfort)"
+      },
+      "heating_limit_setback": {
+        "name": "Heating limit outdoor temperature (setback)"
+      }
+    },
+    "select": {
+      "solar_discharge_heating_mode": {
+        "name": "Solar discharge heating mode",
+        "state": {
+          "schedule": "Schedule",
+          "solar_pump": "Solar pump"
+        }
+      },
+      "season_mode": {
+        "name": "Summer / winter mode",
+        "state": {
+          "winter": "Winter (heating + hot water)",
+          "summer": "Summer (hot water only)"
         }
       }
     }
