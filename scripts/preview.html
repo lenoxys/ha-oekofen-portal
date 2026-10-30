@@ -1,18 +1,19 @@
 <!doctype html>
 <!-- Opens the sidebar panel outside Home Assistant, with sample values.
-     Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr -->
+     Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr (add &night=1 for the moon, &dark for the dark theme) -->
 <meta charset="utf-8">
 <body style="margin:0">
 <script src="../custom_components/okofen_portal/frontend/okofen-dashboard.js"></script>
 <script type="module">
   const params = new URLSearchParams(location.search);
   const sample = {coll: 68.4, tank_top: 65.2, tank_mid: 63.6, tank_bottom: 59.9, ecs_probe: 67, solar_pump: 73, boiler_pump: 0,
-    heating_pump: 1, flow: 44.7, room: 22.1, outdoor: 11.8, pool: 15.6, pool_pump: 0, burner: 0, boiler_temp: 55.6, mixer: 2};
+    heating_pump: 1, flow: 44.7, room: 22.1, outdoor: 11.8, pool: 15.6, pool_pump: 0, burner: 0, boiler_temp: 55.6, mixer: 2,
+    tank_set: 58, room_set: 20, flow_set: 45, ecs_set: 50, ecs_pump: 0};
+  const weather = {icon: params.get('night') ? '01n' : '01d', code: 800, clouds: 5, wind: '9 km/h', sunrise: '07:52', sunset: '18:21', forecast_temp: 16, forecast_clouds: 10};
   const lang = params.get('lang') || 'en';
   const strings = (await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json()).panel;
   const panel = document.createElement('okofen-dashboard');
   document.body.append(panel);
   panel.hass = {language: lang, themes: {darkMode: params.has('dark')},
-    callWS: async () => ({language: lang, strings, values: sample})};
-  if (params.get('scenario')) setTimeout(() => { const s = panel.shadowRoot.getElementById('sc'); s.value = params.get('scenario'); s.onchange({target: s}); }, 100);
+    callWS: async () => ({language: lang, strings, values: sample, weather})};
 </script>

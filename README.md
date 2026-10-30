@@ -6,6 +6,15 @@ Reads from the **my.oekofen.info** portal what the local JSON interface of an Ö
 
 > **Unofficial.** Not affiliated with or endorsed by ÖkoFEN. It uses the same web API as the portal's own web app, with your own account. ÖkoFEN can change it at any time. Use at your own risk.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/panel-dark.gif">
+    <img alt="The ÖkoFEN sidebar panel: an animated schematic of the installation" src="docs/panel-light.gif" width="900">
+  </picture>
+</p>
+
+<p align="center"><em>The sidebar panel, live from your controller: solar collectors, buffer tank, back-up boiler, heating circuit with its 4-way valve, hot water and pool exchangers. Pumps turn, pipes flow, hover anything for its values.</em></p>
+
 ## What it provides
 
 Every read-only variable of the controller that the portal returns (about 440 on a typical Touch installation), one entity each:
