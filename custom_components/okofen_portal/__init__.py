@@ -11,13 +11,15 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .api import OekofenPortalClient
 from .catalog import group_of, kind, load_catalog
 from .const import DOMAIN, FAST_INTERVAL, FAST_VARIABLES, SLOW_INTERVAL
+from .dashboard import async_setup_dashboard
 from .coordinator import OekofenCoordinator
 from .docs import Docs, async_fetch_docs
 from .entity import main_device_info
@@ -34,6 +36,7 @@ PLATFORMS = [
     Platform.WEATHER,
 ]
 DOCS_MAX_AGE = 7 * 24 * 3600
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 @dataclass
@@ -63,6 +66,12 @@ async def _load_docs(hass: HomeAssistant, session: aiohttp.ClientSession, lang: 
         return Docs.from_dict(cached["docs"]) if cached else Docs()
     await store.async_save({"time": time.time(), "docs": docs.to_dict()})
     return docs
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the sidebar panel once."""
+    await async_setup_dashboard(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> bool:

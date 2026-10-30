@@ -15,7 +15,26 @@ CURATED = {
     "LOCAL.L_hk[0].mischer": ("heating_mixer", True),  # 0 stop, 1 open, 2 close
     "LOCAL.L_bestke_umschaltventil": ("boiler_valve", False),  # X24 pump/diverter output
 }
-FAST_VARIABLES = list(CURATED)
+# values the sidebar panel draws (short name -> variable), read every 30 s
+DASHBOARD = {
+    "coll": "LOCAL.L_sk[0].kollektortemp_ist",
+    "tank_bottom": "LOCAL.L_sk[0].speichertemp_ist",
+    "tank_top": "LOCAL.L_pu[0].einschaltfuehler_ist",
+    "tank_mid": "LOCAL.L_pu[0].ausschaltfuehler_ist",
+    "ecs_probe": "LOCAL.L_ww[0].einschaltfuehler_ist",
+    "solar_pump": "LOCAL.L_sk[0].pumpe",
+    "boiler_pump": "LOCAL.L_pu[0].pumpe",
+    "heating_pump": "LOCAL.L_hk[0].pumpe",
+    "flow": "LOCAL.L_hk[0].vorlauftemp_ist",
+    "room": "LOCAL.L_hk[0].raumtemp_ist",
+    "outdoor": "LOCAL.L_aussentemperatur_ist",
+    "pool": "LOCAL.L_sk[1].speichertemp_ist",
+    "pool_pump": "LOCAL.L_sk[1].pumpe",
+    "burner": "LOCAL.L_ke_brennerkontakt_1",
+    "boiler_temp": "LOCAL.L_ke_temp_ist",
+    "mixer": "LOCAL.L_hk[0].mischer",
+}
+FAST_VARIABLES = list(dict.fromkeys([*CURATED, *DASHBOARD.values()]))
 MIXER_KEY = "LOCAL.L_hk[0].mischer"
 MIXER_STATES = ("stopped", "opening", "closing")
 

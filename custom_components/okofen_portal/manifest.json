@@ -1,13 +1,14 @@
 {
   "domain": "okofen_portal",
   "name": "ÖkoFEN Portal",
-  "categories": ["climate.thermostats_heating"],
+  "categories": ["climate.thermostats_heating", "climate.water_heaters"],
   "codeowners": ["@lenoxys"],
   "config_flow": true,
+  "dependencies": ["http", "panel_custom", "websocket_api"],
   "documentation": "https://github.com/lenoxys/ha-oekofen-portal",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/lenoxys/ha-oekofen-portal/issues",
   "requirements": [],
-  "version": "0.6.0"
+  "version": "0.7.0"
 }

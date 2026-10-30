@@ -24,6 +24,12 @@ Every read-only variable of the controller that the portal returns (about 440 on
 
 The burner contact and boiler temperature are shown on the controller's screen but are **not** available through the local API (`/all`), hence not in the local Home Assistant integrations. This integration is meant to **complement**, not replace, an integration of the local API such as `oekofen_pellematic_compact`.
 
+## ÖkoFEN panel (sidebar)
+
+The integration adds an **ÖkoFEN** entry to Home Assistant's sidebar: an animated schematic of the installation (collectors, buffer tank with its four sensors, back-up boiler and its pump, heating circuit with the mixing valve, hot water plate exchanger, pool exchanger), drawn from the integration's own data every 15 seconds. Pumps turn when they run, pipes flow when there is circulation, and the burner contact, the boiler temperature and the mixing valve state are shown. It follows Home Assistant's language (English, French) and its light / dark theme, and has a *Preview* mode (summer / winter) to see it animated.
+
+The layout is **one fixed reference scheme** (a buffer tank with a low solar coil, hot water by plate exchanger, a pool exchanger). Elements your controller does not report show "–". Try it outside Home Assistant with sample values by opening `scripts/preview.html` in a browser.
+
 ## Readable names, descriptions and status
 
 - **One Home Assistant device per circuit or function** (Heating circuit 1, Hot water 1, Buffer 1, Solar circuit 1…, Existing boiler, Weather…), each with a short description in its *model* field. **Only equipment the controller really has** is created: the portal answers for 6 heating circuits, 4 pellet boilers, etc. whether they exist or not, so the controller's own `vorhanden` (present) flags are used to leave the others out (on a typical installation, 9 devices instead of 38). Devices created for absent equipment by earlier versions are removed.
@@ -75,7 +81,7 @@ OEKOFEN_USER=you@example.com OEKOFEN_PASSWORD=... python scripts/check_api.py
 
 ## Français
 
-Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régulations ÖkoFEN Touch n'expose pas: contact brûleur et température de la chaudière existante, statut de la vanne mélangeuse du circuit de chauffage 1. API non officielle, avec votre propre compte. Installation par HACS (dépôt personnalisé, type *Intégration*), puis ajout de l'intégration avec vos identifiants my.oekofen.info. Version 0.5: noms et descriptions lisibles, codes d'état décodés avec les libellés d'ÖkoFEN (téléchargés au démarrage depuis le portail), un appareil par circuit, lecture de toutes les variables en lecture du portail (environ 440 entités, la plupart désactivées par défaut) et écriture d'une liste autorisée de réglages avec bornes (décharge solaire, courbe de chauffe, marge du ballon, mode été/hiver).
+Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régulations ÖkoFEN Touch n'expose pas: contact brûleur et température de la chaudière existante, statut de la vanne mélangeuse du circuit de chauffage 1. API non officielle, avec votre propre compte. Installation par HACS (dépôt personnalisé, type *Intégration*), puis ajout de l'intégration avec vos identifiants my.oekofen.info. Version 0.7: panneau ÖkoFEN dans la barre latérale (schéma animé), entité météo, équipements absents ignorés. Version 0.5: noms et descriptions lisibles, codes d'état décodés avec les libellés d'ÖkoFEN (téléchargés au démarrage depuis le portail), un appareil par circuit, lecture de toutes les variables en lecture du portail (environ 440 entités, la plupart désactivées par défaut) et écriture d'une liste autorisée de réglages avec bornes (décharge solaire, courbe de chauffe, marge du ballon, mode été/hiver).
 
 ## License
 
