@@ -24,6 +24,22 @@ Every read-only variable of the controller that the portal returns (about 440 on
 
 The burner contact and boiler temperature are shown on the controller's screen but are **not** available through the local API (`/all`), hence not in the local Home Assistant integrations. This integration is meant to **complement**, not replace, an integration of the local API such as `oekofen_pellematic_compact`.
 
+## Entity types (v0.8)
+
+| Type | What | Writes |
+|---|---|---|
+| `climate` | one thermostat per heating circuit the controller has: room temperature, comfort target, mode (off / auto / heat) and preset (comfort / eco = setback), `hvac_action` *heating* when the circuit pump runs; attributes: flow temperature and setpoint, effective target, decoded status | mode and comfort target |
+| `water_heater` | one per hot water circuit: top sensor of the tank, comfort target, operation (off / auto / performance = forced on) | operation and target |
+| `weather` | the controller's forecast (see below) | no |
+| `event` | the burner of the existing boiler: `started` and `stopped` (with the boiler temperature and, on stop, the run time in seconds), seen at the 30 s poll | no |
+| `scene` | **Solar priority** (solar discharge 64 / 60 °C on the solar pump, buffer overshoot 3 K) and **Default values** (82 / 81 °C, schedule, 5 K). They write several settings at once and **put the earlier ones back if one write fails**. They are experimental: check the values in `presets.py` first. | yes |
+| `binary_sensor` | *Pump running* for every pump that reports a speed in %, plus the two-state variables | no |
+| `sensor`, `number`, `select` | measurements, decoded status words, the allow-listed settings (now also the eco mode of heating and hot water) | number, select |
+
+All writes go through the same allow-list with bounds. Home Assistant's own scenes and scripts can drive the `number` and `select` entities too.
+
+**Reconfigure**: the account can be changed from the integration's menu (the installation must stay the same). A refused password opens the *re-authenticate* prompt.
+
 ## ÖkoFEN panel (sidebar)
 
 The integration adds an **ÖkoFEN** entry to Home Assistant's sidebar: an animated schematic of the installation (collectors, buffer tank with its four sensors, back-up boiler and its pump, heating circuit with the mixing valve, hot water plate exchanger, pool exchanger), drawn from the integration's own data every 15 seconds. Pumps turn when they run, pipes flow when there is circulation, and the burner contact, the boiler temperature and the mixing valve state are shown. It follows Home Assistant's language (English, French) and its light / dark theme, and has a *Preview* mode (summer / winter) to see it animated.
@@ -81,7 +97,7 @@ OEKOFEN_USER=you@example.com OEKOFEN_PASSWORD=... python scripts/check_api.py
 
 ## Français
 
-Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régulations ÖkoFEN Touch n'expose pas: contact brûleur et température de la chaudière existante, statut de la vanne mélangeuse du circuit de chauffage 1. API non officielle, avec votre propre compte. Installation par HACS (dépôt personnalisé, type *Intégration*), puis ajout de l'intégration avec vos identifiants my.oekofen.info. Version 0.7: panneau ÖkoFEN dans la barre latérale (schéma animé), entité météo, équipements absents ignorés. Version 0.5: noms et descriptions lisibles, codes d'état décodés avec les libellés d'ÖkoFEN (téléchargés au démarrage depuis le portail), un appareil par circuit, lecture de toutes les variables en lecture du portail (environ 440 entités, la plupart désactivées par défaut) et écriture d'une liste autorisée de réglages avec bornes (décharge solaire, courbe de chauffe, marge du ballon, mode été/hiver).
+Lit sur le portail **my.oekofen.info** ce que l'interface JSON locale des régulations ÖkoFEN Touch n'expose pas: contact brûleur et température de la chaudière existante, statut de la vanne mélangeuse du circuit de chauffage 1. API non officielle, avec votre propre compte. Installation par HACS (dépôt personnalisé, type *Intégration*), puis ajout de l'intégration avec vos identifiants my.oekofen.info. Version 0.8: entités climate, water_heater, event et scene, reconfiguration du compte. Version 0.7: panneau ÖkoFEN dans la barre latérale (schéma animé), entité météo, équipements absents ignorés. Version 0.5: noms et descriptions lisibles, codes d'état décodés avec les libellés d'ÖkoFEN (téléchargés au démarrage depuis le portail), un appareil par circuit, lecture de toutes les variables en lecture du portail (environ 440 entités, la plupart désactivées par défaut) et écriture d'une liste autorisée de réglages avec bornes (décharge solaire, courbe de chauffe, marge du ballon, mode été/hiver).
 
 ## License
 

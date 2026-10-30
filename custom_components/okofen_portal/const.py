@@ -34,7 +34,17 @@ DASHBOARD = {
     "boiler_temp": "LOCAL.L_ke_temp_ist",
     "mixer": "LOCAL.L_hk[0].mischer",
 }
-FAST_VARIABLES = list(dict.fromkeys([*CURATED, *DASHBOARD.values()]))
+# read every 30 s for the climate and water_heater entities of the first circuits
+CLIMATE_FAST = [
+    "LOCAL.L_hk[0].raumtemp_soll",
+    "LOCAL.L_hk[0].vorlauftemp_soll",
+    "LOCAL.L_hk[0].status",
+    "LOCAL.hk[0].betriebsart[1]",
+    "LOCAL.hk[0].raumtemp_heizen",
+    "LOCAL.ww[0].betriebsart[1]",
+    "LOCAL.ww[0].temp_heizen",
+]
+FAST_VARIABLES = list(dict.fromkeys([*CURATED, *DASHBOARD.values(), *CLIMATE_FAST]))
 MIXER_KEY = "LOCAL.L_hk[0].mischer"
 MIXER_STATES = ("stopped", "opening", "closing")
 

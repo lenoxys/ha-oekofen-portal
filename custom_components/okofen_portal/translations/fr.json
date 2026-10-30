@@ -14,6 +14,14 @@
         "data": {
           "password": "Mot de passe"
         }
+      },
+      "reconfigure": {
+        "title": "Changer le compte",
+        "description": "L'installation doit rester la même.",
+        "data": {
+          "username": "Identifiant",
+          "password": "Mot de passe"
+        }
       }
     },
     "error": {
@@ -22,7 +30,9 @@
     },
     "abort": {
       "already_configured": "Ce compte est déjà configuré",
-      "reauth_successful": "Reconnexion réussie"
+      "reauth_successful": "Reconnexion réussie",
+      "reconfigure_successful": "Reconfiguration réussie",
+      "unique_id_mismatch": "Ce compte correspond à une autre installation"
     }
   },
   "entity": {
@@ -32,6 +42,9 @@
       },
       "boiler_valve": {
         "name": "Sortie pompe/vanne de la chaudière"
+      },
+      "pump_running": {
+        "name": "Pompe en marche"
       }
     },
     "sensor": {
@@ -106,7 +119,53 @@
           "winter": "Hiver (chauffage + eau chaude)",
           "summer": "Été (eau chaude seule)"
         }
+      },
+      "eco_mode_heating": {
+        "name": "Mode écolo (chauffage)",
+        "state": {
+          "off": "Arrêt",
+          "comfort": "Confort",
+          "intermediate": "Intermédiaire",
+          "ecological": "Ecologique"
+        }
+      },
+      "eco_mode_hot_water": {
+        "name": "Mode écolo (eau chaude)",
+        "state": {
+          "off": "Arrêt",
+          "comfort": "Confort",
+          "intermediate": "Intermédiaire",
+          "ecological": "Ecologique"
+        }
+      }
+    },
+    "event": {
+      "burner_event": {
+        "name": "Brûleur",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "Démarré",
+              "stopped": "Arrêté"
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "solar_priority": {
+        "name": "Priorité solaire"
+      },
+      "default": {
+        "name": "Valeurs par défaut"
+      }
+    },
+    "water_heater": {
+      "hot_water": {
+        "state": {
+          "auto": "Automatique"
+        }
       }
     }
   }
-}
+}\n

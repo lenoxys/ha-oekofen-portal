@@ -15,6 +15,7 @@ from .catalog import kind
 from .coordinator import OekofenCoordinator
 from .const import FORECAST_DAY_KEY
 from .entity import OekofenEntity, describe, visible
+from .settings import SETTING_KEYS
 
 BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
 
@@ -28,7 +29,16 @@ async def async_setup_entry(
         OekofenBinarySensor(coordinator, key, data.names[key])
         for coordinator in (data.fast, data.slow)
         for key, reading in coordinator.data.items()
-        if kind(reading) == "binary" and key != FORECAST_DAY_KEY and visible(data, key)
+        if kind(reading) == "binary"
+        and key != FORECAST_DAY_KEY
+        and key not in SETTING_KEYS
+        and visible(data, key)
+    )
+    async_add_entities(
+        OekofenPumpRunning(coordinator, key)
+        for coordinator in (data.fast, data.slow)
+        for key, reading in coordinator.data.items()
+        if key.endswith(".pumpe") and reading.unit == "%" and visible(data, key)
     )
 
 
@@ -48,3 +58,19 @@ class OekofenBinarySensor(OekofenEntity, BinarySensorEntity):
     def is_on(self) -> bool | None:
         reading = self._reading
         return None if reading is None else bool(reading.value)
+
+
+class OekofenPumpRunning(OekofenEntity, BinarySensorEntity):
+    """On when a pump with a speed in % is running (the speed itself is a sensor)."""
+
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
+    _attr_translation_key = "pump_running"
+
+    def __init__(self, coordinator: OekofenCoordinator, key: str) -> None:
+        super().__init__(coordinator, key)
+        self._attr_unique_id = f"{self._attr_unique_id}_running"
+
+    @property
+    def is_on(self) -> bool | None:
+        reading = self._reading
+        return None if reading is None else float(reading.value) > 0

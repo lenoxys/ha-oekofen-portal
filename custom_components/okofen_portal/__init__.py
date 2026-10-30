@@ -30,9 +30,13 @@ from .weather_parse import WEATHER_KEYS
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
+    Platform.CLIMATE,
+    Platform.EVENT,
     Platform.NUMBER,
+    Platform.SCENE,
     Platform.SELECT,
     Platform.SENSOR,
+    Platform.WATER_HEATER,
     Platform.WEATHER,
 ]
 DOCS_MAX_AGE = 7 * 24 * 3600
@@ -49,6 +53,16 @@ class OekofenData:
     docs: Docs
     names: dict[str, str]
     hidden: set[str]
+
+    def reading(self, key: str):
+        """A variable from whichever coordinator reads it."""
+        return self.fast.data.get(key) or self.slow.data.get(key)
+
+    def update(self, key: str, reading) -> None:
+        """Show a value we just wrote right away (the next poll confirms it)."""
+        for coordinator in (self.fast, self.slow):
+            if key in coordinator.data:
+                coordinator.async_set_updated_data({**coordinator.data, key: reading})
 
 
 type OekofenConfigEntry = ConfigEntry[OekofenData]
@@ -85,7 +99,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         hass,
         entry,
         client,
-        [n for n in catalog if n not in FAST_VARIABLES] + SETTING_KEYS + WEATHER_KEYS,
+        [n for n in [*catalog, *SETTING_KEYS, *WEATHER_KEYS] if n not in FAST_VARIABLES],
         SLOW_INTERVAL,
         "slow",
     )

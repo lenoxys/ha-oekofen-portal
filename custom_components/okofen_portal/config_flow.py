@@ -74,3 +74,24 @@ class OekofenPortalConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({vol.Required(CONF_PASSWORD): str}),
             errors=errors,
         )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change the account of an existing entry (same installation only)."""
+        errors: dict[str, str] = {}
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            plant_id, error = await self._validate(user_input)
+            if error is None:
+                await self.async_set_unique_id(plant_id)
+                self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(entry, data_updates=user_input)
+            errors["base"] = error
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(
+                STEP_USER_SCHEMA, {CONF_USERNAME: entry.data[CONF_USERNAME]}
+            ),
+            errors=errors,
+        )

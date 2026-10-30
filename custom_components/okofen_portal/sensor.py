@@ -25,6 +25,7 @@ from .catalog import kind
 from .const import CLOCK_KEYS, FORECAST_DAY_KEY, FORECAST_DAY_STATES, MIXER_KEY, MIXER_STATES
 from .coordinator import OekofenCoordinator
 from .entity import OekofenEntity, describe, visible
+from .settings import SETTING_KEYS
 
 # portal unit text -> (device class, Home Assistant unit); anything else keeps its own unit
 UNITS: dict[str, tuple[SensorDeviceClass, str]] = {
@@ -48,7 +49,7 @@ async def async_setup_entry(
     entities: list[SensorEntity] = []
     for coordinator in (data.fast, data.slow):
         for key, reading in coordinator.data.items():
-            if not visible(data, key) or kind(reading) == "text":
+            if not visible(data, key) or kind(reading) == "text" or key in SETTING_KEYS:
                 continue
             if key in CLOCK_KEYS:
                 entities.append(OekofenClockSensor(coordinator, key, data.names[key]))

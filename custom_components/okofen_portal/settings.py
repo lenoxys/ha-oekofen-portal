@@ -42,7 +42,33 @@ SETTINGS: tuple[Setting, ...] = (
     # summer / winter switch; "off" (0) is left out on purpose: it would stop the whole installation
     Setting("LOCAL.anlage_betriebsart", "select", "season_mode", options={1: "winter", 2: "summer"}),
 )
+
+ECO_OPTIONS = {0: "off", 1: "comfort", 2: "intermediate", 3: "ecological"}
+SETTINGS += (
+    # eco mode: how much the forecast lowers the room (heating) or hot water setpoint
+    Setting("LOCAL.hk[0].oekomode", "select", "eco_mode_heating", options=ECO_OPTIONS),
+    Setting("LOCAL.ww[0].oekomode", "select", "eco_mode_hot_water", options=ECO_OPTIONS),
+)
+# used by the climate and water_heater entities: mode and comfort / hot water target of each circuit
+HEATING_MODES = {0: "off", 1: "auto", 2: "comfort", 3: "setback"}
+HOT_WATER_MODES = {0: "off", 1: "auto", 2: "forced"}
+SETTINGS += tuple(
+    s
+    for n in range(6)
+    for s in (
+        Setting(f"LOCAL.hk[{n}].betriebsart[1]", "climate", "hvac_mode", options=HEATING_MODES),
+        Setting(f"LOCAL.hk[{n}].raumtemp_heizen", "climate", "comfort_target", 10, 30, 0.5, "°C"),
+    )
+) + tuple(
+    s
+    for n in range(3)
+    for s in (
+        Setting(f"LOCAL.ww[{n}].betriebsart[1]", "water_heater", "operation", options=HOT_WATER_MODES),
+        Setting(f"LOCAL.ww[{n}].temp_heizen", "water_heater", "hot_water_target", 35, 70, 1, "°C"),
+    )
+)
 SETTING_KEYS = [s.key for s in SETTINGS]
+SETTING_BY_KEY = {s.key: s for s in SETTINGS}
 
 
 def check_number(setting: Setting, value: float) -> None:

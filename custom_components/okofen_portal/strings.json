@@ -14,6 +14,14 @@
         "data": {
           "password": "[%key:common::config_flow::data::password%]"
         }
+      },
+      "reconfigure": {
+        "title": "Change the account",
+        "description": "The installation must stay the same.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -22,7 +30,9 @@
     },
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_account%]",
-      "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]"
+      "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]",
+      "reconfigure_successful": "Re-configuration was successful",
+      "unique_id_mismatch": "This account belongs to another installation"
     }
   },
   "entity": {
@@ -32,6 +42,9 @@
       },
       "boiler_valve": {
         "name": "Boiler pump/valve output"
+      },
+      "pump_running": {
+        "name": "Pump running"
       }
     },
     "sensor": {
@@ -106,7 +119,53 @@
           "winter": "Winter (heating + hot water)",
           "summer": "Summer (hot water only)"
         }
+      },
+      "eco_mode_heating": {
+        "name": "Eco mode (heating)",
+        "state": {
+          "off": "Off",
+          "comfort": "Comfort",
+          "intermediate": "Intermediate",
+          "ecological": "Ecological"
+        }
+      },
+      "eco_mode_hot_water": {
+        "name": "Eco mode (hot water)",
+        "state": {
+          "off": "Off",
+          "comfort": "Comfort",
+          "intermediate": "Intermediate",
+          "ecological": "Ecological"
+        }
+      }
+    },
+    "event": {
+      "burner_event": {
+        "name": "Burner",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "started": "Started",
+              "stopped": "Stopped"
+            }
+          }
+        }
+      }
+    },
+    "scene": {
+      "solar_priority": {
+        "name": "Solar priority"
+      },
+      "default": {
+        "name": "Default values"
+      }
+    },
+    "water_heater": {
+      "hot_water": {
+        "state": {
+          "auto": "Automatic"
+        }
       }
     }
   }
-}
+}\n
