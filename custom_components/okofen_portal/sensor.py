@@ -22,9 +22,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import OekofenConfigEntry
 from .api import Reading
 from .catalog import kind
-from .const import MIXER_KEY, MIXER_STATES
+from .const import CLOCK_KEYS, FORECAST_DAY_KEY, FORECAST_DAY_STATES, MIXER_KEY, MIXER_STATES
 from .coordinator import OekofenCoordinator
-from .entity import OekofenEntity, describe
+from .entity import OekofenEntity, describe, visible
 
 # portal unit text -> (device class, Home Assistant unit); anything else keeps its own unit
 UNITS: dict[str, tuple[SensorDeviceClass, str]] = {
@@ -48,9 +48,13 @@ async def async_setup_entry(
     entities: list[SensorEntity] = []
     for coordinator in (data.fast, data.slow):
         for key, reading in coordinator.data.items():
-            if kind(reading) == "number" and key in data.docs.status:
+            if not visible(data, key) or kind(reading) == "text":
+                continue
+            if key in CLOCK_KEYS:
+                entities.append(OekofenClockSensor(coordinator, key, data.names[key]))
+            elif kind(reading) == "number" and key in data.docs.status:
                 entities.append(OekofenStatusSensor(coordinator, key, data.names[key]))
-            elif kind(reading) in ("number", "enum"):
+            elif kind(reading) in ("number", "enum") or key == FORECAST_DAY_KEY:
                 entities.append(OekofenSensor(coordinator, key, reading, data.names[key]))
     async_add_entities(entities)
 
@@ -63,10 +67,14 @@ class OekofenSensor(OekofenEntity, SensorEntity):
     ) -> None:
         super().__init__(coordinator, key)
         self._options: tuple[str, ...] | None = None
-        if kind(reading) == "enum":
-            # slugs for the mixing valve (translated), the portal's own labels otherwise;
-            # fixed now so a later change of the portal language cannot break the entity
-            self._options = MIXER_STATES if key == MIXER_KEY else reading.states
+        if kind(reading) == "enum" or key == FORECAST_DAY_KEY:
+            # slugs for the mixing valve and the forecast day (translated), the portal's own labels
+            # otherwise; fixed now so a later change of the portal language cannot break the entity
+            self._options = (
+                MIXER_STATES
+                if key == MIXER_KEY
+                else FORECAST_DAY_STATES if key == FORECAST_DAY_KEY else reading.states
+            )
             self.entity_description = describe(
                 key,
                 SensorEntityDescription,
@@ -120,3 +128,19 @@ class OekofenStatusSensor(OekofenEntity, SensorEntity):
         reading = self._reading
         raw = {} if reading is None else {"raw": int(reading.value)}
         return {**self._attr_extra_state_attributes, **raw}
+
+
+class OekofenClockSensor(OekofenEntity, SensorEntity):
+    """A time of day that the controller stores as a number (1750 = 17:50)."""
+
+    def __init__(self, coordinator: OekofenCoordinator, key: str, name: str) -> None:
+        super().__init__(coordinator, key)
+        self.entity_description = describe(key, SensorEntityDescription, name)
+
+    @property
+    def native_value(self) -> str | None:
+        reading = self._reading
+        if reading is None:
+            return None
+        hhmm = int(reading.value)
+        return f"{hhmm // 100:02d}:{hhmm % 100:02d}"

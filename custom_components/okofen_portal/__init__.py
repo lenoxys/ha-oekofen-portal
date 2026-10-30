@@ -16,15 +16,23 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .api import OekofenPortalClient
-from .catalog import load_catalog
+from .catalog import group_of, kind, load_catalog
 from .const import DOMAIN, FAST_INTERVAL, FAST_VARIABLES, SLOW_INTERVAL
 from .coordinator import OekofenCoordinator
 from .docs import Docs, async_fetch_docs
 from .entity import main_device_info
 from .names import build_names
+from .presence import FLAG_KEYS, hidden_groups
 from .settings import SETTING_KEYS
+from .weather_parse import WEATHER_KEYS
 
-PLATFORMS = [Platform.BINARY_SENSOR, Platform.NUMBER, Platform.SELECT, Platform.SENSOR]
+PLATFORMS = [
+    Platform.BINARY_SENSOR,
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.WEATHER,
+]
 DOCS_MAX_AGE = 7 * 24 * 3600
 
 
@@ -37,6 +45,7 @@ class OekofenData:
     lang: str
     docs: Docs
     names: dict[str, str]
+    hidden: set[str]
 
 
 type OekofenConfigEntry = ConfigEntry[OekofenData]
@@ -67,24 +76,35 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         hass,
         entry,
         client,
-        [n for n in catalog if n not in FAST_VARIABLES] + SETTING_KEYS,
+        [n for n in catalog if n not in FAST_VARIABLES] + SETTING_KEYS + WEATHER_KEYS,
         SLOW_INTERVAL,
         "slow",
     )
     await fast.async_config_entry_first_refresh()
     await slow.async_config_entry_first_refresh()
     lang = "fr" if hass.config.language.startswith("fr") else "en"
+    readings = {k: r for k, r in {**fast.data, **slow.data}.items() if kind(r) != "text"}
+    # the portal answers for circuits the controller does not have: leave those out
+    hidden = hidden_groups(await client.async_read(FLAG_KEYS), readings)
+    shown = [k for k in readings if group_of(k)[0] not in hidden]
     entry.runtime_data = OekofenData(
         fast,
         slow,
         lang,
         await _load_docs(hass, session, lang),
-        build_names([*fast.data, *slow.data], lang),
+        build_names(shown, lang),
+        hidden,
     )
+    registry = dr.async_get(hass)
     # main device first, so the per-circuit devices can point at it
-    dr.async_get(hass).async_get_or_create(
+    registry.async_get_or_create(
         config_entry_id=entry.entry_id, **main_device_info(entry.entry_id, lang)
     )
+    # devices created by earlier versions for equipment that is not there
+    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        ids = {identifier for domain, identifier in device.identifiers if domain == DOMAIN}
+        if any(f"{entry.entry_id}_{group}" in ids for group in hidden):
+            registry.async_remove_device(device.id)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

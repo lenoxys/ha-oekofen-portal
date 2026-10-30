@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import OekofenConfigEntry
 from .api import OekofenError
 from .coordinator import OekofenCoordinator
-from .entity import OekofenEntity
+from .entity import OekofenEntity, visible
 from .settings import SETTINGS, Setting
 
 
@@ -23,7 +23,9 @@ async def async_setup_entry(
     async_add_entities(
         OekofenSelect(coordinator, setting)
         for setting in SETTINGS
-        if setting.platform == "select" and setting.key in coordinator.data
+        if setting.platform == "select"
+        and setting.key in coordinator.data
+        and visible(entry.runtime_data, setting.key)
     )
 
 

@@ -323,6 +323,26 @@ DESCRIPTIONS: dict[str, tuple[str, str]] = {
     "LOCAL.anlage_betriebsart": ("Winter = heating and hot water. Summer = hot water only.", "Hiver = chauffage et eau chaude. Été = eau chaude seule."),
 }
 
+# exact names where the glossary gives something awkward
+NAME_OVERRIDES: dict[str, tuple[str, str]] = {
+    "LOCAL.L_weather_forecast_clouds": ("Forecast clouds (eco mode)", "Nuages prévus (mode écolo)"),
+    "LOCAL.L_weather_forecast_temp": ("Forecast temperature", "Température prévue"),
+    "LOCAL.L_weather_time_start": ("Forecast window start", "Début de la période de prévision"),
+    "LOCAL.L_weather_time_end": ("Forecast window end", "Fin de la période de prévision"),
+    "LOCAL.L_weather_comfort_start": ("Weather comfort start", "Confort météo: début"),
+    "LOCAL.L_weather_comfort_end": ("Weather comfort end", "Confort météo: fin"),
+    "LOCAL.L_weather_cancel": ("Weather eco mode cancelled", "Mode écolo météo annulé"),
+}
+DESCRIPTIONS.update(
+    {
+        "LOCAL.L_weather_forecast_clouds": ("Cloud cover forecast for the day the controller looks at; the eco mode lowers the heating when it is below its limit.", "Couverture nuageuse prévue pour le jour que regarde la régulation ; le mode écolo baisse le chauffage quand elle passe sous sa limite."),
+        "LOCAL.L_weather_forecast_temp": ("Temperature forecast for that same day.", "Température prévue pour ce même jour."),
+        "LOCAL.L_weather_forecast_today": ("Which day the forecast is about: today or tomorrow (it switches after the end of the forecast window).", "Jour concerné par la prévision : aujourd'hui ou demain (elle bascule après la fin de la période de prévision)."),
+        "LOCAL.L_weather_time_start": ("Start of the daily period in which the controller reads the forecast (HH:MM).", "Début de la période quotidienne où la régulation lit la prévision (HH:MM)."),
+        "LOCAL.L_weather_time_end": ("End of that period (HH:MM).", "Fin de cette période (HH:MM)."),
+    }
+)
+
 _LANG = {"en": 0, "fr": 1}
 
 
@@ -351,6 +371,8 @@ def group_description(group_id: str, lang: str) -> str:
 
 def friendly_name(key: str, lang: str) -> str:
     """'LOCAL.L_hk[0].raumtemp_ist' -> 'Room temperature (actual)'."""
+    if key in NAME_OVERRIDES:
+        return NAME_OVERRIDES[key][_index(lang)]
     words = re.findall(r"[A-Za-z]+|\d+", pretty(key))
     suffix = ""
     if words and words[-1].lower() in SUFFIXES and len(words) > 1:

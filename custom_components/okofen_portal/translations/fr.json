@@ -48,6 +48,13 @@
           "opening": "Ouverture",
           "closing": "Fermeture"
         }
+      },
+      "forecast_day": {
+        "name": "Jour de la prévision",
+        "state": {
+          "today": "Aujourd'hui",
+          "tomorrow": "Demain"
+        }
       }
     },
     "number": {

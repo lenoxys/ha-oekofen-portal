@@ -18,3 +18,15 @@ CURATED = {
 FAST_VARIABLES = list(CURATED)
 MIXER_KEY = "LOCAL.L_hk[0].mischer"
 MIXER_STATES = ("stopped", "opening", "closing")
+
+# variables shown through a dedicated entity or a translated name
+TRANSLATED = {"LOCAL.L_weather_forecast_today": "forecast_day"}
+FORECAST_DAY_KEY = "LOCAL.L_weather_forecast_today"
+FORECAST_DAY_STATES = ("today", "tomorrow")
+CLOCK_KEYS = {  # times stored as HHMM numbers (1750 = 17:50)
+    "LOCAL.L_weather_time_start",
+    "LOCAL.L_weather_time_end",
+    "LOCAL.L_weather_comfort_start",
+    "LOCAL.L_weather_comfort_end",
+}
+COVERED_BY_WEATHER = {"LOCAL.L_weather_temp", "LOCAL.L_weather_clouds"}  # already in the weather entity

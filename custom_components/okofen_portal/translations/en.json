@@ -48,6 +48,13 @@
           "opening": "Opening",
           "closing": "Closing"
         }
+      },
+      "forecast_day": {
+        "name": "Forecast day",
+        "state": {
+          "today": "Today",
+          "tomorrow": "Tomorrow"
+        }
       }
     },
     "number": {

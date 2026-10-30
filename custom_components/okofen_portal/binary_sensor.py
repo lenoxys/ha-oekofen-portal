@@ -13,7 +13,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import OekofenConfigEntry
 from .catalog import kind
 from .coordinator import OekofenCoordinator
-from .entity import OekofenEntity, describe
+from .const import FORECAST_DAY_KEY
+from .entity import OekofenEntity, describe, visible
 
 BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
 
@@ -22,12 +23,12 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Create one binary sensor per two-state variable the controller returned."""
-    names = entry.runtime_data.names
+    data = entry.runtime_data
     async_add_entities(
-        OekofenBinarySensor(coordinator, key, names[key])
-        for coordinator in (entry.runtime_data.fast, entry.runtime_data.slow)
+        OekofenBinarySensor(coordinator, key, data.names[key])
+        for coordinator in (data.fast, data.slow)
         for key, reading in coordinator.data.items()
-        if kind(reading) == "binary"
+        if kind(reading) == "binary" and key != FORECAST_DAY_KEY and visible(data, key)
     )
 
 

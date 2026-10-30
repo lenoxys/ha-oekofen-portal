@@ -26,7 +26,8 @@ The burner contact and boiler temperature are shown on the controller's screen b
 
 ## Readable names, descriptions and status
 
-- **One Home Assistant device per circuit or function** (Heating circuit 1, Hot water 1, Buffer 1, Solar circuit 1…, Existing boiler, Weather…), each with a short description in its *model* field.
+- **One Home Assistant device per circuit or function** (Heating circuit 1, Hot water 1, Buffer 1, Solar circuit 1…, Existing boiler, Weather…), each with a short description in its *model* field. **Only equipment the controller really has** is created: the portal answers for 6 heating circuits, 4 pellet boilers, etc. whether they exist or not, so the controller's own `vorhanden` (present) flags are used to leave the others out (on a typical installation, 9 devices instead of 38). Devices created for absent equipment by earlier versions are removed.
+- **A real `weather` entity** for the controller's weather module: current temperature, cloud cover, wind and condition, plus the 3-hourly forecast it uses to anticipate sunny days. The other weather values (forecast clouds and temperature used by the eco mode, forecast day, the daily window as HH:MM) are sensors.
 - **Entity names are translated** (English or French, following Home Assistant's language) from the controller's German variable names: `raumtemp_ist` becomes *Room temperature (actual)* / *Température de la pièce (mesure)*. Words that are not in the glossary stay as they are.
 - **Every entity has a `description` attribute** (and a `portal_variable` attribute with the controller's own name). For the writable settings it is ÖkoFEN's own help text.
 - **Status words are decoded**: the controller's `status` numbers (for example `512` on the buffer tank) are shown as ÖkoFEN's own messages, such as *Demande marche OFF*; each set bit is one message, and the raw number stays in the `raw` attribute.

@@ -9,7 +9,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import Reading
 from .catalog import group_of
-from .const import CURATED, DOMAIN
+from .const import COVERED_BY_WEATHER, CURATED, DOMAIN, TRANSLATED
 from .coordinator import OekofenCoordinator
 from .names import entity_description, group_description, group_title
 
@@ -18,7 +18,7 @@ def describe(
     key: str, description_cls: type[EntityDescription], name: str | None, **extra
 ) -> EntityDescription:
     """Description for one variable: curated ones are named and enabled, the rest are diagnostics, disabled."""
-    curated = CURATED.get(key)
+    curated = CURATED.get(key) or ((TRANSLATED[key], True) if key in TRANSLATED else None)
     return description_cls(
         key=key,
         translation_key=curated[0] if curated else None,
@@ -27,6 +27,11 @@ def describe(
         entity_category=None if curated else EntityCategory.DIAGNOSTIC,
         **extra,
     )
+
+
+def visible(data, key: str) -> bool:
+    """False for variables of equipment the controller does not have, or already shown elsewhere."""
+    return group_of(key)[0] not in data.hidden and key not in COVERED_BY_WEATHER
 
 
 def main_device_info(entry_id: str, lang: str) -> DeviceInfo:
