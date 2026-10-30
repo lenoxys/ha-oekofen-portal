@@ -5,11 +5,9 @@ from __future__ import annotations
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import OekofenConfigEntry
-from .api import OekofenError
 from .coordinator import OekofenCoordinator
 from .entity import OekofenEntity, visible
 from .settings import SETTINGS, Setting
@@ -52,14 +50,4 @@ class OekofenSelect(OekofenEntity, SelectEntity):
         return None if reading is None else self._setting.options.get(int(reading.value))
 
     async def async_select_option(self, option: str) -> None:
-        reading = self._reading
-        if reading is None:
-            raise HomeAssistantError("The setting is not available")
-        index = self._index_of[option]
-        try:
-            await self.coordinator.client.async_write(self._key, index)
-        except OekofenError as err:
-            raise HomeAssistantError(str(err)) from err
-        self.coordinator.async_set_updated_data(
-            {**self.coordinator.data, self._key: reading._replace(value=index)}
-        )
+        await self._async_set(self._key, self._index_of[option])

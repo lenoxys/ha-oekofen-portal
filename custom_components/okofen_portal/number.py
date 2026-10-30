@@ -10,14 +10,12 @@ from homeassistant.components.number import (
 )
 from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import OekofenConfigEntry
-from .api import OekofenError
 from .coordinator import OekofenCoordinator
 from .entity import OekofenEntity, visible
-from .settings import SETTINGS, Setting, check_number
+from .settings import SETTINGS, Setting
 
 
 PARALLEL_UPDATES = 1
@@ -42,7 +40,6 @@ class OekofenNumber(OekofenEntity, NumberEntity):
 
     def __init__(self, coordinator: OekofenCoordinator, setting: Setting) -> None:
         super().__init__(coordinator, setting.key)
-        self._setting = setting
         celsius = setting.unit == "°C"
         self.entity_description = NumberEntityDescription(
             key=setting.key,
@@ -62,17 +59,4 @@ class OekofenNumber(OekofenEntity, NumberEntity):
         return None if reading is None else float(reading.value)
 
     async def async_set_native_value(self, value: float) -> None:
-        reading = self._reading
-        if reading is None:
-            raise HomeAssistantError("The setting is not available")
-        try:
-            check_number(self._setting, value)
-            await self.coordinator.client.async_write(
-                self._key, round(value * reading.divisor)
-            )
-        except (ValueError, OekofenError) as err:
-            raise HomeAssistantError(str(err)) from err
-        # show the new value now; the next slow poll confirms it
-        self.coordinator.async_set_updated_data(
-            {**self.coordinator.data, self._key: reading._replace(value=value)}
-        )
+        await self._async_set(self._key, value)

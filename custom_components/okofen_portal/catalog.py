@@ -26,38 +26,30 @@ def kind(reading: Reading) -> str:
     return "number"
 
 
-# prefix of an indexed group, e.g. hk[0] -> "Heating circuit 1"
-GROUP_LABELS = {
-    "hk": "Heating circuit",
-    "ww": "Hot water",
-    "pu": "Buffer",
-    "sk": "Solar circuit",
-    "ertrag": "Solar yield",
-    "heater": "Heater",
-    "batt": "Battery",
-    "car": "Charging station",
-    "p2h": "Power2heat",
-    "wp": "Heat pump",
-}
 _INDEXED = re.compile(r"(?:L_)?([a-z0-9]+)\[(\d+)\]")
 
 
-def group_of(key: str) -> tuple[str, str]:
-    """(group id, group name) of a variable: one Home Assistant device per function."""
+def group_of(key: str) -> str:
+    """Group id of a variable ('hk0', 'boiler'...): one Home Assistant device per function."""
     fa = re.match(r"FA\[(\d+)\]\.", key)
     if fa:
-        return f"fa{fa.group(1)}", f"Pellet boiler {int(fa.group(1)) + 1}"
+        return f"fa{fa.group(1)}"
     segment = key.removeprefix("LOCAL.").split(".")[0]
     indexed = _INDEXED.fullmatch(segment)
     if indexed:
-        kind, index = indexed.group(1), int(indexed.group(2))
-        return f"{kind}{index}", f"{GROUP_LABELS.get(kind, kind.title())} {index + 1}"
+        return f"{indexed.group(1)}{indexed.group(2)}"
     segment = segment.removeprefix("L_")
     if segment.startswith(("ke_", "bestke_")):
-        return "boiler", "Existing boiler"
+        return "boiler"
     if segment.startswith("weather"):
-        return "weather", "Weather"
-    return "system", "System"
+        return "weather"
+    return "system"
+
+
+def split_group(group_id: str) -> tuple[str, int | None]:
+    """'hk0' -> ('hk', 0), 'boiler' -> ('boiler', None)."""
+    match = re.fullmatch(r"([a-z0-9]+?)(\d+)", group_id)
+    return (match.group(1), int(match.group(2))) if match else (group_id, None)
 
 
 def pretty(key: str) -> str:

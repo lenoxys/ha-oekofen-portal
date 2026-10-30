@@ -19,9 +19,6 @@ from .presets import PRESETS
 PARALLEL_UPDATES = 1
 
 
-PARALLEL_UPDATES = 1
-
-
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:

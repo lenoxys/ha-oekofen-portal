@@ -19,17 +19,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import OekofenConfigEntry
 from .coordinator import OekofenCoordinator
 from .entity import OekofenEntity, visible
-from .settings import HEATING_MODES, SETTING_BY_KEY
 
 PARALLEL_UPDATES = 1
 # portal value of betriebsart[1] <-> Home Assistant
 HVAC_BY_INDEX = {0: HVACMode.OFF, 1: HVACMode.AUTO, 2: HVACMode.HEAT, 3: HVACMode.HEAT}
 PRESET_BY_INDEX = {2: PRESET_COMFORT, 3: PRESET_ECO}  # comfort, and setback ("reduced")
-INDEX_BY_HVAC = {HVACMode.OFF: 0, HVACMode.AUTO: 1, HVACMode.HEAT: 2}
-INDEX_BY_PRESET = {PRESET_COMFORT: 2, PRESET_ECO: 3}
-
-
-PARALLEL_UPDATES = 1
+INDEX_BY_HVAC = {HVACMode.OFF: 0, HVACMode.AUTO: 1, HVACMode.HEAT: 2}  # HEAT is ambiguous: comfort
+INDEX_BY_PRESET = {preset: index for index, preset in PRESET_BY_INDEX.items()}
 
 
 async def async_setup_entry(

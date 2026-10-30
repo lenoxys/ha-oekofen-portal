@@ -125,7 +125,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     readings = {k: r for k, r in {**fast.data, **slow.data}.items() if kind(r) != "text"}
     # the portal answers for circuits the controller does not have: leave those out
     hidden = hidden_groups(await client.async_read(FLAG_KEYS), readings)
-    shown = [k for k in readings if group_of(k)[0] not in hidden]
+    shown = [k for k in readings if group_of(k) not in hidden]
     entry.runtime_data = OekofenData(
         fast,
         slow,

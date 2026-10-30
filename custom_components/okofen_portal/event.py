@@ -8,13 +8,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import OekofenConfigEntry
-from .const import CURATED
+from .const import BOILER_TEMP_KEY, BURNER_KEY
 from .coordinator import OekofenCoordinator
 from .entity import OekofenEntity, visible
-
-BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
-BOILER_TEMP_KEY = "LOCAL.L_ke_temp_ist"
-
 
 PARALLEL_UPDATES = 0
 

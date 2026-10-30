@@ -8,10 +8,9 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .api import Reading
+from .api import OekofenError, Reading
 from .catalog import group_of
-from .const import COVERED_BY_WEATHER, CURATED, DOMAIN, TRANSLATED
-from .api import OekofenError
+from .const import COVERED_BY_WEATHER, CURATED, DOMAIN, FORECAST_DAY_KEY
 from .control import prepare
 from .coordinator import OekofenCoordinator
 from .names import Texts
@@ -21,7 +20,7 @@ def describe(
     key: str, description_cls: type[EntityDescription], name: str | None, **extra
 ) -> EntityDescription:
     """Description for one variable: curated ones are named and enabled, the rest are diagnostics, disabled."""
-    curated = CURATED.get(key) or ((TRANSLATED[key], True) if key in TRANSLATED else None)
+    curated = CURATED.get(key) or (("forecast_day", True) if key == FORECAST_DAY_KEY else None)
     return description_cls(
         key=key,
         translation_key=curated[0] if curated else None,
@@ -34,7 +33,7 @@ def describe(
 
 def visible(data, key: str) -> bool:
     """False for variables of equipment the controller does not have, or already shown elsewhere."""
-    return group_of(key)[0] not in data.hidden and key not in COVERED_BY_WEATHER
+    return group_of(key) not in data.hidden and key not in COVERED_BY_WEATHER
 
 
 def main_device_info(entry_id: str, texts: Texts) -> DeviceInfo:
@@ -58,7 +57,7 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
         data = coordinator.config_entry.runtime_data
         entry_id = coordinator.config_entry.entry_id
         self._attr_unique_id = f"{entry_id}_{key}"
-        group_id, _ = group_of(key)
+        group_id = group_of(key)
         if group_id == "system":
             self._attr_device_info = main_device_info(entry_id, data.texts)
         else:  # one device per circuit / function, under the main ÖkoFEN device

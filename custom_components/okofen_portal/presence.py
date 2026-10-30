@@ -6,10 +6,8 @@ whether it is installed or not. The controller says what is present with ``vorha
 
 from __future__ import annotations
 
-import re
-
 from .api import Reading
-from .catalog import group_of
+from .catalog import group_of, split_group
 
 # groups with their own flag: LOCAL.<kind>[<n>].vorhanden
 FLAGGED = ("hk", "ww", "pu", "sk", "ertrag", "zirkp", "zubrp")
@@ -23,11 +21,6 @@ FLAG_KEYS = (
 )
 
 
-def _kind_index(group_id: str) -> tuple[str, int | None]:
-    match = re.fullmatch(r"([a-z0-9]+?)(\d+)", group_id)
-    return (match.group(1), int(match.group(2))) if match else (group_id, None)
-
-
 def hidden_groups(flags: dict[str, Reading], readings: dict[str, Reading]) -> set[str]:
     """Group ids with no equipment behind them. A missing flag never hides a group."""
 
@@ -36,8 +29,8 @@ def hidden_groups(flags: dict[str, Reading], readings: dict[str, Reading]) -> se
         return None if reading is None else int(reading.value)
 
     hidden: set[str] = set()
-    for group_id in {group_of(key)[0] for key in readings}:
-        kind, index = _kind_index(group_id)
+    for group_id in {group_of(key) for key in readings}:
+        kind, index = split_group(group_id)
         if group_id in ALWAYS:
             continue
         if kind in FLAGGED:
@@ -52,7 +45,7 @@ def hidden_groups(flags: dict[str, Reading], readings: dict[str, Reading]) -> se
             values = [
                 r.value
                 for key, r in readings.items()
-                if group_of(key)[0] == group_id and isinstance(r.value, (int, float))
+                if group_of(key) == group_id and isinstance(r.value, (int, float))
             ]
             present = int(any(values))
         if present == 0:

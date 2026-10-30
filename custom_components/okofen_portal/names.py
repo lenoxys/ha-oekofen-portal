@@ -14,16 +14,11 @@ from pathlib import Path
 import re
 from typing import Any
 
-from .catalog import group_of, pretty
+from .catalog import group_of, pretty, split_group
 
 I18N_DIR = Path(__file__).parent / "i18n"
 DEFAULT_LANGUAGE = "en"
 SUFFIXES = {"ist", "soll", "act", "set"}  # shown in brackets after the name: "Room temperature (actual)"
-
-
-def available_languages() -> list[str]:
-    """Codes of the language files that ship with the integration."""
-    return sorted(path.stem for path in I18N_DIR.glob("*.json"))
 
 
 def _merge(base: dict[str, Any], over: dict[str, Any]) -> dict[str, Any]:
@@ -54,19 +49,15 @@ class Texts:
         """The strings of the sidebar panel."""
         return self._d["panel"]
 
-    def _group(self, group_id: str) -> tuple[str, int | None]:
-        match = re.fullmatch(r"([a-z0-9]+?)(\d+)", group_id)
-        return (match.group(1), int(match.group(2))) if match else (group_id, None)
-
     def group_title(self, group_id: str) -> str:
         """'hk0' -> 'Heating circuit 1'."""
-        kind, index = self._group(group_id)
+        kind, index = split_group(group_id)
         label = self._d["groups"].get(kind, {}).get("label", kind.title())
         return label if index is None else f"{label} {index + 1}"
 
     def group_description(self, group_id: str) -> str:
         """Short explanation of what the group of entities is."""
-        return self._d["groups"].get(self._group(group_id)[0], {}).get("description", "")
+        return self._d["groups"].get(split_group(group_id)[0], {}).get("description", "")
 
     def friendly_name(self, key: str) -> str:
         """'LOCAL.L_hk[0].raumtemp_ist' -> 'Room temperature (actual)'."""
@@ -93,14 +84,14 @@ class Texts:
         """The specific explanation if there is one, otherwise 'Group: name'."""
         if key in self._d["descriptions"]:
             return self._d["descriptions"][key]
-        return f"{self.group_title(group_of(key)[0])}: {self.friendly_name(key)}"
+        return f"{self.group_title(group_of(key))}: {self.friendly_name(key)}"
 
     def build_names(self, keys: list[str]) -> dict[str, str]:
         """Names unique inside each group: duplicates get the controller's variable name appended."""
         names = {key: self.friendly_name(key) for key in keys}
         seen: dict[tuple[str, str], list[str]] = {}
         for key, name in names.items():
-            seen.setdefault((group_of(key)[0], name), []).append(key)
+            seen.setdefault((group_of(key), name), []).append(key)
         for (_, name), same in seen.items():
             if len(same) > 1:
                 for key in same:

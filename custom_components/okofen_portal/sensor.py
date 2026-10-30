@@ -112,12 +112,16 @@ class OekofenSensor(OekofenEntity, SensorEntity):
         return reading.value
 
 
-class OekofenStatusSensor(OekofenEntity, SensorEntity):
-    """A status word shown as ÖkoFEN's own text (each bit of the number is one message)."""
+class _TextSensor(OekofenEntity, SensorEntity):
+    """A number shown as text: no unit, no device class."""
 
     def __init__(self, coordinator: OekofenCoordinator, key: str, name: str) -> None:
         super().__init__(coordinator, key)
         self.entity_description = describe(key, SensorEntityDescription, name)
+
+
+class OekofenStatusSensor(_TextSensor):
+    """A status word shown as ÖkoFEN's own text (each bit of the number is one message)."""
 
     @property
     def native_value(self) -> str | None:
@@ -134,12 +138,8 @@ class OekofenStatusSensor(OekofenEntity, SensorEntity):
         return {**self._attr_extra_state_attributes, **raw}
 
 
-class OekofenClockSensor(OekofenEntity, SensorEntity):
+class OekofenClockSensor(_TextSensor):
     """A time of day that the controller stores as a number (1750 = 17:50)."""
-
-    def __init__(self, coordinator: OekofenCoordinator, key: str, name: str) -> None:
-        super().__init__(coordinator, key)
-        self.entity_description = describe(key, SensorEntityDescription, name)
 
     @property
     def native_value(self) -> str | None:

@@ -13,12 +13,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import OekofenConfigEntry
 from .catalog import kind
 from .coordinator import OekofenCoordinator
-from .const import FORECAST_DAY_KEY
+from .const import BURNER_KEY, FORECAST_DAY_KEY
 from .entity import OekofenEntity, describe, visible
 from .settings import SETTING_KEYS
-
-BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
-
 
 PARALLEL_UPDATES = 0
 

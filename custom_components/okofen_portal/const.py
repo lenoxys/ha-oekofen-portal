@@ -56,11 +56,12 @@ CLIMATE_FAST = [
     "LOCAL.ww[0].temp_heizen",
 ]
 FAST_VARIABLES = list(dict.fromkeys([*CURATED, *DASHBOARD.values(), *CLIMATE_FAST]))
+BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
+BOILER_TEMP_KEY = "LOCAL.L_ke_temp_ist"
 MIXER_KEY = "LOCAL.L_hk[0].mischer"
 MIXER_STATES = ("stopped", "opening", "closing")
 
-# variables shown through a dedicated entity or a translated name
-TRANSLATED = {"LOCAL.L_weather_forecast_today": "forecast_day"}
+# shown with a translated name and translated states
 FORECAST_DAY_KEY = "LOCAL.L_weather_forecast_today"
 FORECAST_DAY_STATES = ("today", "tomorrow")
 CLOCK_KEYS = {  # times stored as HHMM numbers (1750 = 17:50)

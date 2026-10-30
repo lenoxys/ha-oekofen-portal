@@ -79,8 +79,6 @@ def parse_forecast(items: list[str], now: datetime, tz: tzinfo) -> list[dict]:
                     "cloud_coverage": int(float(parts[2])),
                     "wind_speed": wind,
                     "condition": condition(int(parts[5]), parts[4]),
-                    "sunrise": parts[7] if len(parts) > 7 else None,
-                    "sunset": parts[8] if len(parts) > 8 else None,
                 }
             )
         except ValueError:
