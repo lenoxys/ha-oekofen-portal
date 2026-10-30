@@ -13,7 +13,7 @@ Reads from the **my.oekofen.info** portal what the local JSON interface of an Ö
   </picture>
 </p>
 
-<p align="center"><em>The sidebar panel, live from your controller: solar collectors, buffer tank, back-up boiler, heating circuit with its 4-way valve, hot water and pool exchangers. Pumps turn, pipes flow, hover anything for its values.</em></p>
+<p align="center"><em>The sidebar panel, live from your controller (sample values: a sunny autumn day, the house heated from the buffer tank, a hot water draw, the pool off). Pumps turn, pipes flow, hover anything for its values.</em></p>
 
 ## What it provides
 
