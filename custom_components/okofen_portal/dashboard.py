@@ -8,12 +8,12 @@ import voluptuous as vol
 
 from homeassistant.components import panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.loader import async_get_integration
 
 from .const import DASHBOARD, DOMAIN
-from .history import SERIES
+from .history import async_points
 from .names import Texts
 from .weather_parse import panel_weather
 
@@ -62,15 +62,14 @@ async def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConn
 
 
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/history"})
-@callback
-def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
-    """The last 48 h of the panel's values, for its history tab."""
+@websocket_api.async_response
+async def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
+    """The last 48 h of the panel's values, from the recorder, for the replay bar and the history tab."""
     entries = hass.config_entries.async_loaded_entries(DOMAIN)
     if not entries:
         connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
         return
-    history = entries[0].runtime_data.history
-    connection.send_result(msg["id"], {"series": list(SERIES), "points": history.points})
+    connection.send_result(msg["id"], await async_points(hass, entries[0].entry_id))
 
 
 async def async_setup_dashboard(hass: HomeAssistant) -> None:

@@ -482,7 +482,7 @@
     "history": {
       "today": "Hoy",
       "yesterday": "Ayer",
-      "empty": "Aún no hay datos: el historial se llena minuto a minuto (se guardan 48 h).",
+      "empty": "Nada en el historial de Home Assistant de las últimas 48 h: el panel lee el recorder de sus entidades (quemador, depósito, colector, ida, estancia…). Comprueba que estén activadas y registradas.",
       "aria": "Temperaturas y bombas a lo largo del día",
       "series": {
         "tank_top": "Depósito arriba",

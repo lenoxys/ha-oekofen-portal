@@ -1,8 +1,8 @@
-"""Check that the panel history is filled from the recorder where the integration has no points yet.
+"""Check the panel history read from the recorder (history.py) with a fake registry and recorder.
 
     .venv/bin/python scripts/check_history.py
 
-Fake Home Assistant, entity registry and recorder; needs the homeassistant package (imports only).
+Needs the homeassistant package (imports only, no running instance).
 """
 
 from __future__ import annotations
@@ -30,24 +30,31 @@ def state(entity_id, value, ago):
 
 
 RECORDED = {  # yesterday and today, as the recorder holds them
-    "sensor.okofen_tank_top": [state("sensor.okofen_tank_top", "55.0", 47 * H), state("sensor.okofen_tank_top", "66.5", 20 * H)],
-    "binary_sensor.okofen_burner": [state("binary_sensor.okofen_burner", "off", 47 * H), state("binary_sensor.okofen_burner", "on", 22 * H),
-                                    state("binary_sensor.okofen_burner", "off", 21.5 * H)],
-    "sensor.okofen_mixer": [state("sensor.okofen_mixer", "closing", 30 * H)],
+    "sensor.top": [state("sensor.top", "55.0", 47 * H), state("sensor.top", "unavailable", 25 * H), state("sensor.top", "66.5", 20 * H)],
+    "binary_sensor.burner": [state("binary_sensor.burner", "off", 47 * H), state("binary_sensor.burner", "on", 22 * H),
+                             state("binary_sensor.burner", "off", 21.5 * H)],
+    "sensor.mixer": [state("sensor.mixer", "closing", 30 * H)],
+    "sensor.boost": [state("sensor.boost", "waiting", 47 * H), state("sensor.boost", "active", 3 * H)],
+    "weather.okofen": [state("weather.okofen", "sunny", 47 * H), state("weather.okofen", "snowy", 5 * H)],
+    "sensor.disabled": [state("sensor.disabled", "99", 47 * H)],
 }
-ENTITY = {DASHBOARD["tank_top"]: "sensor.okofen_tank_top", DASHBOARD["burner"]: "binary_sensor.okofen_burner", DASHBOARD["mixer"]: "sensor.okofen_mixer"}
+UNIQUE = {  # unique id -> (entity id, disabled)
+    f"e1_{DASHBOARD['tank_top']}": ("sensor.top", False),
+    f"e1_{DASHBOARD['burner']}": ("binary_sensor.burner", False),
+    f"e1_{DASHBOARD['mixer']}": ("sensor.mixer", False),
+    f"e1_{DASHBOARD['coll']}": ("sensor.disabled", True),
+    "e1_solar_boost_state": ("sensor.boost", False),
+    "e1_weather": ("weather.okofen", False),
+}
 
 
 class Registry:
     def async_get_entity_id(self, domain, platform, unique_id):
-        entity_id = ENTITY.get(unique_id.removeprefix("e1_"))
+        entity_id = UNIQUE.get(unique_id, (None,))[0]
         return entity_id if entity_id and entity_id.startswith(domain + ".") else None
 
     def async_get(self, entity_id):
-        return types.SimpleNamespace(disabled=False)
-
-
-history.er = types.SimpleNamespace(async_get=lambda hass: Registry())
+        return types.SimpleNamespace(disabled=next(d for e, d in UNIQUE.values() if e == entity_id))
 
 
 class Recorder:
@@ -55,29 +62,31 @@ class Recorder:
         return func(*args)
 
 
+asked = []
+
+
 def significant_states(hass, start, end, entity_ids, *rest):
-    assert end.timestamp() <= NOW + 1
+    asked.extend(entity_ids)
     return {e: RECORDED[e] for e in entity_ids}
 
 
+history.er = types.SimpleNamespace(async_get=lambda hass: Registry())
 sys.modules["homeassistant.components.recorder"] = types.SimpleNamespace(
     get_instance=lambda hass: Recorder(), history=types.SimpleNamespace(get_significant_states=significant_states)
 )
-saved = []
 hass = types.SimpleNamespace(config=types.SimpleNamespace(components={"recorder"}))
-entry = types.SimpleNamespace(entry_id="e1")
-h = history.History.__new__(history.History)
-h.hass, h.entry = hass, entry
-h._store = types.SimpleNamespace(async_delay_save=lambda data, delay: saved.append(delay))
-own = [int(NOW) - 300, *[None] * (len(history.SERIES))]  # the integration's own first point, 5 min ago
-h.points = [own]
-asyncio.run(h._async_backfill())
-i = {name: n + 1 for n, name in enumerate(history.SERIES)}
-assert h.points[-1] is own and all(a[0] < b[0] for a, b in zip(h.points, h.points[1:])), "sorted, own points kept"
-assert len(h.points) > 2800 and saved, len(h.points)
-at = lambda ago: min(h.points, key=lambda p: abs(p[0] - (NOW - ago * H)))
-assert at(30)[i["tank_top"]] == 55.0 and at(10)[i["tank_top"]] == 66.5
+out = asyncio.run(history.async_points(hass, "e1"))
+i = {name: n + 1 for n, name in enumerate(out["series"])}
+points = out["points"]
+assert out["series"] == list(history.SERIES) and "sensor.disabled" not in asked, asked
+assert 2870 < len(points) <= 2880 and all(a[0] + 60 == b[0] for a, b in zip(points, points[1:])), len(points)
+assert all(len(p) == len(history.SERIES) + 1 for p in points)
+at = lambda ago: min(points, key=lambda p: abs(p[0] - (NOW - ago * H)))
+assert at(30)[i["tank_top"]] == 55.0 and at(24)[i["tank_top"]] is None and at(10)[i["tank_top"]] == 66.5
 assert at(21.8)[i["burner"]] == 1 and at(21)[i["burner"]] == 0 and at(23)[i["burner"]] == 0
 assert at(10)[i["mixer"]] == 2 and at(40)[i["mixer"]] is None
-assert at(10)[i["coll"]] is None and at(10)[i["boost"]] == 0
-print("historique complété depuis le recorder: valeurs, brûleur, vanne, ordre: OK")
+assert at(10)[i["coll"]] is None, "disabled entity not read"
+assert at(10)[i["boost"]] == 0 and at(1)[i["boost"]] == 1
+assert (at(10)[i["clouds"]], at(10)[i["code"]]) == (0, 800) and (at(1)[i["clouds"]], at(1)[i["code"]]) == (90, 601)
+assert asyncio.run(history.async_points(types.SimpleNamespace(config=types.SimpleNamespace(components=set())), "e1"))["points"] == []
+print("historique du panneau lu depuis le recorder: valeurs, brûleur, vanne, surchauffe, ciel, entités désactivées: OK")

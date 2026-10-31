@@ -70,7 +70,7 @@ An **ÖkoFEN** entry appears in the sidebar, for every user. It follows your pro
 - **Solar optimisation**: the state of the solar boost, every condition with its current value and threshold, and a button to turn it on or off.
 - **History**: today and yesterday, with the tank, collector, flow, room and outdoor temperatures, and lanes for the burner, the pumps and the solar boost. Click a legend entry to hide a curve.
 
-The integration keeps its own last 48 hours, one point per minute, so the replay and history work without enabling any entity. Right after installing or upgrading, it fills the missing hours from Home Assistant's history for the panel values whose entities are enabled; values whose entities are disabled appear as they are recorded, so give it a day. The schematic is one fixed layout (buffer tank with a solar coil, hot water by plate exchanger, pool exchanger); parts your controller does not report show "–".
+The replay and history show the last 48 hours from Home Assistant's own history (the recorder), so yesterday is there as soon as the panel's entities have been recorded. These entities (burner, buffer tank, collector, flow, room, outdoor, pumps, weather, solar boost) are enabled by default on new installs; if you installed before v0.13.0, enable any that are still disabled in **Settings → Devices & services → ÖkoFEN Portal → Entities**. The schematic is one fixed layout (buffer tank with a solar coil, hot water by plate exchanger, pool exchanger); parts your controller does not report show "–".
 
 ## Solar boost (experimental)
 

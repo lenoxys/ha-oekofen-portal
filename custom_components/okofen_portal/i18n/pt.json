@@ -482,7 +482,7 @@
     "history": {
       "today": "Hoje",
       "yesterday": "Ontem",
-      "empty": "Ainda sem dados: o histórico enche-se minuto a minuto (48 h guardadas).",
+      "empty": "Nada no histórico do Home Assistant nas últimas 48 h: o painel lê o recorder das suas entidades (queimador, depósito, coletor, ida, divisão…). Verifique se estão ativadas e registadas.",
       "aria": "Temperaturas e bombas ao longo do dia",
       "series": {
         "tank_top": "Topo do depósito",

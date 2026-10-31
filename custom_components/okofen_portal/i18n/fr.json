@@ -482,7 +482,7 @@
     "history": {
       "today": "Aujourd'hui",
       "yesterday": "Hier",
-      "empty": "Rien d'enregistré pour l'instant : l'historique se remplit minute par minute (48 h conservées).",
+      "empty": "Rien dans l'historique de Home Assistant sur les dernières 48 h : le panneau lit l'enregistreur pour ses entités (brûleur, ballon, capteurs, départ, pièce…). Vérifie qu'elles sont activées et enregistrées.",
       "aria": "Températures et pompes sur la journée",
       "series": {
         "tank_top": "Haut du ballon",

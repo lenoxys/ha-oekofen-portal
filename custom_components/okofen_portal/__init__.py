@@ -18,7 +18,6 @@ from homeassistant.helpers.storage import Store
 
 from .api import OekofenPortalClient
 from .boost import SolarBoost
-from .history import History
 from .local import OekofenLocalClient
 from .catalog import group_of, kind, load_catalog
 from .const import (
@@ -67,7 +66,6 @@ class OekofenData:
     names: dict[str, str]
     hidden: set[str]
     boost: SolarBoost | None = None
-    history: History | None = None
     main_device_id: str = ""  # registry id of the main ÖkoFEN device, parent of the per-circuit devices
 
     def reading(self, key: str):
@@ -154,8 +152,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     # before the platforms: a boost left by an earlier run is restored before the switch can start one
     entry.runtime_data.boost = SolarBoost(hass, entry)
     await entry.runtime_data.boost.async_start()
-    entry.runtime_data.history = History(hass, entry)
-    await entry.runtime_data.history.async_start()
+    # v0.12 kept its own copy of the panel history; the recorder holds it now
+    await Store(hass, 1, f"{DOMAIN}_history_{entry.entry_id}").async_remove()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
@@ -163,5 +161,4 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
 async def async_unload_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> bool:
     """Unload a config entry, putting back what the solar boost changed."""
     await entry.runtime_data.boost.async_stop()
-    await entry.runtime_data.history.async_stop()
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

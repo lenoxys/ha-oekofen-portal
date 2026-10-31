@@ -10,22 +10,27 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import OekofenError, Reading
 from .catalog import group_of
-from .const import COVERED_BY_WEATHER, CURATED, DOMAIN, FORECAST_DAY_KEY
+from .const import COVERED_BY_WEATHER, CURATED, DASHBOARD, DOMAIN, FORECAST_DAY_KEY
 from .control import prepare
 from .coordinator import OekofenCoordinator
 from .names import Texts
+
+PANEL_KEYS = set(DASHBOARD.values())
 
 
 def describe(
     key: str, description_cls: type[EntityDescription], name: str | None, **extra
 ) -> EntityDescription:
-    """Description for one variable: curated ones are named and enabled, the rest are diagnostics, disabled."""
+    """Description for one variable: curated ones are named and enabled, the rest are diagnostics, disabled.
+
+    The values the panel draws are enabled too: the recorder keeps their history, which the panel replays.
+    """
     curated = CURATED.get(key) or (("forecast_day", True) if key == FORECAST_DAY_KEY else None)
     return description_cls(
         key=key,
         translation_key=curated[0] if curated else None,
         name=None if curated else name,
-        entity_registry_enabled_default=curated[1] if curated else False,
+        entity_registry_enabled_default=curated[1] if curated else key in PANEL_KEYS,
         entity_category=None if curated else EntityCategory.DIAGNOSTIC,
         **extra,
     )
