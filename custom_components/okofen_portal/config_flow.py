@@ -7,13 +7,39 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import callback
+from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import OekofenAuthError, OekofenConnectionError, OekofenPortalClient
-from .const import CONF_LOCAL_HOST, CONF_LOCAL_PASSWORD, DOMAIN
+from .const import CONF_CLIMATES, CONF_LOCAL_HOST, CONF_LOCAL_PASSWORD, DOMAIN
 from .local import OekofenLocalClient
+from .solar_boost import Options
+
+
+def _number(minimum: float, maximum: float, step: float, unit: str) -> selector.NumberSelector:
+    return selector.NumberSelector(
+        selector.NumberSelectorConfig(
+            min=minimum, max=maximum, step=step, unit_of_measurement=unit, mode=selector.NumberSelectorMode.BOX
+        )
+    )
+
+
+DEFAULTS = Options()
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required("target", default=DEFAULTS.target): _number(18, 28, 0.5, "°C"),
+        vol.Optional("tank_threshold"): _number(50, 85, 0.5, "°C"),  # empty: computed from the settings
+        vol.Required("hot_water_reserve", default=DEFAULTS.hot_water_reserve): _number(40, 65, 1, "°C"),
+        vol.Required("after_sunrise", default=DEFAULTS.after_sunrise): _number(0, 360, 10, "min"),
+        vol.Required("before_sunset", default=DEFAULTS.before_sunset): _number(0, 360, 10, "min"),
+        vol.Optional(CONF_CLIMATES, default=[]): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="climate", multiple=True)
+        ),
+    }
+)
 
 STEP_USER_SCHEMA = vol.Schema(
     {
@@ -29,6 +55,11 @@ class OekofenPortalConfigFlow(ConfigFlow, domain=DOMAIN):
     """Ask for the my.oekofen.info account and check it."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return OekofenOptionsFlow()
 
     async def _validate(self, data: Mapping[str, Any]) -> tuple[str | None, str | None]:
         """Return (installation id, error key)."""
@@ -117,4 +148,16 @@ class OekofenPortalConfigFlow(ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors=errors,
+        )
+
+
+class OekofenOptionsFlow(OptionsFlow):
+    """Solar boost settings (read at each check, no reload needed)."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, self.config_entry.options),
         )

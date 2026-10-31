@@ -422,7 +422,89 @@
       "ecsPump": "Pumpe Frischwassermodul",
       "poolPump": "Poolpumpe",
       "poolDiff": "Differenz Speicher unten − Pool",
-      "tankToPool": "Speicher unten → Pool"
+      "tankToPool": "Speicher unten → Pool",
+      "boost": "Solare Überheizung",
+      "boostStates": {
+        "waiting": "wartet",
+        "active": "aktiv",
+        "restoring": "Rücksetzung"
+      },
+      "sunriseNow": "Sonnenaufgang",
+      "sunsetNow": "Sonnenuntergang",
+      "skyStorm": "Gewitter",
+      "skySnow": "Schnee",
+      "skyFog": "Nebel"
+    },
+    "solar": {
+      "waitingFor": "Blockiert durch:",
+      "on": "an",
+      "off": "aus",
+      "turnOn": "Einschalten",
+      "turnOff": "Ausschalten",
+      "intro": "An sonnigen Tagen wird der Komfort-Sollwert angehoben, damit der Solarüberschuss des Puffers das Haus ohne Kessel heizt; er wird zurückgesetzt, sobald eine Bedingung nicht mehr erfüllt ist.",
+      "startIf": "Bedingungen für den Start",
+      "keepIf": "Bedingungen zum Weiterlaufen",
+      "current": "Laufende Überheizung",
+      "since": "seit",
+      "comfort": "Komfort",
+      "heads": "Heizkörperthermostate",
+      "settings": "Einstellungen",
+      "settingsHint": "Änderbar unter Einstellungen > Geräte & Dienste > ÖkoFEN Portal > Konfigurieren.",
+      "tabs": {
+        "scheme": "Anlage",
+        "solar": "Solaroptimierung",
+        "history": "Verlauf"
+      },
+      "states": {
+        "inactive": "Aus",
+        "waiting": "Wartet",
+        "active": "Aktiv",
+        "restoring": "Rücksetzung"
+      },
+      "reasons": {
+        "running": "Bedingungen erfüllt",
+        "disabled": "Ausgeschaltet",
+        "dwell": "10 min Pause zwischen Änderungen",
+        "missing_data": "Werte fehlen"
+      },
+      "checks": {
+        "burner": "Brenner aus",
+        "manual": "Sollwert nicht von Hand geändert",
+        "heating_off": "Heizung an",
+        "outside_window": "Sonnenfenster",
+        "cloudy": "Bewölkung (Prognose)",
+        "mild_outdoor": "Außen unter Heizgrenze",
+        "tank_cold": "Puffer oben",
+        "hot_water_low": "Warmwasserfühler",
+        "room_warm": "Raum"
+      }
+    },
+    "history": {
+      "today": "Heute",
+      "yesterday": "Gestern",
+      "empty": "Noch nichts aufgezeichnet: der Verlauf füllt sich minütlich (48 h gespeichert).",
+      "aria": "Temperaturen und Pumpen im Tagesverlauf",
+      "series": {
+        "tank_top": "Puffer oben",
+        "tank_mid": "Puffer Mitte",
+        "tank_bottom": "Puffer unten",
+        "coll": "Kollektoren",
+        "flow": "Vorlauf",
+        "room": "Raum",
+        "outdoor": "Außen",
+        "burner": "Brenner",
+        "boiler_pump": "Kesselpumpe",
+        "solar_pump": "Solarpumpe",
+        "heating_pump": "Heizungspumpe",
+        "boost": "Solare Überheizung"
+      }
+    },
+    "replay": {
+      "play": "Abspielen",
+      "pause": "Pause",
+      "now": "Jetzt",
+      "live": "live",
+      "position": "Position in den letzten zwei Tagen"
     }
   }
 }

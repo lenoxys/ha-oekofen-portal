@@ -422,7 +422,89 @@
       "ecsPump": "热水机组泵",
       "poolPump": "泳池泵",
       "poolDiff": "水箱底部 − 泳池温差",
-      "tankToPool": "水箱底部 → 泳池"
+      "tankToPool": "水箱底部 → 泳池",
+      "boost": "太阳能增温",
+      "boostStates": {
+        "waiting": "等待",
+        "active": "运行中",
+        "restoring": "恢复中"
+      },
+      "sunriseNow": "日出",
+      "sunsetNow": "日落",
+      "skyStorm": "雷暴",
+      "skySnow": "雪",
+      "skyFog": "雾"
+    },
+    "solar": {
+      "waitingFor": "受限于：",
+      "on": "开",
+      "off": "关",
+      "turnOn": "开启",
+      "turnOff": "关闭",
+      "intro": "晴天时提高舒适温度设定，让蓄热水箱的太阳能富余热量为房屋供暖，无需锅炉；任一条件不满足即恢复原设定。",
+      "startIf": "启动条件",
+      "keepIf": "继续条件",
+      "current": "当前增温",
+      "since": "开始于",
+      "comfort": "舒适温度",
+      "heads": "散热器温控阀",
+      "settings": "设置",
+      "settingsHint": "在 设置 > 设备与服务 > ÖkoFEN Portal > 配置 中修改。",
+      "tabs": {
+        "scheme": "系统",
+        "solar": "太阳能优化",
+        "history": "历史"
+      },
+      "states": {
+        "inactive": "关闭",
+        "waiting": "等待",
+        "active": "运行中",
+        "restoring": "恢复中"
+      },
+      "reasons": {
+        "running": "条件已满足",
+        "disabled": "已关闭",
+        "dwell": "两次变更间等待10分钟",
+        "missing_data": "缺少数值"
+      },
+      "checks": {
+        "burner": "燃烧器关闭",
+        "manual": "设定未被手动更改",
+        "heating_off": "采暖开启",
+        "outside_window": "日照时段",
+        "cloudy": "预报云量",
+        "mild_outdoor": "室外低于采暖限值",
+        "tank_cold": "水箱顶部",
+        "hot_water_low": "生活热水探头",
+        "room_warm": "室温"
+      }
+    },
+    "history": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "empty": "尚无记录：历史数据每分钟记录一次（保留48小时）。",
+      "aria": "全天温度与水泵",
+      "series": {
+        "tank_top": "水箱顶部",
+        "tank_mid": "水箱中部",
+        "tank_bottom": "水箱底部",
+        "coll": "集热器",
+        "flow": "供水",
+        "room": "室温",
+        "outdoor": "室外",
+        "burner": "燃烧器",
+        "boiler_pump": "锅炉泵",
+        "solar_pump": "太阳能泵",
+        "heating_pump": "采暖泵",
+        "boost": "太阳能增温"
+      }
+    },
+    "replay": {
+      "play": "播放",
+      "pause": "暂停",
+      "now": "现在",
+      "live": "实时",
+      "position": "过去两天中的位置"
     }
   }
 }

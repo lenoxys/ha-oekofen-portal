@@ -73,6 +73,15 @@
           "today": "Hoy",
           "tomorrow": "Mañana"
         }
+      },
+      "solar_boost_state": {
+        "name": "Estado del sobrecalentamiento solar",
+        "state": {
+          "inactive": "Apagado",
+          "waiting": "En espera",
+          "active": "Activo",
+          "restoring": "Restaurando"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "Automático"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "Sobrecalentamiento solar"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sobrecalentamiento solar",
+        "description": "Los días soleados, sube la consigna de confort para calentar la casa con el excedente del depósito de inercia, sin la caldera. Se detiene en cuanto arranca el quemador, el depósito o el agua caliente se enfrían demasiado o la consigna se cambia a mano.",
+        "data": {
+          "target": "Consigna de confort durante el sobrecalentamiento",
+          "tank_threshold": "Parte alta del depósito para arrancar (vacío: calculado)",
+          "hot_water_reserve": "Reserva de agua caliente",
+          "after_sunrise": "Inicio tras la salida del sol",
+          "before_sunset": "Fin antes de la puesta del sol",
+          "climates": "Cabezales de radiador a abrir"
         }
       }
     }

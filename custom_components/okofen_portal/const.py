@@ -11,6 +11,7 @@ RETRY_DELAYS = (10, 20, 30, 60, *[300] * 11)
 RETRY_MAX = 900
 CONF_LOCAL_HOST = "local_host"
 CONF_LOCAL_PASSWORD = "local_password"
+CONF_CLIMATES = "climates"  # solar boost option: radiator heads (climate entities) opened while boosting
 
 # Variables that the local API does not give: enabled by default and polled fast.
 # key -> (translation key, enabled by default)

@@ -73,6 +73,15 @@
           "today": "Hoje",
           "tomorrow": "Amanhã"
         }
+      },
+      "solar_boost_state": {
+        "name": "Estado do sobreaquecimento solar",
+        "state": {
+          "inactive": "Desligado",
+          "waiting": "Em espera",
+          "active": "Ativo",
+          "restoring": "A restaurar"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "Automático"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "Sobreaquecimento solar"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sobreaquecimento solar",
+        "description": "Em dias de sol, sobe a temperatura de conforto para aquecer a casa com o excedente do depósito de inércia, sem a caldeira. Para assim que o queimador arranca, o depósito ou a água quente arrefecem demasiado ou a temperatura é alterada à mão.",
+        "data": {
+          "target": "Temperatura de conforto durante o sobreaquecimento",
+          "tank_threshold": "Topo do depósito para arrancar (vazio: calculado)",
+          "hot_water_reserve": "Reserva de água quente",
+          "after_sunrise": "Início após o nascer do sol",
+          "before_sunset": "Fim antes do pôr do sol",
+          "climates": "Cabeças termostáticas a abrir"
         }
       }
     }

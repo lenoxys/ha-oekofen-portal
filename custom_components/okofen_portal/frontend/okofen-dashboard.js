@@ -5,8 +5,10 @@
  * exchanger. Hovering (or focusing) an element shows its values. Elements the controller does not report show "–". */
 // The texts come from i18n/<language>.json through the websocket command (key "strings").
 const CSS = `
-:host{display:block;min-height:100%;background:var(--primary-background-color,#f6f4ef);color:var(--primary-text-color,#1f2933);font:15px/1.45 var(--paper-font-body1_-_font-family,system-ui,sans-serif);
+:host{display:block;min-height:100%;background:var(--primary-background-color,#f6f4ef);color:var(--primary-text-color,#1f2933);font:14px/1.45 var(--paper-font-body1_-_font-family,system-ui,sans-serif);
 --bg:var(--primary-background-color,#f6f4ef);--card:var(--card-background-color,#fff);--fg:var(--primary-text-color,#1f2933);--mut:var(--secondary-text-color,#66727f);--line:var(--divider-color,#d9d4c8);--track:#cfc9bb;--hot:#e8590c;--solar:#f59f00;--cold:#1c7ed6;--warm:#d6336c;--ok:#2b8a3e;--red:#e03131}
+:host{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6}
+:host([dark]){--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9}
 :host([dark]){--track:#3a4651;--hot:#ff8a4c;--solar:#ffc233;--cold:#5aa9f0;--warm:#f06595;--ok:#69db7c;--red:#ff6b6b}
 *{box-sizing:border-box}
 main{max-width:1100px;margin:0 auto;padding:16px 16px 32px}
@@ -14,9 +16,9 @@ h1{font-size:22px;margin:0 0 4px;font-weight:500}
 .sub{color:var(--mut);margin:0 0 14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px}
 svg{width:100%;height:auto;display:block}
-svg text{fill:var(--fg);font-size:13px}
-svg .mut{fill:var(--mut);font-size:12px}
-svg .big{font-size:15px;font-weight:600}
+svg text{fill:var(--fg);font-size:14px}
+svg .mut{fill:var(--mut)}
+svg .big{font-weight:600}
 .box{fill:var(--card);stroke:var(--line);stroke-width:2}
 .tank{stroke:var(--fg);stroke-width:3;fill:url(#tg)}
 .tt{fill:#fff;font-weight:600;paint-order:stroke;stroke:#0006;stroke-width:3px}
@@ -26,7 +28,19 @@ svg .big{font-size:15px;font-weight:600}
 .flow.on{opacity:1;animation:dash var(--d,2s) linear infinite}
 .hot{stroke:var(--hot)}.solar{stroke:var(--solar)}.cold{stroke:var(--cold)}.warm{stroke:var(--warm)}
 @keyframes dash{to{stroke-dashoffset:-16}}
-#cloud{fill:#aeb8c3}#cloud.rain{fill:#7b8794}svg [hidden]{display:none}
+#sun,#moon,#cloud,#horizon{transition:opacity 1.5s ease,transform 1.5s ease}
+#sky .gone{opacity:0}
+#sun circle{fill:#f59f00;transition:fill 1.5s ease}#sun .rays{stroke:#f59f00;transition:stroke 1.5s ease,opacity 1.5s ease}
+#sun.low,#moon.low{transform:translateY(26px)}#sun.low circle{fill:#f76707}#sun.low .rays{opacity:0}
+#sun.down,#moon.down{transform:translateY(48px);opacity:0}
+#horizon{stroke:#f76707;stroke-width:2;stroke-linecap:round;transition:opacity 1.5s ease,stroke 1.5s ease}#horizon.night{stroke:#9aa5b1}
+#cloud{fill:#aeb8c3;transition:opacity 1.5s ease,fill 1.5s ease}#cloud.rain{fill:#7b8794}#cloud.snow{fill:#c5ced8}
+#rain,#snow,#bolt,#fog{transition:opacity 1.5s ease}
+#rain{stroke:#4a90d9}#snow{fill:#9fb3c8}#bolt{fill:#f59f00}#fog{stroke:#aeb8c3}
+#rain.fall:not(.gone){animation:fall .9s linear infinite}#snow.fall:not(.gone){animation:fall 2.4s linear infinite}
+#bolt:not(.gone){animation:flash 3s steps(1) infinite}
+@keyframes fall{from{transform:translateY(-4px);opacity:.3}50%{opacity:1}to{transform:translateY(5px);opacity:.3}}
+@keyframes flash{0%,8%,14%{opacity:1}5%,11%,20%,100%{opacity:.15}}svg [hidden]{display:none}
 #boilIcon{fill:var(--red)}#boilOff,#heatIcon{fill:var(--mut)}#heatIcon.on{fill:var(--red)}
 #motor.on{stroke:var(--ok);stroke-width:3.5}
 .ctl{fill:none;stroke:var(--mut);stroke-width:2;stroke-dasharray:3 5}
@@ -41,12 +55,47 @@ svg .big{font-size:15px;font-weight:600}
 .sun.on .rays{animation:spin 12s linear infinite}
 [data-tip]{cursor:help}
 [data-tip]:focus{outline:none}
-#tip{position:fixed;z-index:9;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 6px 20px #0003;font-size:13px;min-width:190px}
+#tip{position:fixed;z-index:9;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 6px 20px #0003;min-width:190px}
 #tip[hidden]{display:none}
 #tip b{display:block;margin-bottom:4px}
 #tip div{display:flex;justify-content:space-between;gap:14px}#tip span{color:var(--mut)}
-.badge{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;font-size:12px;color:var(--mut)}
-@media (prefers-reduced-motion:reduce){.flow.on,.pump.on path,.sun.on .rays,.ctl.on{animation:none}.flow{stroke-dasharray:none}}`;
+nav{display:flex;gap:6px;margin:0 0 10px}
+nav button{font:inherit;color:var(--mut);background:none;border:1px solid var(--line);border-radius:8px;padding:4px 12px;cursor:pointer}
+nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weight:500}
+.pad{padding:14px 16px}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px}
+.state{font-weight:600;border-radius:6px;padding:2px 10px;background:var(--line)}
+.state.active{background:var(--ok);color:#000}.state.restoring{background:var(--solar);color:#000}
+.head .mut,.solar .mut{color:var(--mut)}
+.head button{margin-left:auto;font:inherit;border:1px solid var(--line);border-radius:8px;padding:5px 14px;background:var(--card);color:var(--fg);cursor:pointer}
+.solar h2{font-size:inherit;font-weight:600;margin:14px 0 6px}
+.solar table{border-collapse:collapse;width:100%}
+.solar td{padding:4px 8px;border-top:1px solid var(--line)}
+.solar td:first-child{width:1.6em;text-align:center}
+.solar td.v{text-align:right;white-space:nowrap}.solar td.l{color:var(--mut);white-space:nowrap}
+.solar tr.no td{color:var(--red)}.solar tr.no td.l{color:var(--mut)}
+.hist h2{font-size:inherit;font-weight:600;margin:4px 0 2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 8px}
+.legend button{font:inherit;color:var(--fg);background:none;border:0;padding:2px 0;cursor:pointer;display:flex;align-items:center;gap:6px}
+.legend button[aria-pressed=false]{color:var(--mut);text-decoration:line-through}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
+.hist svg text{fill:var(--mut)}
+.hist .grid{stroke:var(--line);stroke-width:1}
+.hist .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.hist .cross{stroke:var(--mut);stroke-width:1}
+.replay{display:flex;align-items:center;gap:12px;margin:6px -8px -8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg);border-radius:0 0 12px 12px}
+.replay button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 10px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
+.replay #rpPlay{width:40px;height:40px;border-radius:50%;padding:0;background:var(--fg);color:var(--card);border-color:var(--fg)}
+.rpTrack{position:relative;flex:1;height:44px}
+.rpTrack svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:30px}
+.rpTrack span{position:absolute;top:-2px;line-height:1;color:var(--mut);white-space:nowrap}
+.rpTrack input{position:absolute;left:0;right:0;bottom:0;height:30px;width:100%;margin:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+.rpTrack input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--fg);box-shadow:0 1px 4px #0004;cursor:grab}
+.rpTrack input::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--fg);box-shadow:0 1px 4px #0004;cursor:grab}
+#rpTime{min-width:9.5em;color:var(--mut);text-align:right}
+#rpTime.past{color:var(--fg);font-weight:500}
+.badge{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;color:var(--mut)}
+@media (prefers-reduced-motion:reduce){.flow.on,.pump.on path,.sun.on .rays,.ctl.on,#rain,#snow,#bolt{animation:none}.flow{stroke-dasharray:none}}`;
 const svgFor = (t) => `<svg viewBox="0 -45 1000 505" role="img" aria-label="${t.aria}">
 <defs>
   <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
@@ -130,13 +179,19 @@ const svgFor = (t) => `<svg viewBox="0 -45 1000 505" role="img" aria-label="${t.
 <text x="830" y="0" text-anchor="middle" class="big">${t.collectors}</text>
 <text x="830" y="24" text-anchor="middle" id="tColl">–</text>
 <g id="sky" data-tip="sky" tabindex="0" transform="translate(675 5)">
-  <g class="sun" id="sun">
-    <circle r="14" fill="#f59f00"/>
-    <g class="rays" stroke="#f59f00" stroke-width="3" stroke-linecap="round">
+  <clipPath id="skyClip"><rect x="-40" y="-40" width="80" height="70"/></clipPath>
+  <g clip-path="url(#skyClip)"><g class="sun" id="sun">
+    <circle r="14"/>
+    <g class="rays" stroke-width="3" stroke-linecap="round">
       <path d="M0-24V-19M0 19V24M-24 0H-19M19 0H24M-17-17l3 3M14 14l3 3M-17 17l3-3M14-14l3-3"/>
     </g>
   </g>
-  <g id="moon"><circle r="14" fill="#d5dbe3"/><circle cx="7" cy="-5" r="12" style="fill:var(--card)"/></g>
+  <g id="moon"><circle r="14" fill="#d5dbe3"/><circle cx="7" cy="-5" r="12" style="fill:var(--card)"/></g></g>
+  <line id="horizon" class="gone" x1="-30" x2="30" y1="30" y2="30"/>
+  <g id="rain" class="gone fall" stroke-width="2" stroke-linecap="round"><path d="M-6 16l-2 6M3 16l-2 6M12 16l-2 6M-1 25l-2 6M8 25l-2 6"/></g>
+  <g id="snow" class="gone fall slow"><circle cx="-6" cy="18" r="2"/><circle cx="4" cy="16" r="2"/><circle cx="13" cy="19" r="2"/><circle cx="-1" cy="26" r="2"/><circle cx="9" cy="27" r="2"/></g>
+  <path id="bolt" class="gone" d="M4 12l-6 10h5l-3 9 9-12h-5l3-7z"/>
+  <g id="fog" class="gone" stroke-width="3" stroke-linecap="round"><path d="M-22 4H22M-26 12H18M-18 20H26"/></g>
   <g id="cloud" transform="translate(-10 -8)"><circle cx="0" cy="12" r="8"/><circle cx="10" cy="6" r="11"/><circle cx="21" cy="13" r="7"/><rect x="-6" y="12" width="32" height="8" rx="4"/></g>
 </g>
 </g>
@@ -207,14 +262,42 @@ const kwh = (s) => (s.top == null || s.mid == null || s.bot == null ? null : Mat
 const esc = (x) => String(x).replace(/[&<>]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'})[c]);
 
 // sky: day or night from the OpenWeatherMap icon (01d / 01n), clouds from the coverage and the condition code
+// dawn / dusk: within 40 min of sunrise / sunset, from the time shown (live or replayed)
+const minutes = (hhmm) => { const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || ''); return m ? +m[1] * 60 + +m[2] : null; };
 function skyOf(s, tp) {
-  const night = s.icon ? s.icon.endsWith('n') : (new Date().getHours() < 7 || new Date().getHours() >= 19);
+  const at = new Date((s.ts ?? Date.now() / 1000) * 1000), now = at.getHours() * 60 + at.getMinutes();
+  const rise = minutes(s.sunrise), set = minutes(s.sunset);
+  const known = rise != null && set != null;
+  const dawn = known && Math.abs(now - rise) <= 40, dusk = known && Math.abs(now - set) <= 40;
+  const night = known ? now < rise || now >= set : s.icon ? s.icon.endsWith('n') : (at.getHours() < 7 || at.getHours() >= 19);
+  // one body at a time on the horizon: the sun sets then the moon rises; the moon sets then the sun rises
+  const sun = !night ? (dawn || dusk ? 'low' : 'up') : 'down';
+  const moon = night ? (dawn || dusk ? 'low' : 'up') : 'down';
   const clouds = s.clouds ?? 0, code = s.wcode ?? 800;
-  const rain = code >= 200 && code < 700;
-  const cloudy = rain || code > 800 || clouds >= 25, overcast = rain || code === 804 || clouds >= 85;
-  const label = rain ? tp.skyRain : overcast ? tp.skyOvercast : cloudy ? tp.skyCloudy : night ? tp.skyClearNight : tp.skyClear;
-  return {night, cloudy, overcast, rain, label: night && !(label === tp.skyClearNight) ? `${label} (${tp.night})` : label};
+  const storm = code >= 200 && code < 300, snow = code >= 600 && code < 700, fog = code >= 700 && code < 800;
+  const rain = storm || (code >= 300 && code < 600);
+  const cloudy = rain || snow || code > 800 || clouds >= 25, overcast = rain || snow || fog || code === 804 || clouds >= 85;
+  const label = storm ? tp.skyStorm : rain ? tp.skyRain : snow ? tp.skySnow : fog ? tp.skyFog : overcast ? tp.skyOvercast : cloudy ? tp.skyCloudy : night ? tp.skyClearNight : tp.skyClear;
+  const twilight = dawn ? tp.sunriseNow : dusk ? tp.sunsetNow : null;
+  return {night, sun, moon, twilight: dawn || dusk, cloudy, overcast, rain, snow, storm, fog,
+    label: twilight ? `${label} (${twilight})` : night && !(label === tp.skyClearNight) ? `${label} (${tp.night})` : label};
 }
+
+// panel values (const.DASHBOARD names) and weather -> what the schematic and its tooltips read
+const toCur = (v, w, ts) => ({
+  ts,
+  coll: v.coll, ecsP: v.ecs_probe, top: v.tank_top, mid: v.tank_mid, bot: v.tank_bottom, solarPump: v.solar_pump,
+  bPump: v.boiler_pump, contact: v.burner, boilT: v.boiler_temp, heat: v.heating_pump > 0, flow: v.flow, pool: v.pool,
+  poolPump: v.pool_pump, out: v.outdoor, mixer: v.mixer, room: v.room, roomSet: v.room_set, flowSet: v.flow_set,
+  tankSet: v.tank_set, ecsSet: v.ecs_set, ecsPump: v.ecs_pump,
+  icon: w.icon, wcode: w.code, clouds: w.clouds, wind: w.wind, sunrise: w.sunrise, sunset: w.sunset,
+  fcTemp: w.forecast_temp, fcClouds: w.forecast_clouds,
+});
+
+// history tab: temperature lines in fixed categorical order (--s1..--s7), then the on/off lanes
+const HIST_LINES = ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor'];
+const HIST_LANES = [['burner', 'var(--red)'], ['boiler_pump', 'var(--hot)'], ['solar_pump', 'var(--solar)'], ['heating_pump', 'var(--warm)'], ['boost', 'var(--ok)']];
+const HIST = {L: 150, R: 24, W: 1000, PH: 200, LH: 22};
 
 class OkofenDashboard extends HTMLElement {
   constructor() {
@@ -223,6 +306,13 @@ class OkofenDashboard extends HTMLElement {
     this._cur = {};
     this._src = '';
     this._tipKey = null;
+    this._tab = 'scheme';
+    this._hist = null;
+    this._histAt = 0;
+    this._off = new Set();
+    this._replay = null;  // index in the history while replaying, null: live
+    this._live = {};
+    this._playing = null;
   }
 
   set hass(hass) {
@@ -239,7 +329,7 @@ class OkofenDashboard extends HTMLElement {
   set route(_) {}
   set panel(_) {}
 
-  disconnectedCallback() { clearInterval(this._timer); this._timer = null; }
+  disconnectedCallback() { clearInterval(this._timer); this._timer = null; this._pause(); }
 
   _q(id) { return this.shadowRoot.getElementById(id); }
 
@@ -249,7 +339,14 @@ class OkofenDashboard extends HTMLElement {
 <main>
 <h1>${t.title}</h1>
 <p class="sub">${t.sub} <span id="src" class="badge"></span></p>
-<div class="card">${svgFor(t)}</div>
+<nav role="tablist">${['scheme', 'solar', 'history'].map((k) => `<button role="tab" data-tab="${k}" aria-selected="${this._tab === k}">${t.solar.tabs[k]}</button>`).join('')}</nav>
+<div class="card" id="scheme" ${this._tab === 'scheme' ? '' : 'hidden'}>${svgFor(t)}
+<div class="replay" id="replay" hidden><button id="rpPlay" aria-label="${t.replay.play}">▶</button>
+<div class="rpTrack" id="rpTrack"><svg id="rpStrip" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true"></svg>
+<input type="range" id="rpRange" min="0" max="0" value="0" aria-label="${t.replay.position}"></div>
+<span id="rpTime"></span><button id="rpNow">${t.replay.now}</button></div></div>
+<div class="card pad solar" id="solar" ${this._tab === 'solar' ? '' : 'hidden'}></div>
+<div class="card pad hist" id="history" ${this._tab === 'history' ? '' : 'hidden'}></div>
 <div id="tip" hidden role="tooltip"></div>
 </main>`;
     this.shadowRoot.querySelectorAll('path.flow').forEach((p) => {
@@ -258,6 +355,32 @@ class OkofenDashboard extends HTMLElement {
       track.setAttribute('class', 'track');
       p.before(track);
     });
+    this.shadowRoot.querySelector('nav').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-tab]');
+      if (!b) return;
+      this._tab = b.dataset.tab;
+      this.shadowRoot.querySelectorAll('nav button').forEach((x) => x.setAttribute('aria-selected', x === b));
+      ['scheme', 'solar', 'history'].forEach((k) => this._hide(k, this._tab !== k));
+      this._hideTip();
+      if (this._tab === 'history') this._loadHistory();
+    });
+    this._q('solar').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-switch]');
+      if (b && this._boost?.switch) this._hass.callService('switch', b.dataset.switch, {entity_id: this._boost.switch}).then(() => this._poll());
+    });
+    this._q('rpRange').addEventListener('input', (e) => { this._pause(); this._seek(+e.target.value); });
+    this._q('rpPlay').addEventListener('click', () => (this._playing ? this._pause() : this._play()));
+    this._q('rpNow').addEventListener('click', () => { this._pause(); this._seek(null); });
+    const hist = this._q('history');
+    hist.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-series]');
+      if (!b) return;
+      const k = b.dataset.series;
+      this._off.has(k) ? this._off.delete(k) : this._off.add(k);
+      this._renderHistory();
+    });
+    hist.addEventListener('mousemove', (e) => this._histHover(e));
+    hist.addEventListener('mouseleave', () => { this._hideTip(); hist.querySelectorAll('.cross').forEach((l) => l.setAttribute('hidden', '')); });
     const svg = this.shadowRoot.querySelector('svg');
     svg.addEventListener('mousemove', (e) => {
       const g = e.target.closest('[data-tip]');
@@ -281,22 +404,26 @@ class OkofenDashboard extends HTMLElement {
   async _poll() {
     try {
       const res = await this._hass.callWS({type: 'okofen_portal/dashboard', language: this._userLang});
-      if (!this._t || res.language !== this._lang) { this._t = res.strings; this._lang = res.language; this._build(); }
-      const v = res.values || {}, w = res.weather || {};
-      this._cur = {
-        coll: v.coll, ecsP: v.ecs_probe, top: v.tank_top, mid: v.tank_mid, bot: v.tank_bottom, solarPump: v.solar_pump,
-        bPump: v.boiler_pump, contact: v.burner, boilT: v.boiler_temp, heat: v.heating_pump > 0, flow: v.flow, pool: v.pool,
-        poolPump: v.pool_pump, out: v.outdoor, mixer: v.mixer, room: v.room, roomSet: v.room_set, flowSet: v.flow_set,
-        tankSet: v.tank_set, ecsSet: v.ecs_set, ecsPump: v.ecs_pump,
-        icon: w.icon, wcode: w.code, clouds: w.clouds, wind: w.wind, sunrise: w.sunrise, sunset: w.sunset,
-        fcTemp: w.forecast_temp, fcClouds: w.forecast_clouds,
-      };
+      if (!this._t || res.language !== this._lang) { this._t = res.strings; this._lang = res.language; this._build(); this._renderHistory(); this._renderReplay(); }
+      this._boost = res.boost;
+      this._w = res.weather || {};
+      this._live = toCur(res.values || {}, this._w, Date.now() / 1000);
+      if (this._replay == null) this._cur = this._live;
       this._src = `${this._t.updated} ${new Date().toLocaleTimeString(this._lang)}`;
     } catch (e) {
-      this._cur = {};
+      this._cur = this._live = {};
+      this._boost = null;
       this._src = this._t ? this._t.error : '';
     }
     if (this._t) this._render();
+    if (this._tab !== 'solar' && Date.now() - this._histAt > 120000) this._loadHistory();
+  }
+
+  async _loadHistory() {
+    this._histAt = Date.now();
+    try { this._hist = await this._hass.callWS({type: 'okofen_portal/history'}); } catch (e) { this._hist = null; }
+    this._renderHistory();
+    this._renderReplay();
   }
 
   _group(g, on, dur) {
@@ -314,7 +441,7 @@ class OkofenDashboard extends HTMLElement {
   _render() {
     if (!this._t || !this._q('src')) return;
     const t = this._t, s = this._cur, draw = s.ecsPump > 0;
-    this._q('src').textContent = this._src;
+    this._q('src').textContent = this._replay != null ? this._q('rpTime').textContent : this._src;
     this._stop('gE', col(s.ecsP)); this._stop('g0', col(s.top)); this._stop('g1', col(s.mid)); this._stop('g2', col(s.bot));
     this._q('poolIcon').style.fill = col(s.pool);
     this._set('tProbe', `${t.probe} ${deg(s.ecsP)}`);
@@ -339,12 +466,209 @@ class OkofenDashboard extends HTMLElement {
     this._on('xPool', s.poolPump > 0); this._on('xEcs', draw); this._on('ctl', draw);
     this._on('sun', s.coll > 40); this._on('motor', s.mixer > 0);
     const sky = skyOf(s, t.tip);
-    this._hide('sun', sky.night || sky.overcast);
-    this._hide('moon', !sky.night || sky.overcast);
-    this._hide('cloud', !sky.cloudy);
+    const fade = (id, gone) => this._q(id).classList.toggle('gone', !!gone);  // fades instead of hiding
+    // the sun and the moon slide under the horizon and out of it; an overcast sky hides both
+    for (const body of ['sun', 'moon']) {
+      const el = this._q(body);
+      el.classList.toggle('low', sky[body] === 'low');
+      el.classList.toggle('down', sky[body] === 'down');
+      fade(body, sky.overcast);
+    }
+    fade('cloud', !sky.cloudy);
+    fade('horizon', !sky.twilight || sky.overcast);
+    this._q('horizon').classList.toggle('night', sky.night);
     this._q('cloud').classList.toggle('rain', sky.rain);
+    this._q('cloud').classList.toggle('snow', sky.snow);
+    fade('rain', !sky.rain); fade('snow', !sky.snow); fade('bolt', !sky.storm); fade('fog', !sky.fog);
     const mag = this._q('mag'); if (mag) mag.setAttribute('x', draw ? 221 : 209);
     if (this._tipKey) this._showTip(this._tipKey);
+    this._renderSolar();
+  }
+
+  // ===== solar tab: the solar boost, its conditions with their values and thresholds =====
+  _renderSolar() {
+    const t = this._t.solar, b = this._boost, el = this._q('solar');
+    if (!b) { el.innerHTML = `<p class="mut">${esc(this._t.error)}</p>`; return; }
+    const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    const fmtCheck = (c) => {
+      if (c.value == null) return ['', ''];
+      switch (c.id) {
+        case 'outside_window': return [hhmm(c.value), `${hhmm(c.limit[0])} – ${hhmm(c.limit[1])}`];
+        case 'cloudy': return [pct(c.value), `≤ ${pct(c.limit)}`];
+        case 'burner': return [c.value ? t.on : t.off, ''];
+        case 'manual': return [deg(c.value), `= ${deg(c.limit)}`];
+        case 'tank_cold': case 'hot_water_low': return [deg(c.value), `≥ ${deg(c.limit)}`];
+        default: return [deg(c.value), `< ${deg(c.limit)}`];
+      }
+    };
+    const reason = t.reasons[b.reason] || (t.checks[b.reason] ? `${t.waitingFor} ${t.checks[b.reason]}` : b.reason);
+    const rows = b.checks.map((c) => {
+      const [value, limit] = fmtCheck(c);
+      return `<tr class="${c.ok ? 'ok' : 'no'}"><td>${c.ok ? '✓' : '✗'}</td><td>${esc(t.checks[c.id] || c.id)}</td><td class="v">${esc(value)}</td><td class="l">${esc(limit)}</td></tr>`;
+    }).join('');
+    const ses = b.session;
+    el.innerHTML = `<div class="head"><span class="state ${b.state}">${esc(t.states[b.state] || b.state)}</span><span class="mut">${esc(reason)}</span>
+${b.switch ? `<button data-switch="${b.enabled ? 'turn_off' : 'turn_on'}">${esc(b.enabled ? t.turnOff : t.turnOn)}</button>` : ''}</div>
+<p class="mut">${esc(t.intro)}</p>
+<h2>${esc(ses ? t.keepIf : t.startIf)}</h2><table>${rows}</table>
+${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 1000).toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})} · ${esc(t.comfort)} ${deg(ses.comfort)} → ${deg(ses.target)} · ${esc(t.heads)} ${Object.keys(ses.heads).length}</p>` : ''}
+<h2>${esc(t.settings)}</h2><p>${esc(t.comfort)} ${deg(b.target)} · ${esc(t.heads)} ${b.heads.length ? esc(b.heads.map((e) => this._hass.states[e]?.attributes.friendly_name || e).join(', ')) : '–'}</p><p class="mut">${esc(t.settingsHint)}</p>`;
+  }
+
+  // ===== replay under the schematic: yesterday and today, play / pause, back to now =====
+  _renderReplay() {
+    const range = this._q('rpRange'), strip = this._q('rpStrip'), h = this._hist;
+    if (!range) return;
+    const n = h ? h.points.length : 0;
+    this._q('replay')?.toggleAttribute('hidden', !n);
+    range.max = Math.max(0, n - 1);
+    range.value = this._replay ?? range.max;
+    this._rpTime();
+    if (!n) { strip.innerHTML = ''; return; }
+    // progression strip: day boundaries and when the burner and the solar pump ran, so the moments to look at stand out
+    const idx = Object.fromEntries(h.series.map((k, i) => [k, i + 1])), t0 = h.points[0][0], span = Math.max(60, h.points[n - 1][0] - t0);
+    const x = (ts) => ((ts - t0) / span * 1000).toFixed(1);
+    let g = `<rect x="0" y="12" width="1000" height="6" rx="3" fill="var(--line)"/>`;
+    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    const midnight = day0.getTime() / 1000;
+    if (midnight > t0) g += `<line x1="${x(midnight)}" x2="${x(midnight)}" y1="0" y2="30" stroke="var(--mut)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>`;
+    // day names as page text (the strip is stretched, its own text would be too)
+    const tr = this._q('rpTrack');
+    tr.querySelectorAll('span').forEach((e) => e.remove());
+    const label = (text, left) => tr.insertAdjacentHTML('beforeend', `<span style="left:${left}">${esc(text)}</span>`);
+    label(midnight > t0 ? this._t.history.yesterday : this._t.history.today, '0');
+    if (midnight > t0) label(this._t.history.today, `calc(${x(midnight) / 10}% + 4px)`);
+    [['solar_pump', 'var(--solar)', 19], ['burner', 'var(--red)', 12]].forEach(([k, color, y]) => {
+      if (!idx[k]) return;
+      let run = null;
+      h.points.forEach((p, i) => {
+        const on = p[idx[k]] > 0, last = i === n - 1;
+        if (on && run == null) run = p[0];
+        if (run != null && (!on || last)) { g += `<rect x="${x(run)}" y="${y}" width="${Math.max(2, x(p[0]) - x(run))}" height="${k === 'burner' ? 6 : 4}" rx="2" fill="${color}"/>`; run = null; }
+      });
+    });
+    strip.innerHTML = g;
+  }
+
+  _rpTime() {
+    const el = this._q('rpTime'), h = this._hist, tr = this._t.replay;
+    if (!el) return;
+    const p = this._replay != null && h ? h.points[this._replay] : null;
+    el.classList.toggle('past', !!p);
+    if (!p) { el.textContent = tr.live; return; }
+    const d = new Date(p[0] * 1000), day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    el.textContent = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${d.toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}`;
+  }
+
+  _seek(i) {
+    const h = this._hist;
+    if (i == null || !h || i >= h.points.length - 1) {
+      this._replay = null;
+      this._cur = this._live;
+    } else {
+      this._replay = i;
+      const p = h.points[i], v = Object.fromEntries(h.series.map((k, j) => [k, p[j + 1]]));
+      // the sky of that moment when it was recorded (forecast, wind and sun times stay the current ones)
+      const w = 'icon' in v ? {...this._w, clouds: v.clouds, code: v.code, icon: v.icon} : this._w || {};
+      this._cur = toCur(v, w, p[0]);
+    }
+    const range = this._q('rpRange');
+    if (range) range.value = this._replay ?? range.max;
+    this._rpTime();
+    this._render();
+  }
+
+  _play() {
+    const h = this._hist;
+    if (!h || !h.points.length) return;
+    if (this._replay == null) this._replay = 0;  // from live: start at the beginning
+    this._playing = setInterval(() => {
+      const next = this._replay + 5;  // 5 min of history every 100 ms: two days in about a minute
+      if (next >= h.points.length - 1) { this._pause(); this._seek(null); } else this._seek(next);
+    }, 100);
+    this._q('rpPlay').textContent = '⏸';
+    this._q('rpPlay').setAttribute('aria-label', this._t.replay.pause);
+  }
+
+  _pause() {
+    clearInterval(this._playing);
+    this._playing = null;
+    const b = this._q('rpPlay');
+    if (b) { b.textContent = '▶'; b.setAttribute('aria-label', this._t.replay.play); }
+  }
+
+  // ===== history tab: today and yesterday, temperatures on one °C axis, on/off lanes below =====
+  _renderHistory() {
+    const el = this._q('history'), t = this._t?.history;
+    if (!el || !t) return;
+    const h = this._hist;
+    if (!h || !h.points.length) { el.innerHTML = `<p class="mut">${esc(h ? t.empty : this._t.error)}</p>`; return; }
+    const idx = Object.fromEntries(h.series.map((k, i) => [k, i + 1]));
+    const lines = HIST_LINES.filter((k) => idx[k]), shown = lines.filter((k) => !this._off.has(k));
+    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    const days = [[t.today, day0.getTime() / 1000], [t.yesterday, day0.getTime() / 1000 - 86400]];
+    let lo = Infinity, hi = -Infinity;
+    for (const p of h.points) for (const k of shown) { const v = p[idx[k]]; if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
+    if (lo > hi) { lo = 0; hi = 60; }
+    lo = Math.floor(lo / 10) * 10; hi = Math.max(lo + 10, Math.ceil(hi / 10) * 10);
+    this._histGeo = {days, idx, lo, hi};
+    const legend = lines.map((k, i) => `<button data-series="${k}" aria-pressed="${!this._off.has(k)}"><i style="background:var(--s${i + 1})"></i>${esc(t.series[k])}</button>`).join('');
+    el.innerHTML = `<div class="legend">${legend}</div>` + days.map(([label, start], d) => `<h2>${esc(label)}</h2>${this._histSvg(h, start, d, lines, idx, lo, hi)}`).join('');
+  }
+
+  _histSvg(h, start, d, lines, idx, lo, hi) {
+    const t = this._t.history, {L, R, W, PH, LH} = HIST, y = (v) => PH - (v - lo) / (hi - lo) * PH + 6, x = (ts) => L + (ts - start) / 86400 * (W - L - R);
+    const pts = h.points.filter((p) => p[0] >= start && p[0] < start + 86400);
+    let g = '';
+    for (let v = lo; v <= hi; v += 10) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v} °C</text>`;
+    for (let hr = 0; hr <= 24; hr += 3) g += `<text x="${x(start + hr * 3600)}" y="${PH + 38 + HIST_LANES.length * LH}" text-anchor="${hr === 24 ? 'end' : hr ? 'middle' : 'start'}">${String(hr).padStart(2, '0')}h</text>`;
+    lines.forEach((k, i) => {
+      if (this._off.has(k)) return;
+      let path = '', prev = null;
+      for (const p of pts) {
+        const v = p[idx[k]];
+        if (v == null) { prev = null; continue; }
+        path += `${prev == null || p[0] - prev > 180 ? 'M' : 'L'}${x(p[0]).toFixed(1)},${y(v).toFixed(1)}`;
+        prev = p[0];
+      }
+      if (path) g += `<path class="line" style="stroke:var(--s${i + 1})" d="${path}"/>`;
+    });
+    HIST_LANES.forEach(([k, color], j) => {
+      const top = PH + 20 + j * LH;
+      g += `<text x="${L - 8}" y="${top + 14}" text-anchor="end">${esc(t.series[k])}</text><rect x="${L}" y="${top}" width="${W - L - R}" height="${LH - 4}" rx="2" fill="var(--line)" opacity=".5"/>`;
+      let run = null;
+      const close = (end) => { g += `<rect x="${x(run)}" y="${top}" width="${Math.max(1.5, x(end) - x(run))}" height="${LH - 4}" rx="2" fill="${color}"/>`; run = null; };
+      for (const p of pts) {
+        const on = p[idx[k]] > 0;
+        if (on && run == null) run = p[0];
+        else if (!on && run != null) close(p[0]);
+      }
+      if (run != null) close(pts[pts.length - 1][0] + 60);
+    });
+    const H = PH + 46 + HIST_LANES.length * LH;
+    return `<svg viewBox="0 0 ${W} ${H}" data-day="${d}" role="img" aria-label="${esc(t.aria)}">${g}<line class="cross" hidden y1="0" y2="${H - 18}"/></svg>`;
+  }
+
+  _histHover(e) {
+    const svg = e.target.closest('svg[data-day]'), geo = this._histGeo;
+    if (!svg || !geo || !this._hist) return;
+    const {L, R, W} = HIST, box = svg.getBoundingClientRect(), px = (e.clientX - box.left) / box.width * W;
+    const [label, start] = geo.days[+svg.dataset.day];
+    const ts = start + (px - L) / (W - L - R) * 86400;
+    let best = null;
+    for (const p of this._hist.points) if (Math.abs(p[0] - ts) < 180 && (!best || Math.abs(p[0] - ts) < Math.abs(best[0] - ts))) best = p;
+    this.shadowRoot.querySelectorAll('.cross').forEach((l) => l.setAttribute('hidden', ''));
+    if (px < L || px > W - R || !best) { this._hideTip(); return; }
+    const cross = svg.querySelector('.cross');
+    cross.removeAttribute('hidden'); cross.setAttribute('x1', px); cross.setAttribute('x2', px);
+    const t = this._t.history, tp = this._t.tip, val = (k) => best[geo.idx[k]];
+    const rows = [...HIST_LINES.filter((k) => geo.idx[k] && !this._off.has(k)).map((k) => [t.series[k], deg(val(k))]),
+      ...HIST_LANES.map(([k]) => [t.series[k], val(k) > 0 ? tp.running : tp.stopped])];
+    const tip = this._q('tip');
+    tip.innerHTML = `<b>${esc(label)} ${new Date(best[0] * 1000).toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}</b>` +
+      rows.map(([k, v]) => `<div><span>${esc(k)}</span>${esc(v)}</div>`).join('');
+    tip.hidden = false;
+    this._placeTip(e.clientX, e.clientY);
   }
 
   // ===== tooltips: the values of an element and a few figures computed from them =====
@@ -366,7 +690,8 @@ class OkofenDashboard extends HTMLElement {
       boiler: [t.boiler, [tp.burner, burner], [tp.temperature, s.boilT == null ? tp.notRead : deg(s.boilT)], [tp.vsTankTop, diff(s.boilT, s.top)], [tp.boilerPump, pump(s.bPump)]],
       pBoil: [tp.boilerPump, [tp.state, pump(s.bPump)], [tp.burner, burner]],
       heat: [t.heating, [tp.flow, s.heat ? deg(s.flow) : t.off], [tp.flowSet, set(s.flowSet)], [tp.flowDiff, s.flowSet > 8 ? diff(s.flow, s.flowSet) : '–'],
-        [tp.roomTemp, deg(s.room)], [tp.roomSet, set(s.roomSet)], [t.outdoor, deg(s.out)]],
+        [tp.roomTemp, deg(s.room)], [tp.roomSet, set(s.roomSet)], [t.outdoor, deg(s.out)],
+        this._boost && this._boost.state !== 'inactive' && [tp.boost, tp.boostStates[this._boost.state] || this._boost.state]],
       pHeat: [tp.heatPump, [tp.state, state(s.heat)], [tp.flow, deg(s.flow)]],
       mixer: [tp.valve, [tp.status, s.mixer == null ? tp.notRead : t.mixer[s.mixer] || '–'], [tp.flowAndTop, `${deg(s.flow)} / ${deg(s.top)}`]],
       ecs: [t.hotWater, [tp.ecsProbe, deg(s.ecsP)], [tp.setpoint, set(s.ecsSet)], [tp.draw, state(draw)]],

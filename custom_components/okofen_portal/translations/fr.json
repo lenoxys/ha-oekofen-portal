@@ -73,6 +73,15 @@
           "today": "Aujourd'hui",
           "tomorrow": "Demain"
         }
+      },
+      "solar_boost_state": {
+        "name": "État de la surchauffe solaire",
+        "state": {
+          "inactive": "Arrêt",
+          "waiting": "En attente",
+          "active": "En cours",
+          "restoring": "Restauration"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "Automatique"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "Surchauffe solaire"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Surchauffe solaire",
+        "description": "Les jours de soleil, relève la consigne de confort pour chauffer la maison avec le surplus du ballon, sans la chaudière. La surchauffe s'arrête dès que le brûleur démarre, que le ballon ou l'eau chaude refroidissent trop, ou que la consigne est changée à la main.",
+        "data": {
+          "target": "Consigne de confort pendant la surchauffe",
+          "tank_threshold": "Haut du ballon pour démarrer (vide : calculé)",
+          "hot_water_reserve": "Réserve d'eau chaude conservée",
+          "after_sunrise": "Début après le lever du soleil",
+          "before_sunset": "Fin avant le coucher du soleil",
+          "climates": "Têtes de radiateur à ouvrir"
         }
       }
     }

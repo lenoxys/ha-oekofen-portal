@@ -17,6 +17,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
 from .api import OekofenPortalClient
+from .boost import SolarBoost
+from .history import History
 from .local import OekofenLocalClient
 from .catalog import group_of, kind, load_catalog
 from .const import (
@@ -35,6 +37,7 @@ from .entity import main_device_info
 from .names import Texts
 from .presence import FLAG_KEYS, hidden_groups
 from .settings import SETTING_KEYS
+from .solar_boost import KEYS as BOOST_KEYS
 from .weather_parse import WEATHER_KEYS
 
 PLATFORMS = [
@@ -45,6 +48,7 @@ PLATFORMS = [
     Platform.SCENE,
     Platform.SELECT,
     Platform.SENSOR,
+    Platform.SWITCH,
     Platform.WATER_HEATER,
     Platform.WEATHER,
 ]
@@ -62,6 +66,8 @@ class OekofenData:
     docs: Docs
     names: dict[str, str]
     hidden: set[str]
+    boost: SolarBoost | None = None
+    history: History | None = None
 
     def reading(self, key: str):
         """A variable from whichever coordinator reads it."""
@@ -115,7 +121,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         hass,
         entry,
         client,
-        [n for n in [*catalog, *SETTING_KEYS, *WEATHER_KEYS] if n not in FAST_VARIABLES],
+        [n for n in dict.fromkeys([*catalog, *SETTING_KEYS, *WEATHER_KEYS, *BOOST_KEYS.values()]) if n not in FAST_VARIABLES],
         SLOW_INTERVAL,
         "slow",
     )
@@ -144,10 +150,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         ids = {identifier for domain, identifier in device.identifiers if domain == DOMAIN}
         if any(f"{entry.entry_id}_{group}" in ids for group in hidden):
             registry.async_remove_device(device.id)
+    # before the platforms: a boost left by an earlier run is restored before the switch can start one
+    entry.runtime_data.boost = SolarBoost(hass, entry)
+    await entry.runtime_data.boost.async_start()
+    entry.runtime_data.history = History(hass, entry)
+    await entry.runtime_data.history.async_start()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> bool:
-    """Unload a config entry."""
+    """Unload a config entry, putting back what the solar boost changed."""
+    await entry.runtime_data.boost.async_stop()
+    await entry.runtime_data.history.async_stop()
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

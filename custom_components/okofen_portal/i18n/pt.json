@@ -422,7 +422,89 @@
       "ecsPump": "Bomba kit AQS",
       "poolPump": "Bomba piscina",
       "poolDiff": "Base acum. − piscina",
-      "tankToPool": "Base acum. → piscina"
+      "tankToPool": "Base acum. → piscina",
+      "boost": "Sobreaquec. solar",
+      "boostStates": {
+        "waiting": "em espera",
+        "active": "ativo",
+        "restoring": "a restaurar"
+      },
+      "sunriseNow": "nascer do sol",
+      "sunsetNow": "pôr do sol",
+      "skyStorm": "trovoada",
+      "skySnow": "neve",
+      "skyFog": "nevoeiro"
+    },
+    "solar": {
+      "waitingFor": "Bloqueado por:",
+      "on": "ligado",
+      "off": "parado",
+      "turnOn": "Ligar",
+      "turnOff": "Desligar",
+      "intro": "Em dias de sol, a temperatura de conforto é subida para que o excedente solar do depósito aqueça a casa, sem a caldeira; é reposta assim que uma condição falha.",
+      "startIf": "Condições para arrancar",
+      "keepIf": "Condições para continuar",
+      "current": "Em curso",
+      "since": "desde",
+      "comfort": "conforto",
+      "heads": "cabeças termostáticas",
+      "settings": "Definições",
+      "settingsHint": "Alterar em Definições > Dispositivos e serviços > ÖkoFEN Portal > Configurar.",
+      "tabs": {
+        "scheme": "Instalação",
+        "solar": "Otimização solar",
+        "history": "Histórico"
+      },
+      "states": {
+        "inactive": "Desligado",
+        "waiting": "Em espera",
+        "active": "Ativo",
+        "restoring": "A restaurar"
+      },
+      "reasons": {
+        "running": "Condições reunidas",
+        "disabled": "Desligado",
+        "dwell": "Espera de 10 min entre mudanças",
+        "missing_data": "Valores em falta"
+      },
+      "checks": {
+        "burner": "Queimador parado",
+        "manual": "Temperatura não mudada à mão",
+        "heating_off": "Aquecimento ligado",
+        "outside_window": "Janela solar",
+        "cloudy": "Nuvens previstas",
+        "mild_outdoor": "Exterior abaixo do limite",
+        "tank_cold": "Topo do depósito",
+        "hot_water_low": "Sonda AQS",
+        "room_warm": "Ambiente"
+      }
+    },
+    "history": {
+      "today": "Hoje",
+      "yesterday": "Ontem",
+      "empty": "Ainda sem dados: o histórico enche-se minuto a minuto (48 h guardadas).",
+      "aria": "Temperaturas e bombas ao longo do dia",
+      "series": {
+        "tank_top": "Topo do depósito",
+        "tank_mid": "Meio do depósito",
+        "tank_bottom": "Fundo do depósito",
+        "coll": "Coletores",
+        "flow": "Ida",
+        "room": "Ambiente",
+        "outdoor": "Exterior",
+        "burner": "Queimador",
+        "boiler_pump": "Bomba caldeira",
+        "solar_pump": "Bomba solar",
+        "heating_pump": "Bomba aquecimento",
+        "boost": "Sobreaquec. solar"
+      }
+    },
+    "replay": {
+      "play": "Reproduzir",
+      "pause": "Pausa",
+      "now": "Agora",
+      "live": "em direto",
+      "position": "Posição nos dois últimos dias"
     }
   }
 }

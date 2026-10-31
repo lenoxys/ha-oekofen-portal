@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Opens the sidebar panel outside Home Assistant, with sample values.
-     Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr (add &night=1 for the moon, &dark for the dark theme) -->
+     Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr (add &night=1 for the moon, &dark for the dark theme, &boost=active for a running solar boost, &code=601 for an OpenWeatherMap weather code: 211 storm, 501 rain, 601 snow, 741 fog) -->
 <meta charset="utf-8">
 <body style="margin:0">
 <script src="../custom_components/okofen_portal/frontend/okofen-dashboard.js"></script>
@@ -9,11 +9,37 @@
   const sample = {coll: 68.4, tank_top: 65.2, tank_mid: 63.6, tank_bottom: 59.9, ecs_probe: 67, solar_pump: 73, boiler_pump: 0,
     heating_pump: 1, flow: 44.7, room: 22.1, outdoor: 11.8, pool: 15.6, pool_pump: 0, burner: 0, boiler_temp: 55.6, mixer: 2,
     tank_set: 58, room_set: 20, flow_set: 45, ecs_set: 50, ecs_pump: 0};
-  const weather = {icon: params.get('night') ? '01n' : '01d', code: 800, clouds: 5, wind: '9 km/h', sunrise: '07:52', sunset: '18:21', forecast_temp: 16, forecast_clouds: 10};
+  const weather = {icon: params.get('night') ? '01n' : '01d', code: +(params.get('code') || 800), clouds: +(params.get('clouds') || 5), wind: '9 km/h', sunrise: '07:52', sunset: '18:21', forecast_temp: 16, forecast_clouds: 10};
   const lang = params.get('lang') || 'en';
   const strings = (await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json()).panel;
   const panel = document.createElement('okofen-dashboard');
+  panel._tab = params.get('tab') || 'scheme';  // &tab=solar or &tab=history
   document.body.append(panel);
-  panel.hass = {language: lang, themes: {darkMode: params.has('dark')},
-    callWS: async () => ({language: lang, strings, values: sample, weather})};
+  // solar boost: waiting for the buffer (add &boost=active for a running one)
+  const active = params.get('boost') === 'active';
+  const boost = {enabled: true, state: active ? 'active' : 'waiting', reason: active ? 'running' : 'tank_cold', target: 24, switch: 'switch.okofen_solar_boost',
+    heads: ['climate.salon_salon', 'climate.radiateur_2'],
+    session: active ? {comfort: 20, target: 24, since: Date.now() / 1000 - 3600, heads: {'climate.salon_salon': 20, 'climate.radiateur_2': 20}} : null,
+    checks: [
+      {id: 'burner', ok: true, value: 0}, ...(active ? [{id: 'manual', ok: true, value: 24, limit: 24}] : []),
+      {id: 'heating_off', ok: true}, {id: 'outside_window', ok: true, value: 13 * 60 + 5, limit: [585, 1003]},
+      {id: 'cloudy', ok: true, value: 10, limit: 55}, {id: 'mild_outdoor', ok: true, value: 11.8, limit: 20},
+      {id: 'tank_cold', ok: active, value: 65.2, limit: active ? 59 : 67.5}, {id: 'hot_water_low', ok: true, value: 67, limit: active ? 53 : 55},
+      {id: 'room_warm', ok: true, value: 22.1, limit: active ? 24.5 : 23}]};
+  // history: scripts/preview-history.json if present (python3 scripts/preview_history.py), otherwise made up
+  const fakeHistory = () => {
+    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    const points = [];
+    for (let ts = day0 / 1000 - 86400; ts < Date.now() / 1000; ts += 60) {
+      const h = (ts / 3600 + 1) % 24, sun = Math.max(0, Math.sin((h - 8) / 10 * Math.PI));
+      points.push([ts, 55 + 10 * sun, 50 + 9 * sun, 35 + 20 * sun, 10 + 60 * sun, h > 6 && h < 22 ? 40 : 25, 20.5 + sun, 7 + 8 * sun,
+        h > 6.2 && h < 6.6 ? 1 : 0, sun > 0.3 ? 60 : 0, 1, h > 6.2 && h < 6.7 ? 100 : 0, sun > 0.8 ? 1 : 0]);
+    }
+    return {series: ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor', 'burner', 'solar_pump', 'heating_pump', 'boiler_pump', 'boost'], points};
+  };
+  const history = await fetch('preview-history.json').then((r) => (r.ok ? r.json() : fakeHistory())).catch(fakeHistory);
+  if (params.has('seek')) setTimeout(() => panel._seek(+params.get('seek')), 1500);  // &seek=<minute index> to open on a past moment
+  panel.hass = {language: lang, themes: {darkMode: params.has('dark')}, states: {'climate.salon_salon': {attributes: {friendly_name: 'Salon'}}},
+    callService: async (domain, service) => { boost.enabled = service === 'turn_on'; boost.state = boost.enabled ? 'waiting' : 'inactive'; boost.reason = boost.enabled ? 'tank_cold' : 'disabled'; },
+    callWS: async (msg) => (msg.type === 'okofen_portal/history' ? history : {language: lang, strings, values: sample, weather, boost})};
 </script>

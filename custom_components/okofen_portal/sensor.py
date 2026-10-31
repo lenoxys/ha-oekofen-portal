@@ -17,14 +17,16 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import OekofenConfigEntry
 from .api import Reading
+from .boost import STATES as BOOST_STATES
 from .catalog import kind
 from .const import CLOCK_KEYS, FORECAST_DAY_KEY, FORECAST_DAY_STATES, MIXER_KEY, MIXER_STATES
 from .coordinator import OekofenCoordinator
-from .entity import OekofenEntity, describe, visible
+from .entity import OekofenEntity, describe, main_device_info, visible
 from .settings import SETTING_KEYS
 
 # portal unit text -> (device class, Home Assistant unit); anything else keeps its own unit
@@ -49,7 +51,7 @@ async def async_setup_entry(
 ) -> None:
     """Create one sensor per numeric or multi-state variable the controller returned."""
     data = entry.runtime_data
-    entities: list[SensorEntity] = []
+    entities: list[SensorEntity] = [SolarBoostSensor(entry)]
     for coordinator in (data.fast, data.slow):
         for key, reading in coordinator.data.items():
             if not visible(data, key) or kind(reading) == "text" or key in SETTING_KEYS:
@@ -148,3 +150,29 @@ class OekofenClockSensor(_TextSensor):
             return None
         hhmm = int(reading.value)
         return f"{hhmm // 100:02d}:{hhmm % 100:02d}"
+
+
+class SolarBoostSensor(SensorEntity):
+    """What the solar boost is doing, and why (``reason`` attribute): to follow it without the logs."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "solar_boost_state"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = list(BOOST_STATES)
+    _attr_should_poll = False
+
+    def __init__(self, entry: OekofenConfigEntry) -> None:
+        self._boost = entry.runtime_data.boost
+        self._attr_unique_id = f"{entry.entry_id}_solar_boost_state"
+        self._attr_device_info = main_device_info(entry.entry_id, entry.runtime_data.texts)
+
+    @property
+    def native_value(self) -> str:
+        return self._boost.state
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str]:
+        return {"reason": self._boost.reason}
+
+    async def async_added_to_hass(self) -> None:
+        self.async_on_remove(async_dispatcher_connect(self.hass, self._boost.signal, self.async_write_ha_state))

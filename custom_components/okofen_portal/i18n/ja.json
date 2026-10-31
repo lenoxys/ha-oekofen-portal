@@ -422,7 +422,89 @@
       "ecsPump": "給湯キットポンプ",
       "poolPump": "プールポンプ",
       "poolDiff": "タンク下部 − プール差",
-      "tankToPool": "タンク下部 → プール"
+      "tankToPool": "タンク下部 → プール",
+      "boost": "太陽熱ブースト",
+      "boostStates": {
+        "waiting": "待機中",
+        "active": "運転中",
+        "restoring": "復元中"
+      },
+      "sunriseNow": "日の出",
+      "sunsetNow": "日の入り",
+      "skyStorm": "雷雨",
+      "skySnow": "雪",
+      "skyFog": "霧"
+    },
+    "solar": {
+      "waitingFor": "阻害要因：",
+      "on": "オン",
+      "off": "オフ",
+      "turnOn": "オンにする",
+      "turnOff": "オフにする",
+      "intro": "晴れた日は快適温度の設定を上げ、バッファタンクの太陽熱の余剰でボイラーを使わずに家を暖めます。条件が一つでも外れるとすぐに元に戻します。",
+      "startIf": "開始条件",
+      "keepIf": "継続条件",
+      "current": "実行中のブースト",
+      "since": "開始",
+      "comfort": "快適温度",
+      "heads": "ラジエーターバルブ",
+      "settings": "設定",
+      "settingsHint": "設定 > デバイスとサービス > ÖkoFEN Portal > 設定 で変更できます。",
+      "tabs": {
+        "scheme": "設備",
+        "solar": "太陽熱最適化",
+        "history": "履歴"
+      },
+      "states": {
+        "inactive": "オフ",
+        "waiting": "待機中",
+        "active": "運転中",
+        "restoring": "復元中"
+      },
+      "reasons": {
+        "running": "条件を満たしています",
+        "disabled": "オフ",
+        "dwell": "変更間の10分待機",
+        "missing_data": "値がありません"
+      },
+      "checks": {
+        "burner": "バーナー停止",
+        "manual": "設定の手動変更なし",
+        "heating_off": "暖房オン",
+        "outside_window": "日照時間帯",
+        "cloudy": "予報の雲量",
+        "mild_outdoor": "外気温が暖房限界未満",
+        "tank_cold": "タンク上部",
+        "hot_water_low": "給湯センサー",
+        "room_warm": "室温"
+      }
+    },
+    "history": {
+      "today": "今日",
+      "yesterday": "昨日",
+      "empty": "まだ記録がありません。履歴は1分ごとに記録されます（48時間保存）。",
+      "aria": "1日の温度とポンプ",
+      "series": {
+        "tank_top": "タンク上部",
+        "tank_mid": "タンク中部",
+        "tank_bottom": "タンク下部",
+        "coll": "集熱器",
+        "flow": "往き温度",
+        "room": "室温",
+        "outdoor": "外気温",
+        "burner": "バーナー",
+        "boiler_pump": "ボイラーポンプ",
+        "solar_pump": "ソーラーポンプ",
+        "heating_pump": "暖房ポンプ",
+        "boost": "太陽熱ブースト"
+      }
+    },
+    "replay": {
+      "play": "再生",
+      "pause": "一時停止",
+      "now": "現在",
+      "live": "ライブ",
+      "position": "過去2日間の位置"
     }
   }
 }

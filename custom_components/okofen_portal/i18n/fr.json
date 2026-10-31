@@ -422,7 +422,89 @@
       "ecsPump": "Pompe du kit eau chaude",
       "poolPump": "Pompe piscine",
       "poolDiff": "Écart bas du ballon − piscine",
-      "tankToPool": "Bas du ballon → piscine"
+      "tankToPool": "Bas du ballon → piscine",
+      "boost": "Surchauffe solaire",
+      "boostStates": {
+        "waiting": "en attente",
+        "active": "en cours",
+        "restoring": "restauration"
+      },
+      "sunriseNow": "lever du soleil",
+      "sunsetNow": "coucher du soleil",
+      "skyStorm": "orage",
+      "skySnow": "neige",
+      "skyFog": "brouillard"
+    },
+    "solar": {
+      "waitingFor": "Bloqué par :",
+      "on": "marche",
+      "off": "arrêt",
+      "turnOn": "Activer",
+      "turnOff": "Désactiver",
+      "intro": "Les jours de soleil, la consigne de confort est relevée pour que le surplus solaire du ballon chauffe la maison, sans la chaudière ; elle est remise dès qu'une condition n'est plus remplie.",
+      "startIf": "Conditions pour démarrer",
+      "keepIf": "Conditions pour continuer",
+      "current": "Surchauffe en cours",
+      "since": "depuis",
+      "comfort": "confort",
+      "heads": "têtes de radiateur",
+      "settings": "Réglages",
+      "settingsHint": "À modifier dans Paramètres > Appareils et services > ÖkoFEN Portal > Configurer.",
+      "tabs": {
+        "scheme": "Installation",
+        "solar": "Optimisation solaire",
+        "history": "Historique"
+      },
+      "states": {
+        "inactive": "Arrêt",
+        "waiting": "En attente",
+        "active": "En cours",
+        "restoring": "Restauration"
+      },
+      "reasons": {
+        "running": "Conditions réunies",
+        "disabled": "Désactivée",
+        "dwell": "Attente de 10 min entre deux changements",
+        "missing_data": "Valeurs manquantes"
+      },
+      "checks": {
+        "burner": "Brûleur arrêté",
+        "manual": "Consigne non modifiée à la main",
+        "heating_off": "Chauffage en marche",
+        "outside_window": "Fenêtre solaire",
+        "cloudy": "Nuages prévus",
+        "mild_outdoor": "Extérieur sous la limite de chauffe",
+        "tank_cold": "Haut du ballon",
+        "hot_water_low": "Sonde ECS",
+        "room_warm": "Ambiance"
+      }
+    },
+    "history": {
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "empty": "Rien d'enregistré pour l'instant : l'historique se remplit minute par minute (48 h conservées).",
+      "aria": "Températures et pompes sur la journée",
+      "series": {
+        "tank_top": "Haut du ballon",
+        "tank_mid": "Milieu du ballon",
+        "tank_bottom": "Bas du ballon",
+        "coll": "Capteurs",
+        "flow": "Départ",
+        "room": "Ambiance",
+        "outdoor": "Extérieur",
+        "burner": "Brûleur",
+        "boiler_pump": "Pompe chaudière",
+        "solar_pump": "Pompe solaire",
+        "heating_pump": "Pompe chauffage",
+        "boost": "Surchauffe solaire"
+      }
+    },
+    "replay": {
+      "play": "Lecture",
+      "pause": "Pause",
+      "now": "Maintenant",
+      "live": "en direct",
+      "position": "Position sur les deux derniers jours"
     }
   }
 }

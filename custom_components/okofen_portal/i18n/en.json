@@ -422,7 +422,89 @@
       "ecsPump": "Hot water kit pump",
       "poolPump": "Pool pump",
       "poolDiff": "Tank bottom − pool difference",
-      "tankToPool": "Tank bottom → pool"
+      "tankToPool": "Tank bottom → pool",
+      "boost": "Solar boost",
+      "boostStates": {
+        "waiting": "waiting",
+        "active": "boosting",
+        "restoring": "restoring"
+      },
+      "sunriseNow": "sunrise",
+      "sunsetNow": "sunset",
+      "skyStorm": "thunderstorm",
+      "skySnow": "snow",
+      "skyFog": "fog"
+    },
+    "solar": {
+      "waitingFor": "Blocked by:",
+      "on": "on",
+      "off": "off",
+      "turnOn": "Turn on",
+      "turnOff": "Turn off",
+      "intro": "On sunny days the comfort setpoint is raised so the buffer's solar surplus heats the house, without the boiler; it is put back as soon as one condition fails.",
+      "startIf": "Conditions to start",
+      "keepIf": "Conditions to keep going",
+      "current": "Current boost",
+      "since": "since",
+      "comfort": "comfort",
+      "heads": "radiator heads",
+      "settings": "Settings",
+      "settingsHint": "Change them in Settings > Devices & services > ÖkoFEN Portal > Configure.",
+      "tabs": {
+        "scheme": "Installation",
+        "solar": "Solar optimisation",
+        "history": "History"
+      },
+      "states": {
+        "inactive": "Off",
+        "waiting": "Waiting",
+        "active": "Boosting",
+        "restoring": "Restoring"
+      },
+      "reasons": {
+        "running": "Conditions met",
+        "disabled": "Switched off",
+        "dwell": "Waiting 10 min between changes",
+        "missing_data": "Values missing"
+      },
+      "checks": {
+        "burner": "Burner off",
+        "manual": "Setpoint not changed by hand",
+        "heating_off": "Heating on",
+        "outside_window": "Sun window",
+        "cloudy": "Forecast clouds",
+        "mild_outdoor": "Outdoor below heating limit",
+        "tank_cold": "Buffer top",
+        "hot_water_low": "Hot water probe",
+        "room_warm": "Room"
+      }
+    },
+    "history": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "empty": "Nothing recorded yet: the history fills itself minute by minute (48 h kept).",
+      "aria": "Temperatures and pumps over the day",
+      "series": {
+        "tank_top": "Tank top",
+        "tank_mid": "Tank middle",
+        "tank_bottom": "Tank bottom",
+        "coll": "Collectors",
+        "flow": "Flow",
+        "room": "Room",
+        "outdoor": "Outdoor",
+        "burner": "Burner",
+        "boiler_pump": "Boiler pump",
+        "solar_pump": "Solar pump",
+        "heating_pump": "Heating pump",
+        "boost": "Solar boost"
+      }
+    },
+    "replay": {
+      "play": "Play",
+      "pause": "Pause",
+      "now": "Now",
+      "live": "live",
+      "position": "Position in the last two days"
     }
   }
 }

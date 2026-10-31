@@ -73,6 +73,15 @@
           "today": "Today",
           "tomorrow": "Tomorrow"
         }
+      },
+      "solar_boost_state": {
+        "name": "Solar boost state",
+        "state": {
+          "inactive": "Off",
+          "waiting": "Waiting",
+          "active": "Boosting",
+          "restoring": "Restoring"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "Automatic"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "Solar boost"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Solar boost",
+        "description": "On sunny days, raise the comfort setpoint to heat the house with the buffer's surplus, without the boiler. The boost stops as soon as the burner starts, the buffer or the hot water gets too cold, or the setpoint is changed by hand.",
+        "data": {
+          "target": "Comfort setpoint while boosting",
+          "tank_threshold": "Buffer top to start (empty: computed)",
+          "hot_water_reserve": "Hot water reserve kept",
+          "after_sunrise": "Start after sunrise",
+          "before_sunset": "Stop before sunset",
+          "climates": "Radiator heads to open"
         }
       }
     }

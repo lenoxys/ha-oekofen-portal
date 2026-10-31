@@ -8,39 +8,17 @@ import voluptuous as vol
 
 from homeassistant.components import panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.loader import async_get_integration
 
 from .const import DASHBOARD, DOMAIN
+from .history import SERIES
 from .names import Texts
-from .weather_parse import WEATHER_KEYS
+from .weather_parse import panel_weather
 
 PANEL_PATH = "okofen"
 STATIC_URL = f"/{DOMAIN}_static/okofen-dashboard.js"
-
-
-def _weather(readings: dict) -> dict:
-    """Current sky from the controller's forecast: "ven., 30 oct. 20:56|10|0|7 km/h|01n|800|C|07:45|17:53"."""
-    first = readings.get(WEATHER_KEYS[0])
-    parts = str(first.value).split("|") if first is not None else []
-
-    def part(i: int) -> str | None:
-        return parts[i] if len(parts) > i else None
-
-    def value(key: str):
-        return readings[key].value if key in readings else None
-
-    code = part(5)
-    return {
-        "icon": part(4),  # OpenWeatherMap icon: 01d day, 01n night
-        "code": int(code) if code and code.isdigit() else None,
-        "clouds": value("LOCAL.L_weather_clouds"),
-        "wind": part(3),
-        "sunrise": part(7),
-        "sunset": part(8),
-        "forecast_temp": value("LOCAL.L_weather_forecast_temp"),
-        "forecast_clouds": value("LOCAL.L_weather_forecast_clouds"),
-    }
 
 
 async def _panel_texts(hass: HomeAssistant, language: str | None, default: Texts) -> Texts:
@@ -74,14 +52,31 @@ async def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConn
             "values": {
                 name: readings[key].value for name, key in DASHBOARD.items() if key in readings
             },
-            "weather": _weather(readings),
+            "weather": panel_weather(readings),
+            "boost": {
+                **data.boost.panel(),
+                "switch": er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entries[0].entry_id}_solar_boost"),
+            },
         },
     )
 
 
+@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/history"})
+@callback
+def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
+    """The last 48 h of the panel's values, for its history tab."""
+    entries = hass.config_entries.async_loaded_entries(DOMAIN)
+    if not entries:
+        connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
+        return
+    history = entries[0].runtime_data.history
+    connection.send_result(msg["id"], {"series": list(SERIES), "points": history.points})
+
+
 async def async_setup_dashboard(hass: HomeAssistant) -> None:
-    """Register the websocket command and the sidebar panel (once per Home Assistant)."""
+    """Register the websocket commands and the sidebar panel (once per Home Assistant)."""
     websocket_api.async_register_command(hass, ws_dashboard)
+    websocket_api.async_register_command(hass, ws_history)
     script = Path(__file__).parent / "frontend" / "okofen-dashboard.js"
     await hass.http.async_register_static_paths([StaticPathConfig(STATIC_URL, str(script), False)])
     integration = await async_get_integration(hass, DOMAIN)

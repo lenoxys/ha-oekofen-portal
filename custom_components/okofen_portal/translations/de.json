@@ -73,6 +73,15 @@
           "today": "Heute",
           "tomorrow": "Morgen"
         }
+      },
+      "solar_boost_state": {
+        "name": "Status solare Überheizung",
+        "state": {
+          "inactive": "Aus",
+          "waiting": "Wartet",
+          "active": "Aktiv",
+          "restoring": "Wird zurückgesetzt"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "Automatik"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "Solare Überheizung"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Solare Überheizung",
+        "description": "An sonnigen Tagen wird der Komfort-Sollwert angehoben, um das Haus ohne Kessel mit dem Überschuss des Pufferspeichers zu heizen. Die Überheizung endet, sobald der Brenner startet, Puffer oder Warmwasser zu stark abkühlen oder der Sollwert von Hand geändert wird.",
+        "data": {
+          "target": "Komfort-Sollwert während der Überheizung",
+          "tank_threshold": "Puffer oben für den Start (leer: berechnet)",
+          "hot_water_reserve": "Warmwasserreserve",
+          "after_sunrise": "Beginn nach Sonnenaufgang",
+          "before_sunset": "Ende vor Sonnenuntergang",
+          "climates": "Zu öffnende Heizkörperthermostate"
         }
       }
     }

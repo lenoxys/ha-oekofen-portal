@@ -73,6 +73,15 @@
           "today": "今日",
           "tomorrow": "明日"
         }
+      },
+      "solar_boost_state": {
+        "name": "太陽熱ブーストの状態",
+        "state": {
+          "inactive": "オフ",
+          "waiting": "待機中",
+          "active": "運転中",
+          "restoring": "復元中"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "自動"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "太陽熱ブースト"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "太陽熱ブースト",
+        "description": "晴れた日に快適温度の設定を上げ、ボイラーを使わずにバッファタンクの余剰熱で家を暖めます。バーナーが起動したとき、タンクや給湯の温度が下がりすぎたとき、または設定が手動で変更されたときに停止します。",
+        "data": {
+          "target": "ブースト中の快適温度設定",
+          "tank_threshold": "開始するタンク上部温度（空欄：自動計算）",
+          "hot_water_reserve": "確保する給湯温度",
+          "after_sunrise": "日の出後の開始",
+          "before_sunset": "日の入り前の終了",
+          "climates": "開くラジエーターバルブ"
         }
       }
     }

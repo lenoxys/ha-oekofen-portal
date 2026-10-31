@@ -84,3 +84,27 @@ def parse_forecast(items: list[str], now: datetime, tz: tzinfo) -> list[dict]:
         except ValueError:
             continue
     return out
+
+
+def panel_weather(readings: dict) -> dict:
+    """Current sky from the controller's forecast: "ven., 30 oct. 20:56|10|0|7 km/h|01n|800|C|07:45|17:53"."""
+    first = readings.get(WEATHER_KEYS[0])
+    parts = str(first.value).split("|") if first is not None else []
+
+    def part(i: int) -> str | None:
+        return parts[i] if len(parts) > i else None
+
+    def value(key: str):
+        return readings[key].value if key in readings else None
+
+    code = part(5)
+    return {
+        "icon": part(4),  # OpenWeatherMap icon: 01d day, 01n night
+        "code": int(code) if code and code.isdigit() else None,
+        "clouds": value("LOCAL.L_weather_clouds"),
+        "wind": part(3),
+        "sunrise": part(7),
+        "sunset": part(8),
+        "forecast_temp": value("LOCAL.L_weather_forecast_temp"),
+        "forecast_clouds": value("LOCAL.L_weather_forecast_clouds"),
+    }

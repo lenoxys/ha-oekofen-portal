@@ -73,6 +73,15 @@
           "today": "今天",
           "tomorrow": "明天"
         }
+      },
+      "solar_boost_state": {
+        "name": "太阳能增温状态",
+        "state": {
+          "inactive": "关闭",
+          "waiting": "等待",
+          "active": "运行中",
+          "restoring": "恢复中"
+        }
       }
     },
     "number": {
@@ -169,6 +178,27 @@
       "hot_water": {
         "state": {
           "auto": "自动"
+        }
+      }
+    },
+    "switch": {
+      "solar_boost": {
+        "name": "太阳能增温"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "太阳能增温",
+        "description": "晴天时提高舒适温度设定，用蓄热水箱的富余热量为房屋供暖，无需锅炉。燃烧器启动、水箱或生活热水温度过低，或设定被手动更改时即停止。",
+        "data": {
+          "target": "增温期间的舒适温度设定",
+          "tank_threshold": "启动所需的水箱顶部温度（留空：自动计算）",
+          "hot_water_reserve": "保留的生活热水温度",
+          "after_sunrise": "日出后开始",
+          "before_sunset": "日落前结束",
+          "climates": "要打开的散热器温控阀"
         }
       }
     }
