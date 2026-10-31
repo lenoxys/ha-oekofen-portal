@@ -6,7 +6,7 @@ from pathlib import Path
 
 import voluptuous as vol
 
-from homeassistant.components import panel_custom, websocket_api
+from homeassistant.components import frontend, panel_custom, websocket_api
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -19,6 +19,7 @@ from .weather_parse import panel_weather
 
 PANEL_PATH = "okofen"
 STATIC_URL = f"/{DOMAIN}_static/okofen-dashboard.js"
+ICONS_URL = f"/{DOMAIN}_static/okofen-icons.js"
 
 
 async def _panel_texts(hass: HomeAssistant, language: str | None, default: Texts) -> Texts:
@@ -76,16 +77,21 @@ async def async_setup_dashboard(hass: HomeAssistant) -> None:
     """Register the websocket commands and the sidebar panel (once per Home Assistant)."""
     websocket_api.async_register_command(hass, ws_dashboard)
     websocket_api.async_register_command(hass, ws_history)
-    script = Path(__file__).parent / "frontend" / "okofen-dashboard.js"
-    await hass.http.async_register_static_paths([StaticPathConfig(STATIC_URL, str(script), False)])
+    folder = Path(__file__).parent / "frontend"
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(STATIC_URL, str(folder / "okofen-dashboard.js"), False),
+        StaticPathConfig(ICONS_URL, str(folder / "okofen-icons.js"), False),
+    ])
     integration = await async_get_integration(hass, DOMAIN)
+    # loaded on every page, so the sidebar can draw the "okofen:heat" icon before the panel is opened
+    frontend.add_extra_js_url(hass, f"{ICONS_URL}?v={integration.version}")
     await panel_custom.async_register_panel(
         hass,
         webcomponent_name="okofen-dashboard",
         frontend_url_path=PANEL_PATH,
         module_url=f"{STATIC_URL}?v={integration.version}",
         sidebar_title="ÖkoFEN",
-        sidebar_icon="mdi:water-boiler",
+        sidebar_icon="okofen:heat",
         require_admin=False,
         config={},
     )

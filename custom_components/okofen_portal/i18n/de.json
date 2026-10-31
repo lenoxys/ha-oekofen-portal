@@ -483,6 +483,7 @@
       "today": "Heute",
       "yesterday": "Gestern",
       "empty": "Nichts im Verlauf von Home Assistant für die letzten 48 h: das Panel liest den Recorder für seine Entitäten (Brenner, Speicher, Kollektor, Vorlauf, Raum…). Prüfe, ob sie aktiviert sind und aufgezeichnet werden.",
+      "noData": "Hier hat Home Assistant nichts aufgezeichnet",
       "aria": "Temperaturen und Pumpen im Tagesverlauf",
       "series": {
         "tank_top": "Puffer oben",

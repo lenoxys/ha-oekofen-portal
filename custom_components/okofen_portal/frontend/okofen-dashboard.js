@@ -299,6 +299,25 @@ const toCur = (v, w, ts) => ({
 const HIST_LINES = ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor'];
 const HIST_LANES = [['burner', 'var(--red)'], ['boiler_pump', 'var(--hot)'], ['solar_pump', 'var(--solar)'], ['heating_pump', 'var(--warm)'], ['boost', 'var(--ok)']];
 const HIST = {L: 150, R: 24, W: 1000, PH: 200, LH: 22};
+// stretches of 10 min or more where Home Assistant recorded nothing of the installation, as [from, to) unix times
+// (before the integration or its entities were enabled, recorder stopped...), so they read as missing, not as all stopped
+const NOT_INSTALLATION = new Set(['boost', 'clouds', 'code', 'icon']);
+function gaps(h) {
+  if (h.gaps) return h.gaps;
+  const cols = h.series.map((k, i) => (NOT_INSTALLATION.has(k) ? 0 : i + 1)).filter(Boolean), out = [];
+  let from = null;
+  h.points.forEach((p, i) => {
+    const empty = cols.every((j) => p[j] == null), last = i === h.points.length - 1;
+    if (empty && from == null) from = p[0];
+    if (from != null && (!empty || last)) {
+      const to = empty ? p[0] + 60 : p[0];
+      if (to - from >= 600) out.push([from, to]);
+      from = null;
+    }
+  });
+  return (h.gaps = out);
+}
+const inGap = (h, ts) => gaps(h).some(([a, b]) => ts >= a && ts < b);
 
 class OkofenDashboard extends HTMLElement {
   constructor() {
@@ -545,8 +564,15 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const tr = this._q('rpTrack');
     tr.querySelectorAll('span').forEach((e) => e.remove());
     const label = (text, left) => tr.insertAdjacentHTML('beforeend', `<span style="left:${left}">${esc(text)}</span>`);
-    label(midnight > t0 ? this._t.history.yesterday : this._t.history.today, '0');
-    if (midnight > t0) label(this._t.history.today, `calc(${x(midnight) / 10}% + 4px)`);
+    // a day's name goes where its data starts when its first hours were not recorded
+    const shown = (ts) => gaps(h).find(([a, b]) => ts >= a && ts < b)?.[1] ?? ts;
+    if (midnight > t0 && shown(t0) < midnight) label(this._t.history.yesterday, `calc(${x(shown(t0)) / 10}% + 4px)`);
+    if (midnight > t0) label(this._t.history.today, `calc(${x(shown(midnight)) / 10}% + 4px)`);
+    else label(this._t.history.today, '0');
+    // nothing recorded: the track is cut to a dotted line
+    for (const [a, b] of gaps(h)) {
+      g += `<rect x="${x(a)}" y="11" width="${x(b) - x(a)}" height="8" fill="var(--bg)"/><line x1="${x(a)}" x2="${x(b)}" y1="15" y2="15" stroke="var(--mut)" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>`;
+    }
     [['solar_pump', 'var(--solar)', 19], ['burner', 'var(--red)', 12]].forEach(([k, color, y]) => {
       if (!idx[k]) return;
       let run = null;
@@ -569,6 +595,7 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     if (!p) { el.textContent = empty ? tr.empty : tr.live; return; }
     const d = new Date(p[0] * 1000), day0 = new Date(); day0.setHours(0, 0, 0, 0);
     el.textContent = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${d.toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}`;
+    if (inGap(h, p[0])) { el.classList.remove('past'); el.title = this._t.history.empty; }  // greyed: nothing recorded at that time
   }
 
   _seek(i) {
@@ -592,7 +619,8 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
   _play() {
     const h = this._hist;
     if (!h || !h.points.length) return;
-    if (this._replay == null) this._replay = 0;  // from live: start at the beginning
+    // from live: start at the first recorded minute, not in the empty hours before it
+    if (this._replay == null) this._replay = Math.max(0, h.points.findIndex((p) => !inGap(h, p[0])));
     this._playing = setInterval(() => {
       const next = this._replay + 5;  // 5 min of history every 100 ms: two days in about a minute
       if (next >= h.points.length - 1) { this._pause(); this._seek(null); } else this._seek(next);
@@ -656,8 +684,15 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
       }
       if (run != null) close(pts[pts.length - 1][0] + 60);
     });
-    const H = PH + 46 + HIST_LANES.length * LH;
-    return `<svg viewBox="0 0 ${W} ${H}" data-day="${d}" role="img" aria-label="${esc(t.aria)}">${g}<line class="cross" hidden y1="0" y2="${H - 18}"/></svg>`;
+    const H = PH + 46 + HIST_LANES.length * LH, bottom = PH + 16 + HIST_LANES.length * LH;
+    // nothing recorded: hatched over the plot and the lanes, so it does not read as everything stopped (the tooltip says why)
+    for (const [a, b] of gaps(h)) {
+      const x0 = x(Math.max(a, start)), x1 = x(Math.min(b, start + 86400));
+      if (x1 - x0 < 1) continue;
+      g += `<rect x="${x0}" y="0" width="${x1 - x0}" height="${bottom}" fill="url(#gap${d})"/>`;
+    }
+    const hatch = `<defs><pattern id="gap${d}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--bg)"/><line x1="0" y1="0" x2="0" y2="8" stroke="var(--mut)" stroke-opacity=".35" stroke-width="2"/></pattern></defs>`;
+    return `<svg viewBox="0 0 ${W} ${H}" data-day="${d}" role="img" aria-label="${esc(t.aria)}">${hatch}${g}<line class="cross" hidden y1="0" y2="${H - 18}"/></svg>`;
   }
 
   _histHover(e) {
@@ -675,9 +710,10 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const t = this._t.history, tp = this._t.tip, val = (k) => best[geo.idx[k]];
     const rows = [...HIST_LINES.filter((k) => geo.idx[k] && !this._off.has(k)).map((k) => [t.series[k], deg(val(k))]),
       ...HIST_LANES.map(([k]) => [t.series[k], val(k) > 0 ? tp.running : tp.stopped])];
-    const tip = this._q('tip');
+    const tip = this._q('tip'), gap = inGap(this._hist, best[0]);
     tip.innerHTML = `<b>${esc(label)} ${new Date(best[0] * 1000).toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}</b>` +
-      rows.map(([k, v]) => `<div><span>${esc(k)}</span>${esc(v)}</div>`).join('');
+      (gap ? `<div>${esc(t.noData)}</div>` : '') +
+      (gap ? [] : rows).map(([k, v]) => `<div><span>${esc(k)}</span>${esc(v)}</div>`).join('');
     tip.hidden = false;
     this._placeTip(e.clientX, e.clientY);
   }

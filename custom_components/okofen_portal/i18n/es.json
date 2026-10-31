@@ -483,6 +483,7 @@
       "today": "Hoy",
       "yesterday": "Ayer",
       "empty": "Nada en el historial de Home Assistant de las últimas 48 h: el panel lee el recorder de sus entidades (quemador, depósito, colector, ida, estancia…). Comprueba que estén activadas y registradas.",
+      "noData": "Home Assistant no registró nada aquí",
       "aria": "Temperaturas y bombas a lo largo del día",
       "series": {
         "tank_top": "Depósito arriba",

@@ -483,6 +483,7 @@
       "today": "Today",
       "yesterday": "Yesterday",
       "empty": "Nothing in Home Assistant's history for the last 48 h: the panel reads the recorder for its entities (burner, tank, collector, flow, room…). Check they are enabled and recorded.",
+      "noData": "Nothing recorded by Home Assistant here",
       "aria": "Temperatures and pumps over the day",
       "series": {
         "tank_top": "Tank top",

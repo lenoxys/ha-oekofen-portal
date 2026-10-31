@@ -38,6 +38,11 @@
     return {series: ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor', 'burner', 'solar_pump', 'heating_pump', 'boiler_pump', 'boost'], points};
   };
   const history = await fetch('preview-history.json').then((r) => (r.ok ? r.json() : fakeHistory())).catch(fakeHistory);
+  if (params.has('gap')) {  // &gap=17:20: nothing recorded before yesterday at that time, as right after enabling the entities
+    const [hh, mm] = params.get('gap').split(':'), until = new Date(); until.setHours(+hh, +mm, 0, 0);
+    const keep = new Set(['boost', 'clouds', 'code', 'icon'].map((k) => history.series.indexOf(k) + 1));
+    for (const p of history.points) if (p[0] < until / 1000 - 86400) p.forEach((v, i) => { if (i && !keep.has(i)) p[i] = null; });
+  }
   if (params.has('seek')) setTimeout(() => panel._seek(+params.get('seek')), 1500);  // &seek=<minute index> to open on a past moment
   panel.hass = {language: lang, themes: {darkMode: params.has('dark')}, states: {'climate.salon_salon': {attributes: {friendly_name: 'Salon'}}},
     callService: async (domain, service) => { boost.enabled = service === 'turn_on'; boost.state = boost.enabled ? 'waiting' : 'inactive'; boost.reason = boost.enabled ? 'tank_cold' : 'disabled'; },

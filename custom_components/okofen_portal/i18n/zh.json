@@ -483,6 +483,7 @@
       "today": "今天",
       "yesterday": "昨天",
       "empty": "Home Assistant 历史中没有最近48小时的数据：面板从记录器读取其实体（燃烧器、水箱、集热器、供水、室温等）。请确认这些实体已启用并被记录。",
+      "noData": "Home Assistant 在此时段没有记录",
       "aria": "全天温度与水泵",
       "series": {
         "tank_top": "水箱顶部",
