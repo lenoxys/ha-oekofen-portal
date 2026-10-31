@@ -72,7 +72,11 @@ def significant_states(hass, start, end, entity_ids, *rest):
 
 history.er = types.SimpleNamespace(async_get=lambda hass: Registry())
 sys.modules["homeassistant.components.recorder"] = types.SimpleNamespace(
-    get_instance=lambda hass: Recorder(), history=types.SimpleNamespace(get_significant_states=significant_states)
+    get_instance=lambda hass: Recorder(),
+    history=types.SimpleNamespace(
+        get_significant_states=significant_states,
+        state_changes_during_period=lambda hass, start, end, entity_id, *rest: {entity_id: RECORDED[entity_id][:1]},
+    ),
 )
 hass = types.SimpleNamespace(config=types.SimpleNamespace(components={"recorder"}))
 out = asyncio.run(history.async_points(hass, "e1"))
@@ -88,5 +92,8 @@ assert at(10)[i["mixer"]] == 2 and at(40)[i["mixer"]] is None
 assert at(10)[i["coll"]] is None, "disabled entity not read"
 assert at(10)[i["boost"]] == 0 and at(1)[i["boost"]] == 1
 assert (at(10)[i["clouds"]], at(10)[i["code"]]) == (0, 800) and (at(1)[i["clouds"]], at(1)[i["code"]]) == (90, 601)
+assert abs(out["first"] - (NOW - 47 * H)) < 1, "first recorded state"
+day = asyncio.run(history.async_points(hass, "e1", NOW - 30 * H, NOW - 20 * H))["points"]  # a window asked by the panel
+assert 595 < len(day) <= 600 and day[0][0] >= NOW - 30 * H and day[-1][0] < NOW - 20 * H, len(day)
 assert asyncio.run(history.async_points(types.SimpleNamespace(config=types.SimpleNamespace(components=set())), "e1"))["points"] == []
 print("historique du panneau lu depuis le recorder: valeurs, brûleur, vanne, surchauffe, ciel, entités désactivées: OK")

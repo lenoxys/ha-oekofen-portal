@@ -76,7 +76,9 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 .solar tr.no td{color:var(--red)}.solar tr.no td.l{color:var(--mut)}
 .hist h2{font-size:inherit;font-weight:600;margin:4px 0 2px}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 8px}
+.go{margin-left:auto;display:flex;gap:6px}
 .legend button{font:inherit;color:var(--fg);background:none;border:0;padding:2px 0;cursor:pointer;display:flex;align-items:center;gap:6px}
+.go button{border:1px solid var(--line);border-radius:8px;padding:2px 12px;background:var(--card)}.go button:disabled{opacity:.4;cursor:default}
 .legend button[aria-pressed=false]{color:var(--mut);text-decoration:line-through}
 .legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
 .hist svg text{fill:var(--mut)}
@@ -86,7 +88,14 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 .replay{display:flex;align-items:center;gap:12px;margin:6px -8px -8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg);border-radius:0 0 12px 12px}
 .replay button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 10px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
 .replay button:disabled,.rpTrack input:disabled{opacity:.4;cursor:default}
-.replay #rpPlay{width:40px;height:40px;border-radius:50%;padding:0;background:var(--fg);color:var(--card);border-color:var(--fg)}
+.replay #rpPlay{width:44px;height:44px;border-radius:50%;padding:0;background:var(--fg);color:var(--card);border-color:var(--fg);position:relative;z-index:1;box-shadow:0 0 0 3px var(--bg)}
+/* previous day, play, next day: the day buttons tucked under the play button, each chevron in its visible part */
+.rpCtl{display:flex;align-items:center;flex:none}
+#rpPlay svg{display:block;width:50%;height:50%;margin:auto;fill:currentColor}
+.replay .rpCtl #rpPrev,.replay .rpCtl #rpNext{width:38px;height:38px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;border:2px solid var(--mut);color:var(--fg)}
+.rpCtl #rpPrev svg,.rpCtl #rpNext svg{width:65%;height:65%}  /* centred a little towards the play button */
+.replay .rpCtl button:disabled{opacity:.3}
+.replay .rpCtl #rpPrev{margin-right:-16px;padding-right:10px}.replay .rpCtl #rpNext{margin-left:-16px;padding-left:10px}
 .rpTrack{position:relative;flex:1;height:72px}
 .rpTrack svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:58px}
 .rpTrack span{position:absolute;top:-2px;line-height:1;color:var(--mut);white-space:nowrap}
@@ -300,6 +309,11 @@ const toCur = (v, w, ts) => ({
 // history tab: temperature lines in fixed categorical order (--s1..--s7), then the on/off lanes
 const HIST_LINES = ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor'];
 const HIST_LANES = [['burner', 'var(--red)'], ['boiler_pump', 'var(--hot)'], ['solar_pump', 'var(--solar)'], ['heating_pump', 'var(--warm)'], ['boost', 'var(--ok)']];
+// play / pause and the day chevrons drawn, so they scale with the round buttons and sit centred (text glyphs ride the baseline)
+const PREV_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const NEXT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>';
+const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5"/><rect x="14" y="4" width="5" height="16" rx="1.5"/></svg>';
 const HIST = {L: 150, R: 24, W: 1000, PH: 200, LH: 22};
 // stretches of 10 min or more where Home Assistant recorded nothing of the installation, as [from, to) unix times
 // (before the integration or its entities were enabled, recorder stopped...), so they read as missing, not as all stopped
@@ -331,6 +345,8 @@ class OkofenDashboard extends HTMLElement {
     this._tab = 'scheme';
     this._hist = null;
     this._histAt = 0;
+    this._back = 0;  // days back from today of the window shown (0: yesterday and today, live)
+    this._histSeq = 0;
     this._off = new Set();
     this._replay = null;  // index in the history while replaying, null: live
     this._live = {};
@@ -363,7 +379,7 @@ class OkofenDashboard extends HTMLElement {
 <p class="sub">${t.sub} <span id="src" class="badge"></span></p>
 <nav role="tablist">${['scheme', 'solar', 'history'].map((k) => `<button role="tab" data-tab="${k}" aria-selected="${this._tab === k}">${t.solar.tabs[k]}</button>`).join('')}</nav>
 <div class="card" id="scheme" ${this._tab === 'scheme' ? '' : 'hidden'}>${svgFor(t)}
-<div class="replay" id="replay" hidden><button id="rpPlay" aria-label="${t.replay.play}">▶</button>
+<div class="replay" id="replay" hidden><span class="rpCtl"><button id="rpPrev" aria-label="${t.replay.prev}">${PREV_ICON}</button><button id="rpPlay" aria-label="${t.replay.play}">${PLAY_ICON}</button><button id="rpNext" aria-label="${t.replay.next}">${NEXT_ICON}</button></span>
 <div class="rpTrack" id="rpTrack"><svg id="rpStrip" viewBox="0 0 1000 58" preserveAspectRatio="none" aria-hidden="true"></svg>
 <input type="range" id="rpRange" min="0" max="0" value="0" aria-label="${t.replay.position}"></div>
 <button id="rpNow" aria-label="${t.replay.now}"><span class="t" id="rpTime"></span><span class="n">${t.replay.now}</span><span class="z" id="rpSize"></span><span class="z" id="rpSize2"></span><span class="z">${t.replay.live}</span></button></div></div>
@@ -394,9 +410,13 @@ class OkofenDashboard extends HTMLElement {
     this._q('rpRange').addEventListener('mouseleave', () => this._hideTip());
     this._q('rpRange').addEventListener('input', (e) => { this._pause(); this._seek(+e.target.value); });
     this._q('rpPlay').addEventListener('click', () => (this._playing ? this._pause() : this._play()));
-    this._q('rpNow').addEventListener('click', () => { this._pause(); this._seek(null); });
+    this._q('rpNow').addEventListener('click', () => { this._pause(); if (this._back) this._go(-this._back); else this._seek(null); });
+    this._q('rpPrev').addEventListener('click', () => this._go(1));
+    this._q('rpNext').addEventListener('click', () => this._go(-1));
     const hist = this._q('history');
     hist.addEventListener('click', (e) => {
+      const go = e.target.closest('[data-go]');
+      if (go) { this._go(+go.dataset.go); return; }
       const b = e.target.closest('[data-series]');
       if (!b) return;
       const k = b.dataset.series;
@@ -447,9 +467,50 @@ class OkofenDashboard extends HTMLElement {
 
   async _loadHistory() {
     this._histAt = Date.now();
-    try { this._hist = await this._hass.callWS({type: 'okofen_portal/history'}); } catch (e) { this._hist = null; }
+    const w = this._window(), seq = ++this._histSeq;
+    let h = null;
+    try { h = await this._hass.callWS({type: 'okofen_portal/history', start: w.start, end: w.end}); } catch (e) { /* shown as the error */ }
+    if (seq !== this._histSeq) return;  // a later day was asked meanwhile
+    this._hist = h;
     this._renderHistory();
     this._renderReplay();
+  }
+
+  // the two days shown: the selected one and the one before (selected = today, live, when _back is 0)
+  _window() {
+    const mid = new Date(); mid.setHours(0, 0, 0, 0); mid.setDate(mid.getDate() - this._back);
+    const start = new Date(mid), next = new Date(mid);
+    start.setDate(mid.getDate() - 1); next.setDate(mid.getDate() + 1);
+    return {start: start / 1000, mid: mid / 1000, end: this._back ? next / 1000 : Date.now() / 1000};
+  }
+
+  // ‹ goes back one day, as far as Home Assistant still has data; › forward, up to today
+  async _go(step) {
+    const back = Math.max(0, this._back + step);
+    if (back === this._back || (step > 0 && !this._canBack())) return;
+    this._pause();
+    this._back = back;
+    await this._loadHistory();
+    if (back) this._seek(this._firstData()); else this._seek(null);
+  }
+
+  // more to see before the window: Home Assistant still has something older than its start
+  _canBack() {
+    const h = this._hist;
+    return !!(h && h.first != null && h.first < this._window().start);
+  }
+
+  _firstData() {
+    const h = this._hist;
+    return h ? Math.max(0, h.points.findIndex((p) => !inGap(h, p[0]))) : 0;
+  }
+
+  // today, yesterday, then the weekday and date
+  _dayName(ts) {
+    const d = new Date(ts * 1000), today = new Date();
+    d.setHours(0, 0, 0, 0); today.setHours(0, 0, 0, 0);
+    const ago = Math.round((today - d) / 86400000);
+    return ago === 0 ? this._t.history.today : ago === 1 ? this._t.history.yesterday : d.toLocaleDateString(this._lang, {weekday: 'short', day: 'numeric', month: 'short'});
   }
 
   _group(g, on, dur) {
@@ -549,6 +610,8 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     // always shown, greyed out until the integration has recorded something (it starts at install)
     this._q('replay')?.removeAttribute('hidden');
     range.disabled = this._q('rpPlay').disabled = n < 2;
+    this._q('rpPrev').disabled = !this._canBack();  // greyed when there is nothing older
+    this._q('rpNext').disabled = !this._back;
     range.max = Math.max(0, n - 1);
     range.value = this._replay ?? range.max;
     this._rpTime();
@@ -561,8 +624,7 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const idx = Object.fromEntries(h.series.map((k, i) => [k, i + 1])), t0 = h.points[0][0], span = Math.max(60, h.points[n - 1][0] - t0);
     const x = (ts) => ((ts - t0) / span * 1000).toFixed(1);
     let g = `<rect x="0" y="12" width="1000" height="6" rx="3" fill="var(--line)"/>`;
-    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
-    const midnight = day0.getTime() / 1000;
+    const midnight = this._window().mid;
     if (midnight > t0) g += `<line x1="${x(midnight)}" x2="${x(midnight)}" y1="0" y2="58" stroke="var(--mut)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>`;
     // day names as page text (the strip is stretched, its own text would be too)
     const tr = this._q('rpTrack');
@@ -570,9 +632,9 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const label = (text, left) => tr.insertAdjacentHTML('beforeend', `<span style="left:${left}">${esc(text)}</span>`);
     // a day's name goes where its data starts when its first hours were not recorded
     const shown = (ts) => gaps(h).find(([a, b]) => ts >= a && ts < b)?.[1] ?? ts;
-    if (midnight > t0 && shown(t0) < midnight) label(this._t.history.yesterday, `calc(${x(shown(t0)) / 10}% + 4px)`);
-    if (midnight > t0) label(this._t.history.today, `calc(${x(shown(midnight)) / 10}% + 4px)`);
-    else label(this._t.history.today, '0');
+    if (midnight > t0 && shown(t0) < midnight) label(this._dayName(t0), `calc(${x(shown(t0)) / 10}% + 4px)`);
+    if (midnight > t0) label(this._dayName(midnight), `calc(${x(shown(midnight)) / 10}% + 4px)`);
+    else label(this._dayName(midnight), '0');
     // nothing recorded: the track is cut to a dotted line
     for (const [a, b] of gaps(h)) {
       g += `<rect x="${x(a)}" y="11" width="${x(b) - x(a)}" height="8" fill="var(--bg)"/><line x1="${x(a)}" x2="${x(b)}" y1="15" y2="15" stroke="var(--mut)" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>`;
@@ -600,12 +662,11 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     if (!h || h.points.length < 2 || !this._rpSpan) return;
     const [t0, span] = this._rpSpan, ts = t0 + (e.clientX - box.left) / box.width * span, near = span / box.width * 6;  // 6 px either side
     const hm = (t) => new Date(t * 1000).toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'});
-    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
     const rows = this._rpRuns.filter(([, a, b]) => ts >= a - near && ts <= b + near)
       .map(([k, a, b]) => `<div><span>${esc(this._t.history.series[k] || this._t.tip.poolPump)}</span>${hm(a)}–${hm(b)} · ${Math.max(1, Math.round((b - a) / 60))} min</div>`);
     if (inGap(h, ts)) rows.push(`<div>${esc(this._t.history.noData)}</div>`);
     const tip = this._q('tip');
-    tip.innerHTML = `<b>${esc(ts * 1000 < day0 ? this._t.history.yesterday : this._t.history.today)} ${hm(ts)}</b>${rows.join('')}`;
+    tip.innerHTML = `<b>${esc(this._dayName(ts))} ${hm(ts)}</b>${rows.join('')}`;
     tip.hidden = false;
     this._placeTip(e.clientX, e.clientY);
   }
@@ -622,19 +683,20 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const empty = !h || h.points.length < 2;
     btn.title = empty ? this._t.history.empty : '';  // explains where the history comes from
     if (!p) { el.textContent = empty ? tr.empty : tr.live; return; }
-    const d = new Date(p[0] * 1000), day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    const d = new Date(p[0] * 1000);
     el.textContent = hm(d);
-    this._rpLabel = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${hm(d)}`;  // with the day, for the badge at the top
+    this._rpLabel = `${this._dayName(p[0])} ${hm(d)}`;  // with the day, for the badge at the top
     if (inGap(h, p[0])) { btn.classList.remove('past'); btn.title = this._t.history.empty; }  // greyed: nothing recorded at that time
   }
 
   _seek(i) {
     const h = this._hist;
-    if (i == null || !h || i >= h.points.length - 1) {
+    if (i == null || !h || (i >= h.points.length - 1 && !this._back)) {
       this._replay = null;
       this._cur = this._live;
     } else {
-      this._replay = i;
+      this._replay = Math.min(i, h.points.length - 1);
+      i = this._replay;
       const p = h.points[i], v = Object.fromEntries(h.series.map((k, j) => [k, p[j + 1]]));
       // the sky of that moment when it was recorded (forecast, wind and sun times stay the current ones)
       const w = 'icon' in v ? {...this._w, clouds: v.clouds, code: v.code, icon: v.icon} : this._w || {};
@@ -650,12 +712,12 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const h = this._hist;
     if (!h || !h.points.length) return;
     // from live: start at the first recorded minute, not in the empty hours before it
-    if (this._replay == null) this._replay = Math.max(0, h.points.findIndex((p) => !inGap(h, p[0])));
+    if (this._replay == null || this._replay >= h.points.length - 1) this._replay = this._firstData();
     this._playing = setInterval(() => {
       const next = this._replay + 5;  // 5 min of history every 100 ms: two days in about a minute
-      if (next >= h.points.length - 1) { this._pause(); this._seek(null); } else this._seek(next);
+      if (next >= h.points.length - 1) { this._pause(); this._seek(this._back ? h.points.length - 1 : null); } else this._seek(next);  // an older day stops at its end
     }, 100);
-    this._q('rpPlay').textContent = '⏸';
+    this._q('rpPlay').innerHTML = PAUSE_ICON;
     this._q('rpPlay').setAttribute('aria-label', this._t.replay.pause);
   }
 
@@ -663,26 +725,26 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     clearInterval(this._playing);
     this._playing = null;
     const b = this._q('rpPlay');
-    if (b) { b.textContent = '▶'; b.setAttribute('aria-label', this._t.replay.play); }
+    if (b) { b.innerHTML = PLAY_ICON; b.setAttribute('aria-label', this._t.replay.play); }
   }
 
   // ===== history tab: today and yesterday, temperatures on one °C axis, on/off lanes below =====
   _renderHistory() {
     const el = this._q('history'), t = this._t?.history;
     if (!el || !t) return;
-    const h = this._hist;
-    if (!h || !h.points.length) { el.innerHTML = `<p class="mut">${esc(h ? t.empty : this._t.error)}</p>`; return; }
+    const h = this._hist, tr = this._t.replay;
+    const go = `<span class="go"><button data-go="1" aria-label="${esc(tr.prev)}" ${this._canBack() ? '' : 'disabled'}>‹</button><button data-go="-1" aria-label="${esc(tr.next)}" ${this._back ? '' : 'disabled'}>›</button></span>`;
+    if (!h || !h.points.length) { el.innerHTML = `<div class="legend">${go}</div><p class="mut">${esc(h ? t.empty : this._t.error)}</p>`; return; }
     const idx = Object.fromEntries(h.series.map((k, i) => [k, i + 1]));
     const lines = HIST_LINES.filter((k) => idx[k]), shown = lines.filter((k) => !this._off.has(k));
-    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
-    const days = [[t.today, day0.getTime() / 1000], [t.yesterday, day0.getTime() / 1000 - 86400]];
+    const w = this._window(), days = [[this._dayName(w.mid), w.mid], [this._dayName(w.start), w.start]];
     let lo = Infinity, hi = -Infinity;
     for (const p of h.points) for (const k of shown) { const v = p[idx[k]]; if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
     if (lo > hi) { lo = 0; hi = 60; }
     lo = Math.floor(lo / 10) * 10; hi = Math.max(lo + 10, Math.ceil(hi / 10) * 10);
     this._histGeo = {days, idx, lo, hi};
     const legend = lines.map((k, i) => `<button data-series="${k}" aria-pressed="${!this._off.has(k)}"><i style="background:var(--s${i + 1})"></i>${esc(t.series[k])}</button>`).join('');
-    el.innerHTML = `<div class="legend">${legend}</div>` + days.map(([label, start], d) => `<h2>${esc(label)}</h2>${this._histSvg(h, start, d, lines, idx, lo, hi)}`).join('');
+    el.innerHTML = `<div class="legend">${legend}${go}</div>` + days.map(([label, start], d) => `<h2>${esc(label)}</h2>${this._histSvg(h, start, d, lines, idx, lo, hi)}`).join('');
   }
 
   _histSvg(h, start, d, lines, idx, lo, hi) {

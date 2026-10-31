@@ -26,18 +26,36 @@
       {id: 'cloudy', ok: true, value: 10, limit: 55}, {id: 'mild_outdoor', ok: true, value: 11.8, limit: 20},
       {id: 'tank_cold', ok: active, value: 65.2, limit: active ? 59 : 67.5}, {id: 'hot_water_low', ok: true, value: 67, limit: active ? 53 : 55},
       {id: 'room_warm', ok: true, value: 22.1, limit: active ? 24.5 : 23}]};
-  // history: scripts/preview-history.json if present (python3 scripts/preview_history.py), otherwise made up
-  const fakeHistory = () => {
-    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+  // history: scripts/preview-history.json if present (python3 scripts/preview_history.py), otherwise made up;
+  // &fake=10 always makes up that many days (yesterday and today included), each with its own weather
+  const fakeHistory = (days = 2) => {
+    const series = ['tank_top', 'tank_mid', 'tank_bottom', 'ecs_probe', 'coll', 'flow', 'room', 'outdoor', 'burner', 'boiler_pump', 'solar_pump',
+      'heating_pump', 'pool_pump', 'boost', 'clouds', 'code', 'icon'];
+    // sunshine of each day, oldest first, and its sky (OpenWeatherMap codes): sunny, cloudy, rain, snow
+    const SUN = [0.9, 0.3, 1, 0.1, 0.7, 0, 0.5, 1, 0.2, 0.8];
+    const sky = (sf, d) => (d % 10 === 5 ? [100, 601] : sf > 0.7 ? [10, 800] : sf > 0.4 ? [45, 802] : sf > 0.15 ? [85, 804] : [95, 501]);
+    const start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - days + 1);
     const points = [];
-    for (let ts = day0 / 1000 - 86400; ts < Date.now() / 1000; ts += 60) {
-      const h = (ts / 3600 + 1) % 24, sun = Math.max(0, Math.sin((h - 8) / 10 * Math.PI));
-      points.push([ts, 55 + 10 * sun, 50 + 9 * sun, 35 + 20 * sun, 10 + 60 * sun, h > 6 && h < 22 ? 40 : 25, 20.5 + sun, 7 + 8 * sun,
-        h > 6.2 && h < 6.6 ? 1 : 0, sun > 0.3 ? 60 : 0, 1, h > 6.2 && h < 6.7 ? 100 : 0, sun > 0.8 ? 1 : 0]);
+    let top = 52, burning = false;
+    for (let ts = start / 1000, n = 0; ts < Date.now() / 1000; ts += 60, n++) {
+      const d = new Date(ts * 1000), day = Math.floor(n / 1440), h = d.getHours() + d.getMinutes() / 60;
+      const sf = SUN[(day + 10 - days % 10) % 10], [clouds, code] = sky(sf, day + 10 - days % 10);
+      const sun = Math.max(0, Math.sin((h - 8) / 9.5 * Math.PI)) * sf;
+      const heating = h > 5.5 && h < 22.5 && h % 2 < 1.4, coll = 8 + 70 * sun, bottom = top - 16 + 10 * sun, solar = coll > bottom + 6;
+      // the buffer tank: warmed by the sun, cooled by the heating, the burner keeps it above 45 °C
+      top += (solar ? 0.035 * sf : 0) - (heating ? 0.012 : 0.003) + (burning ? 0.15 : 0);
+      if (top < 45) burning = true; else if (top > 55) burning = false;
+      const pool = sf > 0.6 && h > 10 && h < 16, boost = sf > 0.85 && h > 11 && h < 15;
+      const row = [top, top - 4, bottom, top - 1, coll, heating ? 38 + 4 * Math.sin(h) : 22, 20.3 + sun * 1.6 + (boost ? 1.5 : 0), 2 + day % 4 + 8 * sun,
+        +burning, +burning, solar ? 60 : 0, heating ? 45 : 0, +pool, +boost, clouds, code, null];
+      // a Home Assistant restart four days ago at 02:00: 40 minutes not recorded
+      points.push([ts, ...(day === days - 5 && h >= 2 && h < 2.67 ? row.map((v, i) => (i >= 13 ? v : null)) : row)]);
     }
-    return {series: ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor', 'burner', 'solar_pump', 'heating_pump', 'boiler_pump', 'boost'], points};
+    return {series, points};
   };
-  const history = await fetch('preview-history.json').then((r) => (r.ok ? r.json() : fakeHistory())).catch(fakeHistory);
+  const fake = params.has('fake');
+  const history = fake ? fakeHistory(+params.get('fake') || 10)
+    : await fetch('preview-history.json').then((r) => (r.ok ? r.json() : fakeHistory())).catch(() => fakeHistory());
   // on/off values Home Assistant did not record (entity disabled): made-up runs, so every mark of the replay strip shows
   const runs = {burner: (h) => h > 6.2 && h < 6.9, boiler_pump: (h) => h > 6.2 && h < 7.1, heating_pump: (h) => h > 5.5 && h < 22.5 && h % 2 < 1.4, pool_pump: (h) => h > 10 && h < 16};
   for (const [k, on] of Object.entries(runs)) {
@@ -52,5 +70,15 @@
   if (params.has('seek')) setTimeout(() => panel._seek(+params.get('seek')), 1500);  // &seek=<minute index> to open on a past moment
   panel.hass = {language: lang, themes: {darkMode: params.has('dark')}, states: {'climate.salon_salon': {attributes: {friendly_name: 'Salon'}}},
     callService: async (domain, service) => { boost.enabled = service === 'turn_on'; boost.state = boost.enabled ? 'waiting' : 'inactive'; boost.reason = boost.enabled ? 'tank_cold' : 'disabled'; },
-    callWS: async (msg) => (msg.type === 'okofen_portal/history' ? history : {language: lang, strings, values: sample, weather, boost})};
+    callWS: async (msg) => (msg.type === 'okofen_portal/history' ? day(msg) : {language: lang, strings, values: sample, weather, boost})};
+  // the window the panel asks for; with the sample, older days replay its two days again, as far as a recorder keeping 10 days
+  // (with &gap nothing is older than the sample, so the panel greys ‹); with &fake, the made-up days as they are
+  function day({start, end}) {
+    const base = history.points[0][0], k = fake ? 0 : Math.max(0, Math.round((base - start) / 86400));  // whole days, whatever the clock change
+    const byMinute = new Map(history.points.map((p) => [Math.round((p[0] - k * 86400) / 60) * 60, p]));
+    const blank = history.series.map(() => null), points = [];
+    // one point a minute over the whole window, empty where nothing was recorded, as the integration sends it
+    for (let ts = Math.ceil(start / 60) * 60; ts < end; ts += 60) points.push([ts, ...(byMinute.get(ts)?.slice(1) ?? blank)]);
+    return {...history, first: fake ? base : params.has('gap') ? base + 60 : base - 8 * 86400, points};
+  }
 </script>

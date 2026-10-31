@@ -501,6 +501,8 @@
       }
     },
     "replay": {
+      "prev": "Dia anterior",
+      "next": "Dia seguinte",
       "play": "Reproduzir",
       "pause": "Pausa",
       "now": "Agora",

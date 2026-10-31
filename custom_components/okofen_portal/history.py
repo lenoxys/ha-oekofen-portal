@@ -1,6 +1,7 @@
-"""The panel's last 48 h, read from the recorder: the entities of its values, the weather and the solar boost.
+"""The panel's history, read from the recorder: the entities of its values, the weather and the solar boost.
 
-Sent to the panel as one point a minute: [unix time, value per SERIES...], None where nothing was recorded.
+Sent to the panel as one point a minute: [unix time, value per SERIES...], None where nothing was recorded,
+with the time of the first thing the recorder still has, so the panel knows how far back there is something to see.
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ from .const import DASHBOARD, DOMAIN, MIXER_STATES
 
 WEATHER = ("clouds", "code", "icon")
 SERIES = (*DASHBOARD, "boost", *WEATHER)
-KEEP = 48 * 3600
+KEEP = 48 * 3600  # when no window is asked
+LONGEST = 3 * 86400  # longest window sent at once
 # weather entity condition -> (cloud cover %, OpenWeatherMap code): what the panel's sky reads
 SKY = {
     "sunny": (0, 800), "clear-night": (0, 800), "windy": (10, 800), "partlycloudy": (40, 802),
@@ -25,12 +27,15 @@ SKY = {
 }
 
 
-async def async_points(hass: HomeAssistant, entry_id: str) -> dict:
-    """The last 48 h of the panel, from whatever the recorder holds for the enabled entities."""
-    out = {"series": list(SERIES), "points": []}
+async def async_points(hass: HomeAssistant, entry_id: str, start: float | None = None, end: float | None = None) -> dict:
+    """The panel between start and end (default the last 48 h), from what the recorder holds for the enabled entities."""
+    end = min(end or time.time(), time.time())
+    start = max(start if start is not None else end - KEEP, end - LONGEST)
+    out = {"series": list(SERIES), "points": [], "first": None}
     if "recorder" not in hass.config.components:
         return out
     from homeassistant.components.recorder import get_instance, history  # noqa: PLC0415 (optional)
+
 
     registry = er.async_get(hass)
 
@@ -44,16 +49,22 @@ async def async_points(hass: HomeAssistant, entry_id: str) -> dict:
     ids = {name: entity_id for name, entity_id in ids.items() if entity_id}
     if not ids:
         return out
-    end = time.time()
-    start = end - KEEP
 
-    def read() -> list[list]:
+    def read() -> tuple[list[list], float | None]:
         states = history.get_significant_states(
             hass, dt_util.utc_from_timestamp(start), None, list(ids.values()), None, True, False, False, True
         )
-        return resample({name: states.get(entity_id, []) for name, entity_id in ids.items()}, start, end)
+        # the oldest state of each entity (one row each), the panel's ‹ stops there
+        firsts = [
+            found[0].last_changed.timestamp()
+            for entity_id in ids.values()
+            if (found := history.state_changes_during_period(
+                hass, dt_util.utc_from_timestamp(0), None, entity_id, True, False, 1, False
+            ).get(entity_id))
+        ]
+        return resample({name: states.get(entity_id, []) for name, entity_id in ids.items()}, start, end), min(firsts, default=None)
 
-    out["points"] = await get_instance(hass).async_add_executor_job(read)
+    out["points"], out["first"] = await get_instance(hass).async_add_executor_job(read)
     return out
 
 

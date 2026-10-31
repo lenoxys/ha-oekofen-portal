@@ -62,15 +62,17 @@ async def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConn
     )
 
 
-@websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/history"})
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/history", vol.Optional("start"): vol.Coerce(float), vol.Optional("end"): vol.Coerce(float)}
+)
 @websocket_api.async_response
 async def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
-    """The last 48 h of the panel's values, from the recorder, for the replay bar and the history tab."""
+    """The panel's values between start and end (default the last 48 h), from the recorder, for the replay bar and the history tab."""
     entries = hass.config_entries.async_loaded_entries(DOMAIN)
     if not entries:
         connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
         return
-    connection.send_result(msg["id"], await async_points(hass, entries[0].entry_id))
+    connection.send_result(msg["id"], await async_points(hass, entries[0].entry_id, msg.get("start"), msg.get("end")))
 
 
 async def async_setup_dashboard(hass: HomeAssistant) -> None:
