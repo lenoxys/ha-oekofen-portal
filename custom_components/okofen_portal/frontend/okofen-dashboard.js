@@ -87,14 +87,16 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 .replay button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 10px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
 .replay button:disabled,.rpTrack input:disabled{opacity:.4;cursor:default}
 .replay #rpPlay{width:40px;height:40px;border-radius:50%;padding:0;background:var(--fg);color:var(--card);border-color:var(--fg)}
-.rpTrack{position:relative;flex:1;height:44px}
-.rpTrack svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:30px}
+.rpTrack{position:relative;flex:1;height:72px}
+.rpTrack svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:58px}
 .rpTrack span{position:absolute;top:-2px;line-height:1;color:var(--mut);white-space:nowrap}
-.rpTrack input{position:absolute;left:0;right:0;bottom:0;height:30px;width:100%;margin:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+.rpTrack input{position:absolute;left:0;right:0;bottom:28px;height:30px;width:100%;margin:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}
 .rpTrack input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--fg);box-shadow:0 1px 4px #0004;cursor:grab}
 .rpTrack input::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--fg);box-shadow:0 1px 4px #0004;cursor:grab}
-#rpTime{min-width:9.5em;color:var(--mut);text-align:right}
-#rpTime.past{color:var(--fg);font-weight:500}
+/* the time being replayed, "now" on hover; all labels stacked in one cell so the button keeps the widest one's size */
+#rpNow{display:inline-grid;font-variant-numeric:tabular-nums;color:var(--mut)}#rpNow.past{color:var(--fg)}
+#rpNow>span{grid-area:1/1;text-align:center}#rpNow>.n,#rpNow>.z{visibility:hidden}
+#rpNow.past:not(:disabled):hover>.t{visibility:hidden}#rpNow.past:not(:disabled):hover>.n{visibility:visible}
 .badge{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;color:var(--mut)}
 @media (prefers-reduced-motion:reduce){.flow.on,.pump.on path,.sun.on .rays,.ctl.on,#rain,#snow,#bolt{animation:none}.flow{stroke-dasharray:none}}`;
 const svgFor = (t) => `<svg viewBox="0 -45 1000 505" role="img" aria-label="${t.aria}">
@@ -362,9 +364,9 @@ class OkofenDashboard extends HTMLElement {
 <nav role="tablist">${['scheme', 'solar', 'history'].map((k) => `<button role="tab" data-tab="${k}" aria-selected="${this._tab === k}">${t.solar.tabs[k]}</button>`).join('')}</nav>
 <div class="card" id="scheme" ${this._tab === 'scheme' ? '' : 'hidden'}>${svgFor(t)}
 <div class="replay" id="replay" hidden><button id="rpPlay" aria-label="${t.replay.play}">▶</button>
-<div class="rpTrack" id="rpTrack"><svg id="rpStrip" viewBox="0 0 1000 30" preserveAspectRatio="none" aria-hidden="true"></svg>
+<div class="rpTrack" id="rpTrack"><svg id="rpStrip" viewBox="0 0 1000 58" preserveAspectRatio="none" aria-hidden="true"></svg>
 <input type="range" id="rpRange" min="0" max="0" value="0" aria-label="${t.replay.position}"></div>
-<span id="rpTime"></span><button id="rpNow">${t.replay.now}</button></div></div>
+<button id="rpNow" aria-label="${t.replay.now}"><span class="t" id="rpTime"></span><span class="n">${t.replay.now}</span><span class="z" id="rpSize"></span><span class="z" id="rpSize2"></span><span class="z">${t.replay.live}</span></button></div></div>
 <div class="card pad solar" id="solar" ${this._tab === 'solar' ? '' : 'hidden'}></div>
 <div class="card pad hist" id="history" ${this._tab === 'history' ? '' : 'hidden'}></div>
 <div id="tip" hidden role="tooltip"></div>
@@ -388,6 +390,8 @@ class OkofenDashboard extends HTMLElement {
       const b = e.target.closest('[data-switch]');
       if (b && this._boost?.switch) this._hass.callService('switch', b.dataset.switch, {entity_id: this._boost.switch}).then(() => this._poll());
     });
+    this._q('rpRange').addEventListener('mousemove', (e) => this._rpHover(e));
+    this._q('rpRange').addEventListener('mouseleave', () => this._hideTip());
     this._q('rpRange').addEventListener('input', (e) => { this._pause(); this._seek(+e.target.value); });
     this._q('rpPlay').addEventListener('click', () => (this._playing ? this._pause() : this._play()));
     this._q('rpNow').addEventListener('click', () => { this._pause(); this._seek(null); });
@@ -463,7 +467,7 @@ class OkofenDashboard extends HTMLElement {
   _render() {
     if (!this._t || !this._q('src')) return;
     const t = this._t, s = this._cur, draw = s.ecsPump > 0;
-    this._q('src').textContent = this._replay != null ? this._q('rpTime').textContent : this._src;
+    this._q('src').textContent = this._replay != null ? this._rpLabel : this._src;
     this._stop('gE', col(s.ecsP)); this._stop('g0', col(s.top)); this._stop('g1', col(s.mid)); this._stop('g2', col(s.bot));
     this._q('poolIcon').style.fill = col(s.pool);
     this._set('tProbe', `${t.probe} ${deg(s.ecsP)}`);
@@ -559,7 +563,7 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     let g = `<rect x="0" y="12" width="1000" height="6" rx="3" fill="var(--line)"/>`;
     const day0 = new Date(); day0.setHours(0, 0, 0, 0);
     const midnight = day0.getTime() / 1000;
-    if (midnight > t0) g += `<line x1="${x(midnight)}" x2="${x(midnight)}" y1="0" y2="30" stroke="var(--mut)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>`;
+    if (midnight > t0) g += `<line x1="${x(midnight)}" x2="${x(midnight)}" y1="0" y2="58" stroke="var(--mut)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>`;
     // day names as page text (the strip is stretched, its own text would be too)
     const tr = this._q('rpTrack');
     tr.querySelectorAll('span').forEach((e) => e.remove());
@@ -573,29 +577,55 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     for (const [a, b] of gaps(h)) {
       g += `<rect x="${x(a)}" y="11" width="${x(b) - x(a)}" height="8" fill="var(--bg)"/><line x1="${x(a)}" x2="${x(b)}" y1="15" y2="15" stroke="var(--mut)" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>`;
     }
-    [['solar_pump', 'var(--solar)', 19], ['burner', 'var(--red)', 12]].forEach(([k, color, y]) => {
+    // under the track, below the cursor, so it never hides them; named on hover (_rpHover)
+    const runs = this._rpRuns = [];
+    this._rpSpan = [t0, span];
+    // same order and colours as the History tab's lanes, the pool pump last
+    [['burner', 'var(--red)'], ['boiler_pump', 'var(--hot)'], ['solar_pump', 'var(--solar)'], ['heating_pump', 'var(--warm)'], ['pool_pump', 'var(--cold)']].forEach(([k, color], row) => {
+      const y = 27 + row * 6;
       if (!idx[k]) return;
       let run = null;
       h.points.forEach((p, i) => {
         const on = p[idx[k]] > 0, last = i === n - 1;
         if (on && run == null) run = p[0];
-        if (run != null && (!on || last)) { g += `<rect x="${x(run)}" y="${y}" width="${Math.max(2, x(p[0]) - x(run))}" height="${k === 'burner' ? 6 : 4}" rx="2" fill="${color}"/>`; run = null; }
+        if (run != null && (!on || last)) { runs.push([k, run, p[0]]); g += `<rect x="${x(run)}" y="${y}" width="${Math.max(2, x(p[0]) - x(run))}" height="4" rx="2" fill="${color}"/>`; run = null; }
       });
     });
     strip.innerHTML = g;
   }
 
+  // the time under the mouse, and the burner or solar pump run there with its start, end and duration
+  _rpHover(e) {
+    const h = this._hist, box = e.currentTarget.getBoundingClientRect();
+    if (!h || h.points.length < 2 || !this._rpSpan) return;
+    const [t0, span] = this._rpSpan, ts = t0 + (e.clientX - box.left) / box.width * span, near = span / box.width * 6;  // 6 px either side
+    const hm = (t) => new Date(t * 1000).toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'});
+    const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+    const rows = this._rpRuns.filter(([, a, b]) => ts >= a - near && ts <= b + near)
+      .map(([k, a, b]) => `<div><span>${esc(this._t.history.series[k] || this._t.tip.poolPump)}</span>${hm(a)}–${hm(b)} · ${Math.max(1, Math.round((b - a) / 60))} min</div>`);
+    if (inGap(h, ts)) rows.push(`<div>${esc(this._t.history.noData)}</div>`);
+    const tip = this._q('tip');
+    tip.innerHTML = `<b>${esc(ts * 1000 < day0 ? this._t.history.yesterday : this._t.history.today)} ${hm(ts)}</b>${rows.join('')}`;
+    tip.hidden = false;
+    this._placeTip(e.clientX, e.clientY);
+  }
+
   _rpTime() {
-    const el = this._q('rpTime'), h = this._hist, tr = this._t.replay;
+    const el = this._q('rpTime'), btn = this._q('rpNow'), h = this._hist, tr = this._t.replay;
     if (!el) return;
     const p = this._replay != null && h ? h.points[this._replay] : null;
-    el.classList.toggle('past', !!p);
+    const hm = (d) => d.toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'});
+    // the widest times (AM and PM in 12-hour languages), so the button does not move
+    this._q('rpSize').textContent = hm(new Date(2000, 0, 1, 10, 58));
+    this._q('rpSize2').textContent = hm(new Date(2000, 0, 1, 22, 58));
+    btn.classList.toggle('past', !!p);
     const empty = !h || h.points.length < 2;
-    el.title = empty ? this._t.history.empty : '';  // explains that the integration records from now on
+    btn.title = empty ? this._t.history.empty : '';  // explains where the history comes from
     if (!p) { el.textContent = empty ? tr.empty : tr.live; return; }
     const d = new Date(p[0] * 1000), day0 = new Date(); day0.setHours(0, 0, 0, 0);
-    el.textContent = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${d.toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}`;
-    if (inGap(h, p[0])) { el.classList.remove('past'); el.title = this._t.history.empty; }  // greyed: nothing recorded at that time
+    el.textContent = hm(d);
+    this._rpLabel = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${hm(d)}`;  // with the day, for the badge at the top
+    if (inGap(h, p[0])) { btn.classList.remove('past'); btn.title = this._t.history.empty; }  // greyed: nothing recorded at that time
   }
 
   _seek(i) {

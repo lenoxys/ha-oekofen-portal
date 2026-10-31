@@ -38,6 +38,12 @@
     return {series: ['tank_top', 'tank_mid', 'tank_bottom', 'coll', 'flow', 'room', 'outdoor', 'burner', 'solar_pump', 'heating_pump', 'boiler_pump', 'boost'], points};
   };
   const history = await fetch('preview-history.json').then((r) => (r.ok ? r.json() : fakeHistory())).catch(fakeHistory);
+  // on/off values Home Assistant did not record (entity disabled): made-up runs, so every mark of the replay strip shows
+  const runs = {burner: (h) => h > 6.2 && h < 6.9, boiler_pump: (h) => h > 6.2 && h < 7.1, heating_pump: (h) => h > 5.5 && h < 22.5 && h % 2 < 1.4, pool_pump: (h) => h > 10 && h < 16};
+  for (const [k, on] of Object.entries(runs)) {
+    const i = history.series.indexOf(k) + 1;
+    if (i && history.points.every((p) => p[i] == null)) history.points.forEach((p) => { const d = new Date(p[0] * 1000); p[i] = on(d.getHours() + d.getMinutes() / 60) ? 1 : 0; });
+  }
   if (params.has('gap')) {  // &gap=17:20: nothing recorded before yesterday at that time, as right after enabling the entities
     const [hh, mm] = params.get('gap').split(':'), until = new Date(); until.setHours(+hh, +mm, 0, 0);
     const keep = new Set(['boost', 'clouds', 'code', 'icon'].map((k) => history.series.indexOf(k) + 1));
