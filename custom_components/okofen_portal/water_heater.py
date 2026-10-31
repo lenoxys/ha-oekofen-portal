@@ -43,7 +43,7 @@ class OekofenWaterHeater(OekofenEntity, WaterHeaterEntity):
 
     _attr_name = None
     _attr_translation_key = "hot_water"
-    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_operation_list = [STATE_OFF, STATE_AUTO, STATE_PERFORMANCE]
     _attr_supported_features = (
         WaterHeaterEntityFeature.TARGET_TEMPERATURE | WaterHeaterEntityFeature.OPERATION_MODE
@@ -66,11 +66,11 @@ class OekofenWaterHeater(OekofenEntity, WaterHeaterEntity):
         return None if value is None else OPERATION_BY_INDEX.get(int(value))
 
     @property
-    def native_current_temperature(self) -> float | None:
+    def current_temperature(self) -> float | None:
         return self._value("L_ww[{n}].einschaltfuehler_ist")
 
     @property
-    def native_target_temperature(self) -> float | None:
+    def target_temperature(self) -> float | None:
         return self._value("ww[{n}].temp_heizen")  # the comfort setpoint
 
     @property

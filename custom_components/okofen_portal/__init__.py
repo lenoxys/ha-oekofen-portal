@@ -68,6 +68,7 @@ class OekofenData:
     hidden: set[str]
     boost: SolarBoost | None = None
     history: History | None = None
+    main_device_id: str = ""  # registry id of the main ÖkoFEN device, parent of the per-circuit devices
 
     def reading(self, key: str):
         """A variable from whichever coordinator reads it."""
@@ -142,9 +143,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     )
     registry = dr.async_get(hass)
     # main device first, so the per-circuit devices can point at it
-    registry.async_get_or_create(
+    entry.runtime_data.main_device_id = registry.async_get_or_create(
         config_entry_id=entry.entry_id, **main_device_info(entry.entry_id, texts)
-    )
+    ).id
     # devices created by earlier versions for equipment that is not there
     for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
         ids = {identifier for domain, identifier in device.identifiers if domain == DOMAIN}

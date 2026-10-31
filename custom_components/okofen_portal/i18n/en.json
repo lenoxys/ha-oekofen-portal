@@ -504,7 +504,8 @@
       "pause": "Pause",
       "now": "Now",
       "live": "live",
-      "position": "Position in the last two days"
+      "position": "Position in the last two days",
+      "empty": "no history yet"
     }
   }
 }

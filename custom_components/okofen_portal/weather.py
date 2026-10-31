@@ -54,7 +54,7 @@ class OekofenWeather(CoordinatorEntity[OekofenCoordinator], WeatherEntity):
             manufacturer="ÖkoFEN",
             name=f"ÖkoFEN {texts.group_title('weather')}",
             model=texts.group_description("weather"),
-            via_device=(DOMAIN, entry.entry_id),
+            via_device_id=entry.runtime_data.main_device_id,
         )
 
     @property

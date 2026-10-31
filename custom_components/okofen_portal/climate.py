@@ -46,7 +46,7 @@ class OekofenClimate(OekofenEntity, ClimateEntity):
     """A heating circuit: room temperature, comfort target, mode and what the pump is doing."""
 
     _attr_name = None
-    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.OFF, HVACMode.AUTO, HVACMode.HEAT]
     _attr_preset_modes = [PRESET_COMFORT, PRESET_ECO]
     _attr_supported_features = (
@@ -87,11 +87,11 @@ class OekofenClimate(OekofenEntity, ClimateEntity):
         return HVACAction.HEATING if self._value("L_hk[{n}].pumpe") else HVACAction.IDLE
 
     @property
-    def native_current_temperature(self) -> float | None:
+    def current_temperature(self) -> float | None:
         return self._value("L_hk[{n}].raumtemp_ist")
 
     @property
-    def native_target_temperature(self) -> float | None:
+    def target_temperature(self) -> float | None:
         return self._value("hk[{n}].raumtemp_heizen")  # the comfort setpoint
 
     @property

@@ -66,7 +66,7 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
                 manufacturer="ÖkoFEN",
                 name=f"ÖkoFEN {data.texts.group_title(group_id)}",
                 model=data.texts.group_description(group_id),
-                via_device=(DOMAIN, entry_id),
+                via_device_id=data.main_device_id,
             )
         # ÖkoFEN's own help text when the portal has one, otherwise our explanation
         self._attr_extra_state_attributes = {

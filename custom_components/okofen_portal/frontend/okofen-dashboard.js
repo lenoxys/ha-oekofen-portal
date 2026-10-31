@@ -85,6 +85,7 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 .hist .cross{stroke:var(--mut);stroke-width:1}
 .replay{display:flex;align-items:center;gap:12px;margin:6px -8px -8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg);border-radius:0 0 12px 12px}
 .replay button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 10px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
+.replay button:disabled,.rpTrack input:disabled{opacity:.4;cursor:default}
 .replay #rpPlay{width:40px;height:40px;border-radius:50%;padding:0;background:var(--fg);color:var(--card);border-color:var(--fg)}
 .rpTrack{position:relative;flex:1;height:44px}
 .rpTrack svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:30px}
@@ -416,7 +417,9 @@ class OkofenDashboard extends HTMLElement {
       this._src = this._t ? this._t.error : '';
     }
     if (this._t) this._render();
-    if (this._tab !== 'solar' && Date.now() - this._histAt > 120000) this._loadHistory();
+    // every 2 min, every 30 s while there is almost nothing yet
+    const histEvery = this._hist && this._hist.points.length >= 2 ? 120000 : 30000;
+    if (this._tab !== 'solar' && Date.now() - this._histAt > histEvery) this._loadHistory();
   }
 
   async _loadHistory() {
@@ -520,11 +523,17 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const range = this._q('rpRange'), strip = this._q('rpStrip'), h = this._hist;
     if (!range) return;
     const n = h ? h.points.length : 0;
-    this._q('replay')?.toggleAttribute('hidden', !n);
+    // always shown, greyed out until the integration has recorded something (it starts at install)
+    this._q('replay')?.removeAttribute('hidden');
+    range.disabled = this._q('rpPlay').disabled = n < 2;
     range.max = Math.max(0, n - 1);
     range.value = this._replay ?? range.max;
     this._rpTime();
-    if (!n) { strip.innerHTML = ''; return; }
+    if (!n) {
+      this._q('rpTrack').querySelectorAll('span').forEach((e) => e.remove());
+      strip.innerHTML = '<rect x="0" y="12" width="1000" height="6" rx="3" fill="var(--line)"/>';
+      return;
+    }
     // progression strip: day boundaries and when the burner and the solar pump ran, so the moments to look at stand out
     const idx = Object.fromEntries(h.series.map((k, i) => [k, i + 1])), t0 = h.points[0][0], span = Math.max(60, h.points[n - 1][0] - t0);
     const x = (ts) => ((ts - t0) / span * 1000).toFixed(1);
@@ -555,7 +564,7 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     if (!el) return;
     const p = this._replay != null && h ? h.points[this._replay] : null;
     el.classList.toggle('past', !!p);
-    if (!p) { el.textContent = tr.live; return; }
+    if (!p) { el.textContent = h && h.points.length >= 2 ? tr.live : tr.empty; return; }
     const d = new Date(p[0] * 1000), day0 = new Date(); day0.setHours(0, 0, 0, 0);
     el.textContent = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${d.toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}`;
   }
