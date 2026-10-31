@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "ÖkoFEN-Portal",
-        "description": "Melde dich mit deinem my.oekofen.info-Konto an. Optional kannst du die lokale Adresse der Regelung (z. B. 192.168.0.10) und das lokale Passwort angeben oder die vollständige vom Touch angezeigte URL einfügen (http://192.168.0.10:4321/<password>/all): Die schnellen Werte werden dann alle 10 s lokal gelesen und das Portal nur noch für den Rest verwendet.",
+        "description": "Melde dich mit deinem my.oekofen.info-Konto an. Optional kannst du die lokale Adresse der Regelung (z. B. 192.168.0.10) und das lokale Passwort angeben oder die vollständige vom Touch angezeigte URL einfügen (http://192.168.0.10:4321/PASSWORD/all): Die schnellen Werte werden dann alle 10 s lokal gelesen und das Portal nur noch für den Rest verwendet.",
         "data": {
           "username": "Benutzername",
           "password": "Passwort",

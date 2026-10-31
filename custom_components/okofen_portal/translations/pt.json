@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Portal ÖkoFEN",
-        "description": "Inicie sessão com a sua conta my.oekofen.info. Opcionalmente, adicione o endereço local do controlador (p. ex. 192.168.0.10) e a respetiva palavra-passe local, ou cole o URL completo apresentado pelo Touch (http://192.168.0.10:4321/<password>/all): os valores rápidos passam a ser lidos localmente de 10 em 10 s e o portal só é usado para o resto.",
+        "description": "Inicie sessão com a sua conta my.oekofen.info. Opcionalmente, adicione o endereço local do controlador (p. ex. 192.168.0.10) e a respetiva palavra-passe local, ou cole o URL completo apresentado pelo Touch (http://192.168.0.10:4321/PASSWORD/all): os valores rápidos passam a ser lidos localmente de 10 em 10 s e o portal só é usado para o resto.",
         "data": {
           "username": "Nome de utilizador",
           "password": "Palavra-passe",

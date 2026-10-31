@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "ÖkoFEN 门户",
-        "description": "请使用您的 my.oekofen.info 账户登录。可选择性地填写控制器的本地地址（例如 192.168.0.10）及其本地密码，或粘贴 Touch 上显示的完整 URL（http://192.168.0.10:4321/<password>/all）：此时快速变化的数值将每 10 秒从本地读取，门户仅用于其余数据。",
+        "description": "请使用您的 my.oekofen.info 账户登录。可选择性地填写控制器的本地地址（例如 192.168.0.10）及其本地密码，或粘贴 Touch 上显示的完整 URL（http://192.168.0.10:4321/PASSWORD/all）：此时快速变化的数值将每 10 秒从本地读取，门户仅用于其余数据。",
         "data": {
           "username": "用户名",
           "password": "密码",
