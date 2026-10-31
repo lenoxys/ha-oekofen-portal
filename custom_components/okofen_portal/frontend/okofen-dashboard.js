@@ -564,7 +564,9 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     if (!el) return;
     const p = this._replay != null && h ? h.points[this._replay] : null;
     el.classList.toggle('past', !!p);
-    if (!p) { el.textContent = h && h.points.length >= 2 ? tr.live : tr.empty; return; }
+    const empty = !h || h.points.length < 2;
+    el.title = empty ? this._t.history.empty : '';  // explains that the integration records from now on
+    if (!p) { el.textContent = empty ? tr.empty : tr.live; return; }
     const d = new Date(p[0] * 1000), day0 = new Date(); day0.setHours(0, 0, 0, 0);
     el.textContent = `${d < day0 ? this._t.history.yesterday : this._t.history.today} ${d.toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})}`;
   }
