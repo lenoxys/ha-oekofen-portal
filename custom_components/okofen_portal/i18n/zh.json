@@ -476,7 +476,14 @@
         "mild_outdoor": "室外低于采暖限值",
         "tank_cold": "水箱顶部",
         "hot_water_low": "生活热水探头",
-        "room_warm": "室温"
+        "room_warm": "室温",
+        "occupied": "无人在家",
+        "far_away": "很远：仅余热"
+      },
+      "presence": {
+        "home": "在家",
+        "near": "外出，较近",
+        "far": "外出，较远"
       }
     },
     "history": {

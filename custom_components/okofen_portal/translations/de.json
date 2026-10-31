@@ -193,12 +193,16 @@
         "title": "Solare Überheizung",
         "description": "An sonnigen Tagen wird der Komfort-Sollwert angehoben, um das Haus ohne Kessel mit dem Überschuss des Pufferspeichers zu heizen. Die Überheizung endet, sobald der Brenner startet, Puffer oder Warmwasser zu stark abkühlen oder der Sollwert von Hand geändert wird.",
         "data": {
-          "target": "Komfort-Sollwert während der Überheizung",
-          "tank_threshold": "Puffer oben für den Start (leer: berechnet)",
+          "target": "Höchster Komfort-Sollwert während der Überhöhung",
+          "tank_threshold": "Mindestens nötige Puffer-oben-Temperatur zum Start (leer: aus der Heizkurve)",
           "hot_water_reserve": "Warmwasserreserve",
           "after_sunrise": "Beginn nach Sonnenaufgang",
           "before_sunset": "Ende vor Sonnenuntergang",
-          "climates": "Zu öffnende Heizkörperthermostate"
+          "climates": "Zu öffnende Heizkörperthermostate",
+          "persons": "Personen: jemand zu Hause, keine Überhöhung",
+          "alarm": "Alarm: abwesend scharf, niemand da; Nacht scharf, jemand zu Hause",
+          "far_km": "Alle weiter entfernt: nur der Überschuss",
+          "surplus": "Puffer oben, der auch bei Abwesenheit aller ins Haus entladen wird"
         }
       }
     }

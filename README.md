@@ -74,15 +74,19 @@ The replay and history come from Home Assistant's own history (the recorder), so
 
 ## Solar boost (experimental)
 
-On sunny days, the buffer tank often holds more solar heat than the house uses. The solar boost spends it: it **raises the comfort temperature** (24 °C by default) and **opens the radiator valves you choose**, so the house stores heat in its walls during the day and needs less heating in the evening, without starting the boiler.
+On sunny days, the buffer tank often holds more solar heat than the house uses. The solar boost spends it: it **raises the comfort temperature as far as the buffer can supply** (up to 24 °C by default) and **opens the radiator valves you choose**, so the house stores heat in its walls during the day and needs less heating in the evening, without starting the boiler.
 
 ÖkoFEN's own *solar discharge* function cannot do this on most installations: it starts at 82 °C, does not protect the hot water reserve, ignores the sunset and does not control thermostatic radiator valves.
 
-**Turn it on**: first open **ÖkoFEN Portal → Configure** and pick your radiator valves (any `climate` entities), then turn on the **Solar boost** switch. It is off by default.
+**Turn it on**: first open **ÖkoFEN Portal → Configure** and pick your radiator valves (any `climate` entities), and optionally the people and the alarm panel (see below), then turn on the **Solar boost** switch. It is off by default.
 
-**It starts** when all of these are true: the burner is off, heating is on, it is between 2 hours after sunrise and 1 h 30 before sunset, the forecast is sunny (under the controller's own cloud limit), it is colder outside than the heating limit, the top of the buffer tank is hot enough that raising the comfort will not call the boiler, the hot water keeps its reserve (55 °C by default), and the room is below the target.
+**It starts** when all of these are true: the burner is off, heating is on, it is between 2 hours after sunrise and 1 h 30 before sunset, the forecast is sunny (under the controller's own cloud limit), it is colder outside than the heating limit, the top of the buffer tank is hot enough that raising the comfort by 1 °C will not call the boiler, the hot water keeps its reserve (55 °C by default), the room is below what can be reached, and nobody is home.
 
-**It stops** and puts back your comfort temperature and radiator valves as soon as one condition is no longer met, and **immediately if the burner starts**. If you change the comfort temperature yourself during a boost, your value is kept and the boost does not start again that day; a radiator valve you changed is left alone. After a restart, the integration first puts everything back.
+**How high it goes**: the boost predicts the buffer temperature the controller will ask for from your own heating curve (base point, slope, maximum flow, buffer overshoot, plus a margin for the controller's room correction). It starts 1 °C above your comfort temperature, then climbs by 0.5 °C every 2 minutes while the buffer can follow, up to the highest comfort set in the options. If the buffer cools, or the controller asks more than the buffer holds, it steps down at once.
+
+**Presence** (optional): pick the people (`person` entities, their phone's position) and your alarm panel. Someone home, or the alarm armed for the night: no boost, the house is heated as usual. Everyone away but within 30 km: the boost warms the house up for their return. Everyone further away: only if the buffer is very hot (80 °C by default), to dump the surplus into the house. The alarm armed away counts as nobody home, even if a phone has not updated yet.
+
+**It stops** and puts back your comfort temperature and radiator valves as soon as one condition is no longer met, and **immediately if the burner starts, someone comes home, or the buffer or the hot water gets too cold**. If you change the comfort temperature yourself during a boost, your value is kept and the boost does not start again that day; a radiator valve you changed is left alone. After a restart, the integration first puts everything back.
 
 **Follow it** in the panel's *Solar optimisation* tab, or with the **Solar boost state** sensor (*off*, *waiting*, *boosting*, *restoring*; the `reason` attribute says what it is waiting for).
 
@@ -90,13 +94,17 @@ On sunny days, the buffer tank often holds more solar heat than the house uses. 
 
 | Option | Default |
 |---|---|
-| Comfort temperature during the boost | 24 °C |
-| Buffer top temperature to start | computed from your heating settings |
+| Highest comfort temperature during the boost | 24 °C |
+| Buffer top needed at least to start | none: your heating curve decides |
 | Hot water reserve kept | 55 °C |
 | Start after sunrise / stop before sunset | 120 / 90 min |
 | Radiator valves to open | none |
+| People: someone home, no boost | none |
+| Alarm panel: armed away, nobody home; armed for the night, someone home | none |
+| Everyone further than this: only the surplus | 30 km |
+| Buffer top dumped into the house even when everyone is far away | 80 °C |
 
-The room settles at the comfort temperature **plus the controller's own offsets** (remote control offset, eco mode on sunny days), so it may stay a few degrees under the target. Try it on one sunny day first and watch the panel.
+The room settles at the comfort temperature **plus the controller's own offsets** (remote control offset, eco mode on sunny days), so it may stay a few degrees under the target. With a steep heating curve, even +1 °C can need a hot buffer: the *Solar optimisation* tab shows the buffer top each step needs. Try it on one sunny day first and watch the panel.
 
 ## Settings you can change
 

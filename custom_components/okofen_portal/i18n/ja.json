@@ -476,7 +476,14 @@
         "mild_outdoor": "外気温が暖房限界未満",
         "tank_cold": "タンク上部",
         "hot_water_low": "給湯センサー",
-        "room_warm": "室温"
+        "room_warm": "室温",
+        "occupied": "誰も在宅していない",
+        "far_away": "遠方：余剰のみ"
+      },
+      "presence": {
+        "home": "在宅",
+        "near": "外出・近い",
+        "far": "外出・遠い"
       }
     },
     "history": {

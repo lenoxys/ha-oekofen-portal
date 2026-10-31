@@ -1,5 +1,9 @@
 """Solar boost: raise the comfort setpoint on sunny days to heat the house with the buffer's surplus.
 
+The comfort is raised as far as the buffer can supply without calling the boiler (adaptive target), from
+the controller's own heating curve, and lowered at once when the buffer setpoint it then asks for gets
+too close to the buffer top. Not when someone is home; only the surplus when everyone is far away.
+
 ÖkoFEN's own solar discharge cannot do it (it starts at 82 °C, knows neither the hot water reserve
 nor the sunset, and does not open the radiator heads). This module only decides; ``boost.py`` writes.
 Does not import Home Assistant.
@@ -9,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from datetime import datetime
+import math
 
 # short name -> portal variable
 KEYS = {
@@ -28,24 +33,37 @@ KEYS = {
     "cloud_limit": "LOCAL.weather_limit",  # the controller's own "sunny" limit, %
     "burner": "LOCAL.L_ke_brennerkontakt_1",
     "sun": "LOCAL.L_weather[0]",  # "...|07:45|17:53": sunrise and sunset
+    "room_set": "LOCAL.L_hk[0].raumtemp_soll",  # comfort + the controller's offsets (remote, eco)
+    "curve_foot": "LOCAL.hk[0].heizkurve_fusspunkt",
+    "curve_slope": "LOCAL.hk[0].heizkurve_steigung",
 }
 COMFORT_KEY = KEYS["comfort"]
 DWELL = 600  # s between two changes, except to stop for the burner, a manual change or missing data
 HYSTERESIS = 1.5  # K between the start and stop thresholds
-URGENT = {"burner", "manual", "missing_data", "heating_off"}
+# stops not delayed by DWELL (starts always wait): the buffer and hot water ones protect from the boiler
+URGENT = {"burner", "manual", "missing_data", "heating_off", "occupied", "tank_cold", "hot_water_low"}
 REASONS = (
-    "running", "disabled", "missing_data", "burner", "manual", "heating_off", "outside_window",
+    "running", "disabled", "missing_data", "burner", "manual", "occupied", "far_away", "heating_off", "outside_window",
     "cloudy", "mild_outdoor", "tank_cold", "hot_water_low", "room_warm", "dwell",
 )
+STEP = 0.5  # K: the comfort climbs by this much
+STEP_DWELL = 120  # s between two steps up, so the controller's new buffer setpoint is read before the next one
+# K the controller adds to its heating curve to catch up the room (seen up to +6 K on 30 Oct 2026, one house)
+# ponytail: one margin for every house; learn it from flow_set against the curve if it turns out too tight or loose
+ROOM_INFLUENCE = 8
+HOME = ("armed_home", "armed_night")  # alarm states: someone is home
+AWAY = ("armed_away", "armed_vacation")
 
 
 @dataclass
 class Options:
-    target: float = 24  # comfort setpoint written while boosting, °C
-    tank_threshold: float | None = None  # buffer top to start; None: worst case (flow max + overshoot + 1 K + hysteresis)
+    target: float = 24  # highest comfort setpoint written while boosting, °C
+    tank_threshold: float | None = None  # buffer top needed at least to start; None: only the heating curve decides
     hot_water_reserve: float = 55  # hot water probe kept above this, °C
     after_sunrise: int = 120  # minutes
     before_sunset: int = 90
+    far_km: float = 30  # everyone further than this: no boost, except the surplus
+    surplus: float = 80  # buffer top that is dumped into the house even when everyone is far away, °C
 
     @classmethod
     def from_dict(cls, d) -> Options:
@@ -63,49 +81,118 @@ def sun_window(sun: str, after_sunrise: int, before_sunset: int) -> tuple[int, i
     return rh * 60 + rm + after_sunrise, sh * 60 + sm - before_sunset
 
 
-def checks(written: float | None, now: datetime, v: dict, opt: Options) -> list[dict]:
+def need(comfort: float, v: dict) -> float:
+    """Buffer top the controller asks for when the comfort is ``comfort``: its curve, the room catch-up, capped."""
+    offset = v["room_set"] - v["comfort"] if v["room_set"] > 8 else 0  # 8 °C: the idle setpoint
+    flow = v["curve_foot"] + v["curve_slope"] * (comfort + offset - v["outdoor"]) + ROOM_INFLUENCE
+    return min(flow, v["flow_max"]) + v["overshoot"] + 1
+
+
+def best(written: float | None, base: float, v: dict, opt: Options) -> float | None:
+    """Highest comfort the buffer can supply, in steps above ``base``; None when not even one step."""
+    margin = 0 if written is not None else HYSTERESIS
+    top = v["top"]
+    steps = int((opt.target - base) / STEP + 1e-9)
+    found = None
+    for k in range(1, steps + 1):
+        if need(base + k * STEP, v) + margin > top:
+            break
+        found = base + k * STEP
+    if written is not None and v["tank_set"] > 8 and v["tank_set"] + 1 > v["top"]:
+        found = written - STEP if written - STEP > base else None  # the controller already asks more than the buffer holds
+    return found
+
+
+def presence(alarm: str | None, persons: list[tuple[str, float | None, float | None]], home: tuple[float, float] | None,
+             far_km: float) -> str | None:
+    """"home", "near", "far", or None when nothing says. ``persons``: (state, latitude, longitude) of each person.
+
+    The alarm armed for the night means home, armed away means nobody home whatever the phones say;
+    otherwise someone home is home, and the nearest person decides near or far.
+    """
+    if alarm in HOME:
+        return "home"
+    armed_away = away = alarm in AWAY
+    distances = []
+    for state, lat, lon in persons:
+        if state in ("unknown", "unavailable", None):
+            continue
+        if state == "home" and not armed_away:
+            return "home"
+        away = True
+        if lat is not None and lon is not None and home is not None:
+            distances.append(_km(lat, lon, *home))
+    if distances:
+        return "near" if min(distances) <= far_km else "far"
+    return "near" if away else None
+
+
+def _km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    p1, p2, dl = math.radians(lat1), math.radians(lat2), math.radians(lon2 - lon1)
+    return 6371 * 2 * math.asin(math.sqrt(math.sin((p2 - p1) / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2))
+
+
+def checks(written: float | None, now: datetime, v: dict, opt: Options, base: float | None = None) -> list[dict]:
     """Every condition, in order: ``id`` is the reason when it fails; ``value`` and ``limit`` are for the panel.
 
-    ``written``: the comfort we set, None when not boosting (start thresholds, otherwise stop thresholds).
+    ``written``: the comfort we set, None when not boosting (start thresholds, otherwise stop thresholds);
+    ``base``: the comfort to put back (default the current one).
     """
     active = written is not None
     window = None if any(v.get(k) is None for k in KEYS) else sun_window(v["sun"], opt.after_sunrise, opt.before_sunset)
     if window is None:
         return [{"id": "missing_data", "ok": False, "value": None, "limit": None}]
+    base = v["comfort"] if base is None else base
 
     def check(id_: str, ok: bool, value=None, limit=None) -> dict:
         return {"id": id_, "ok": bool(ok), "value": value, "limit": limit}
 
     minute = now.hour * 60 + now.minute
-    # raising the comfort raises the buffer setpoint: start only above the worst case, stop just above the real one
-    if active:
-        tank = v["tank_set"] + 1
-    else:
-        tank = opt.tank_threshold if opt.tank_threshold is not None else v["flow_max"] + v["overshoot"] + 1 + HYSTERESIS
+    # start for at least two steps (1 K), keep while one is still affordable
+    first = base + (STEP if active else 2 * STEP)
+    tank = need(first, v) + (0 if active else HYSTERESIS)
+    if not active and opt.tank_threshold is not None:
+        tank = max(tank, opt.tank_threshold)
+    target = best(written, base, v, opt)
     # the hot water circuit asks the boiler when its probe falls under its own setpoint
     reserve = max(opt.hot_water_reserve, v["ecs_set"] + 1) - (2 if active else 0)
-    room = opt.target + 0.5 if active else opt.target - 1
+    room = (written if active else (target or opt.target)) + (0.5 if active else -1)
+    where = v.get("presence")
     out = [
         check("burner", not v["burner"], v["burner"]),
+        check("occupied", where != "home", where),
+        check("far_away", where != "far" or v["top"] >= opt.surplus, v["top"] if where == "far" else None, opt.surplus),
         check("heating_off", v["mode"] != 0 and v["season"] == 1),
         check("outside_window", window[0] <= minute < window[1], minute, list(window)),
         check("cloudy", v["forecast_clouds"] <= v["cloud_limit"], v["forecast_clouds"], v["cloud_limit"]),
         # the circuit would not heat anyway
         check("mild_outdoor", v["outdoor"] < v["heating_limit"], v["outdoor"], v["heating_limit"]),
-        check("tank_cold", v["top"] >= tank, v["top"], tank),
+        check("tank_cold", v["top"] >= tank and (target is not None and target >= first or base >= opt.target), v["top"], round(tank, 1)),
         check("hot_water_low", v["ecs"] >= reserve, v["ecs"], reserve),
-        check("room_warm", v["room"] < room and (active or v["comfort"] < opt.target), v["room"], room),
+        check("room_warm", v["room"] < room and (active or base < opt.target), v["room"], room),
     ]
     if active:  # someone changed the comfort: leave it to them
         out.insert(1, check("manual", abs(v["comfort"] - written) <= 0.01, v["comfort"], written))
     return out
 
 
-def decide(written: float | None, changed_at: float | None, now: datetime, v: dict, opt: Options) -> tuple[bool, str]:
-    """(boost wanted, reason). ``written``: the comfort we set, None when not boosting; ``v``: short name -> value."""
+def decide(written: float | None, changed_at: float | None, now: datetime, v: dict, opt: Options,
+           base: float | None = None, stepped_at: float | None = None) -> tuple[float | None, str]:
+    """(comfort to hold, None for no boost; reason). ``written``: the comfort we set, None when not boosting;
+    ``base``: the comfort to put back; ``stepped_at``: when the comfort last changed during this boost."""
     active = written is not None
-    reason = next((c["id"] for c in checks(written, now, v, opt) if not c["ok"]), None)
+    base = v.get("comfort") if base is None else base
+    reason = next((c["id"] for c in checks(written, now, v, opt, base) if not c["ok"]), None)
     want = reason is None
     if want != active and reason not in URGENT and changed_at is not None and now.timestamp() - changed_at < DWELL:
-        return active, "dwell"
-    return want, reason or "running"
+        return written, "dwell"
+    if not want:
+        return None, reason
+    target = best(written, base, v, opt)
+    if not active:
+        return base + 2 * STEP, "running"  # start low, then climb
+    # down at once, up one step at a time, once the controller answered the last one
+    if target > written:
+        since = stepped_at if stepped_at is not None else changed_at
+        target = written + STEP if since is None or now.timestamp() - since >= STEP_DWELL else written
+    return target, "running"

@@ -12,6 +12,8 @@ RETRY_MAX = 900
 CONF_LOCAL_HOST = "local_host"
 CONF_LOCAL_PASSWORD = "local_password"
 CONF_CLIMATES = "climates"  # solar boost option: radiator heads (climate entities) opened while boosting
+CONF_PERSONS = "persons"  # solar boost option: person entities, someone home means no boost
+CONF_ALARM = "alarm"  # solar boost option: alarm panel, armed away / for the night
 
 # Variables that the local API does not give: enabled by default and polled fast.
 # key -> (translation key, enabled by default)

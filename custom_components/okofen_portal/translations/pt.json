@@ -193,12 +193,16 @@
         "title": "Sobreaquecimento solar",
         "description": "Em dias de sol, sobe a temperatura de conforto para aquecer a casa com o excedente do depósito de inércia, sem a caldeira. Para assim que o queimador arranca, o depósito ou a água quente arrefecem demasiado ou a temperatura é alterada à mão.",
         "data": {
-          "target": "Temperatura de conforto durante o sobreaquecimento",
-          "tank_threshold": "Topo do depósito para arrancar (vazio: calculado)",
+          "target": "Temperatura de conforto mais alta durante o reforço",
+          "tank_threshold": "Topo do depósito mínimo para iniciar (vazio: pela curva de aquecimento)",
           "hot_water_reserve": "Reserva de água quente",
           "after_sunrise": "Início após o nascer do sol",
           "before_sunset": "Fim antes do pôr do sol",
-          "climates": "Cabeças termostáticas a abrir"
+          "climates": "Cabeças termostáticas a abrir",
+          "persons": "Pessoas: alguém em casa, sem reforço",
+          "alarm": "Alarme: armado ausente, ninguém; armado noite, alguém em casa",
+          "far_km": "Todos mais longe: só o excedente",
+          "surplus": "Topo do depósito descarregado na casa mesmo com todos longe"
         }
       }
     }

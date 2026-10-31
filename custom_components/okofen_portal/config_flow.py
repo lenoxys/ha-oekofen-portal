@@ -14,7 +14,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import OekofenAuthError, OekofenConnectionError, OekofenPortalClient
-from .const import CONF_CLIMATES, CONF_LOCAL_HOST, CONF_LOCAL_PASSWORD, DOMAIN
+from .const import CONF_ALARM, CONF_CLIMATES, CONF_LOCAL_HOST, CONF_LOCAL_PASSWORD, CONF_PERSONS, DOMAIN
 from .local import OekofenLocalClient
 from .solar_boost import Options
 
@@ -38,6 +38,13 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Optional(CONF_CLIMATES, default=[]): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="climate", multiple=True)
         ),
+        # presence: someone home, no boost; everyone far away, only the surplus
+        vol.Optional(CONF_PERSONS, default=[]): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="person", multiple=True)
+        ),
+        vol.Optional(CONF_ALARM): selector.EntitySelector(selector.EntitySelectorConfig(domain="alarm_control_panel")),
+        vol.Required("far_km", default=DEFAULTS.far_km): _number(1, 500, 1, "km"),
+        vol.Required("surplus", default=DEFAULTS.surplus): _number(60, 95, 1, "°C"),
     }
 )
 

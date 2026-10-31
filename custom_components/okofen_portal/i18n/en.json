@@ -476,7 +476,14 @@
         "mild_outdoor": "Outdoor below heating limit",
         "tank_cold": "Buffer top",
         "hot_water_low": "Hot water probe",
-        "room_warm": "Room"
+        "room_warm": "Room",
+        "occupied": "Nobody home",
+        "far_away": "Far away: surplus only"
+      },
+      "presence": {
+        "home": "home",
+        "near": "away, close",
+        "far": "away, far"
       }
     },
     "history": {

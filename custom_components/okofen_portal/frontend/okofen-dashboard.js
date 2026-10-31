@@ -584,7 +584,8 @@ class OkofenDashboard extends HTMLElement {
         case 'cloudy': return [pct(c.value), `≤ ${pct(c.limit)}`];
         case 'burner': return [c.value ? t.on : t.off, ''];
         case 'manual': return [deg(c.value), `= ${deg(c.limit)}`];
-        case 'tank_cold': case 'hot_water_low': return [deg(c.value), `≥ ${deg(c.limit)}`];
+        case 'occupied': return [t.presence?.[c.value] || c.value, ''];
+        case 'tank_cold': case 'hot_water_low': case 'far_away': return [deg(c.value), `≥ ${deg(c.limit)}`];
         default: return [deg(c.value), `< ${deg(c.limit)}`];
       }
     };
@@ -599,7 +600,7 @@ ${b.switch ? `<button data-switch="${b.enabled ? 'turn_off' : 'turn_on'}">${esc(
 <p class="mut">${esc(t.intro)}</p>
 <h2>${esc(ses ? t.keepIf : t.startIf)}</h2><table>${rows}</table>
 ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 1000).toLocaleTimeString(this._lang, {hour: '2-digit', minute: '2-digit'})} · ${esc(t.comfort)} ${deg(ses.comfort)} → ${deg(ses.target)} · ${esc(t.heads)} ${Object.keys(ses.heads).length}</p>` : ''}
-<h2>${esc(t.settings)}</h2><p>${esc(t.comfort)} ${deg(b.target)} · ${esc(t.heads)} ${b.heads.length ? esc(b.heads.map((e) => this._hass.states[e]?.attributes.friendly_name || e).join(', ')) : '–'}</p><p class="mut">${esc(t.settingsHint)}</p>`;
+<h2>${esc(t.settings)}</h2><p>${esc(t.comfort)} ≤ ${deg(b.target)} · ${esc(t.heads)} ${b.heads.length ? esc(b.heads.map((e) => this._hass.states[e]?.attributes.friendly_name || e).join(', ')) : '–'}</p><p class="mut">${esc(t.settingsHint)}</p>`;
   }
 
   // ===== replay under the schematic: yesterday and today, play / pause, back to now =====

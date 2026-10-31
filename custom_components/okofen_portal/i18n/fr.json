@@ -476,7 +476,14 @@
         "mild_outdoor": "Extérieur sous la limite de chauffe",
         "tank_cold": "Haut du ballon",
         "hot_water_low": "Sonde ECS",
-        "room_warm": "Ambiance"
+        "room_warm": "Ambiance",
+        "occupied": "Personne à la maison",
+        "far_away": "Loin : surplus seulement"
+      },
+      "presence": {
+        "home": "à la maison",
+        "near": "absent, proche",
+        "far": "absent, loin"
       }
     },
     "history": {

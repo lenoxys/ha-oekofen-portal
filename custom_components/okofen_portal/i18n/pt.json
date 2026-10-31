@@ -476,7 +476,14 @@
         "mild_outdoor": "Exterior abaixo do limite",
         "tank_cold": "Topo do depósito",
         "hot_water_low": "Sonda AQS",
-        "room_warm": "Ambiente"
+        "room_warm": "Ambiente",
+        "occupied": "Ninguém em casa",
+        "far_away": "Longe: só excedente"
+      },
+      "presence": {
+        "home": "em casa",
+        "near": "fora, perto",
+        "far": "fora, longe"
       }
     },
     "history": {

@@ -1,4 +1,5 @@
-"""Runs the solar boost: reads the inputs every 30 s, writes the comfort and the radiator heads, restores them."""
+"""Runs the solar boost: reads the inputs every 30 s, writes the comfort (climbing or stepping down) and the
+radiator heads, restores them."""
 
 from __future__ import annotations
 
@@ -15,16 +16,17 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
 from .api import OekofenError
-from .const import CONF_CLIMATES, DOMAIN, RETRY_DELAYS, RETRY_MAX
+from .const import CONF_ALARM, CONF_CLIMATES, CONF_PERSONS, DOMAIN, RETRY_DELAYS, RETRY_MAX
 from .control import async_apply
-from .solar_boost import COMFORT_KEY, KEYS, Options, checks, decide
+from .solar_boost import COMFORT_KEY, KEYS, Options, checks, decide, presence
 
 _LOGGER = logging.getLogger(__name__)
 STATES = ("inactive", "waiting", "active", "restoring")
 
 
 class SolarBoost:
-    """One per config entry. ``session`` (also stored) is what to put back: comfort, heads, what we wrote."""
+    """One per config entry. ``session`` (also stored) is what to put back: comfort, heads; and what we wrote:
+    ``target`` the comfort now, ``heads_to`` the heads, ``stepped_at`` the last step."""
 
     def __init__(self, hass: HomeAssistant, entry) -> None:
         self.hass = hass
@@ -71,25 +73,40 @@ class SolarBoost:
         for name, key in KEYS.items():
             reading = data.reading(key)
             out[name] = None if reading is None else reading.value
+        out["presence"] = self._presence()
         return out
+
+    def _presence(self) -> str | None:
+        options = self.entry.options
+        alarm = self.hass.states.get(options.get(CONF_ALARM) or "")
+        persons = []
+        for entity_id in options.get(CONF_PERSONS, []):
+            if (state := self.hass.states.get(entity_id)) is not None:
+                persons.append((state.state, state.attributes.get("latitude"), state.attributes.get("longitude")))
+        home = (self.hass.config.latitude, self.hass.config.longitude)
+        return presence(alarm.state if alarm else None, persons, home, Options.from_dict(options).far_km)
 
     async def async_run(self) -> None:
         async with self._lock:
             if time.monotonic() < self._retry_at:
                 return
             v = self._inputs()
-            written = self.session["target"] if self.session else None
+            session = self.session or {}
+            written, base = session.get("target"), session.get("comfort")
             now, options = dt_util.now(), Options.from_dict(self.entry.options)
-            self.checks = checks(written, now, v, options)
+            self.checks = checks(written, now, v, options, base)
             if self.enabled and not self.session and self._manual_day == now.date():
-                want, self.reason = False, "manual"  # the user took over today: do not fight them
+                target, self.reason = None, "manual"  # the user took over today: do not fight them
             elif self.enabled:
-                want, self.reason = decide(written, self._changed_at, now, v, options)
+                target, self.reason = decide(written, self._changed_at, now, v, options, base, session.get("stepped_at"))
             else:
-                want, self.reason = False, "disabled"
+                target, self.reason = None, "disabled"
+            want = target is not None
             try:
                 if want and not self.session:
-                    await self._begin(v)
+                    await self._begin(v, target)
+                elif want and abs(target - written) > 0.01:
+                    await self._step(target)
                 elif not want and self.session:
                     await self._end(self.reason)
             except (OekofenError, HomeAssistantError, ValueError) as err:
@@ -123,15 +140,15 @@ class SolarBoost:
             except HomeAssistantError as err:
                 _LOGGER.warning("Solar boost: %s not set to %s: %s", entity_id, temperature, err)
 
-    async def _begin(self, v: dict) -> None:
-        target = Options.from_dict(self.entry.options).target
+    async def _begin(self, v: dict, target: float) -> None:
+        heads_to = Options.from_dict(self.entry.options).target  # the heads fully open, the comfort climbs
         heads = {}
         for entity_id in self.entry.options.get(CONF_CLIMATES, []):
             state = self.hass.states.get(entity_id)
             if state is not None and state.attributes.get("temperature") is not None:
                 heads[entity_id] = state.attributes["temperature"]
         # saved first: a restart in the middle still knows what to put back
-        self.session = {"comfort": v["comfort"], "heads": heads, "target": target, "since": time.time()}
+        self.session = {"comfort": v["comfort"], "heads": heads, "target": target, "heads_to": heads_to, "since": time.time()}
         await self._store.async_save(self.session)
         try:
             await self._write_comfort(target)
@@ -140,8 +157,16 @@ class SolarBoost:
             await self._store.async_remove()
             raise
         self._changed_at = self.session["since"]
-        await self._set_heads({entity_id: target for entity_id in heads})
+        await self._set_heads({entity_id: heads_to for entity_id in heads})
         _LOGGER.info("Solar boost started: comfort %s -> %s, heads %s", v["comfort"], target, list(heads))
+
+    async def _step(self, target: float) -> None:
+        """Climb or step down; the stored target only changes once written, so a failed write is tried again."""
+        previous = self.session["target"]
+        await self._write_comfort(target)
+        self.session = {**self.session, "target": target, "stepped_at": time.time()}
+        await self._store.async_save(self.session)
+        _LOGGER.info("Solar boost: comfort %s -> %s", previous, target)
 
     async def _end(self, reason: str) -> None:
         session = self.session
@@ -157,7 +182,7 @@ class SolarBoost:
             state = self.hass.states.get(entity_id)
             if state is None and not self.hass.is_running:
                 raise HomeAssistantError(f"{entity_id} not loaded yet")  # starting up: try again shortly
-            if state is not None and state.attributes.get("temperature") == session["target"]:
+            if state is not None and state.attributes.get("temperature") == session.get("heads_to", session["target"]):
                 restore[entity_id] = temperature
         await self._set_heads(restore)
         self.session = None

@@ -191,14 +191,18 @@
     "step": {
       "init": {
         "title": "Surchauffe solaire",
-        "description": "Les jours de soleil, relève la consigne de confort pour chauffer la maison avec le surplus du ballon, sans la chaudière. La surchauffe s'arrête dès que le brûleur démarre, que le ballon ou l'eau chaude refroidissent trop, ou que la consigne est changée à la main.",
+        "description": "Les jours de soleil, monte la consigne de confort aussi haut que le ballon le permet sans chaudière, pour stocker la chaleur solaire dans la maison. Pas quand quelqu'un est là ; quand tout le monde est loin, seulement le surplus. La surchauffe s'arrête dès que le brûleur démarre, que le ballon ou l'eau chaude refroidit trop, que quelqu'un rentre ou que la consigne est changée à la main.",
         "data": {
-          "target": "Consigne de confort pendant la surchauffe",
-          "tank_threshold": "Haut du ballon pour démarrer (vide : calculé)",
+          "target": "Consigne de confort la plus haute pendant la surchauffe",
+          "tank_threshold": "Haut du ballon minimum pour démarrer (vide : selon la courbe de chauffe)",
           "hot_water_reserve": "Réserve d'eau chaude conservée",
           "after_sunrise": "Début après le lever du soleil",
           "before_sunset": "Fin avant le coucher du soleil",
-          "climates": "Têtes de radiateur à ouvrir"
+          "climates": "Têtes de radiateur à ouvrir",
+          "persons": "Personnes : quelqu'un à la maison, pas de surchauffe",
+          "alarm": "Alarme : armée absent, personne ; armée nuit, quelqu'un à la maison",
+          "far_km": "Tout le monde au-delà : seulement le surplus",
+          "surplus": "Haut du ballon déchargé dans la maison même si tout le monde est loin"
         }
       }
     }

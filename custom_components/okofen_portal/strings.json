@@ -191,14 +191,18 @@
     "step": {
       "init": {
         "title": "Solar boost",
-        "description": "On sunny days, raise the comfort setpoint to heat the house with the buffer's surplus, without the boiler. The boost stops as soon as the burner starts, the buffer or the hot water gets too cold, or the setpoint is changed by hand.",
+        "description": "On sunny days, raise the comfort setpoint as far as the buffer can supply without the boiler, to store solar heat in the house. Not when someone is home; when everyone is far away, only the surplus. The boost stops as soon as the burner starts, the buffer or the hot water gets too cold, someone comes home, or the setpoint is changed by hand.",
         "data": {
-          "target": "Comfort setpoint while boosting",
-          "tank_threshold": "Buffer top to start (empty: computed)",
+          "target": "Highest comfort setpoint while boosting",
+          "tank_threshold": "Buffer top needed at least to start (empty: from the heating curve)",
           "hot_water_reserve": "Hot water reserve kept",
           "after_sunrise": "Start after sunrise",
           "before_sunset": "Stop before sunset",
-          "climates": "Radiator heads to open"
+          "climates": "Radiator heads to open",
+          "persons": "People: someone home, no boost",
+          "alarm": "Alarm: armed away, nobody home; armed for the night, someone home",
+          "far_km": "Everyone further than this: only the surplus",
+          "surplus": "Buffer top dumped into the house even when everyone is far"
         }
       }
     }
