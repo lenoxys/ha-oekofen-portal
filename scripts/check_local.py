@@ -31,7 +31,12 @@ async def main() -> None:
         theirs = await cloud.async_read(list(local.MAP))
         for key in local.MAP:
             a, b = mine.get(key), theirs.get(key)
-            same = a is not None and b is not None and abs(float(a.value) - float(b.value)) <= 1
+            if a is None or b is None:
+                same = False
+            elif isinstance(a.value, str):  # forecast: the time of the first one is when it was asked
+                same = a.value.split("|")[1:] == str(b.value).split("|")[1:]
+            else:
+                same = abs(float(a.value) - float(b.value)) <= 1
             print(f"{'ok ' if same else 'DIFF'} {key}: local={a and a.value} portal={b and b.value}")
 
 

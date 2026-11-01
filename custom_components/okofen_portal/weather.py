@@ -29,9 +29,10 @@ PARALLEL_UPDATES = 0
 async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """One weather entity, if the controller has a forecast."""
-    coordinator = entry.runtime_data.slow
-    if WEATHER_KEYS[0] in coordinator.data and "weather" not in entry.runtime_data.hidden:
+    """One weather entity, if the controller has a forecast: from the local interface when it gives it."""
+    data = entry.runtime_data
+    coordinator = data.fast if WEATHER_KEYS[0] in data.fast.data else data.slow
+    if WEATHER_KEYS[0] in coordinator.data and "weather" not in data.hidden:
         async_add_entities([OekofenWeather(coordinator)])
 
 

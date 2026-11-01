@@ -47,7 +47,14 @@ MAP: dict[str, tuple[str, str, int, str]] = {
     "LOCAL.L_ww[0].status": ("ww1", "L_state", 1, ""),  # 0x4000: asks the boiler
     "LOCAL.weather_limit": ("weather", "cloud_limit", 1, "%"),
     "LOCAL.L_weather_forecast_clouds": ("weather", "L_forecast_clouds", 1, "%"),
-    "LOCAL.L_weather[0]": ("forecast", "L_w_0", 1, ""),  # "...|C|07:48|17:50": sunrise and sunset
+    # the controller's weather: now, and the 3-hourly forecast ("...|C|07:48|17:50": the first has sunrise and sunset)
+    "LOCAL.L_weather_temp": ("weather", "L_temp", 10, "°C"),
+    "LOCAL.L_weather_clouds": ("weather", "L_clouds", 1, "%"),
+    "LOCAL.L_weather_forecast_temp": ("weather", "L_forecast_temp", 10, "°C"),
+    "LOCAL.L_weather_forecast_today": ("weather", "L_forecast_today", 1, ""),
+    "LOCAL.L_weather_time_start": ("weather", "L_starttime", 1, ""),
+    "LOCAL.L_weather_time_end": ("weather", "L_endtime", 1, ""),
+    **{f"LOCAL.L_weather[{i}]": ("forecast", f"L_w_{i}", 1, "") for i in range(25)},
 }
 # settings the controller also takes locally (same raw values as the portal: index, or tenths of a degree);
 # matched on a Touch V4.00b: portal comfort 24 °C = hk1.temp_heat 240, hot water forced 55 °C = ww1 2 / 550
