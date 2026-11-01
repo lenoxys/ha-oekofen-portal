@@ -36,7 +36,11 @@ KEYS = {
     "room_set": "LOCAL.L_hk[0].raumtemp_soll",  # comfort + the controller's offsets (remote, eco)
     "curve_foot": "LOCAL.hk[0].heizkurve_fusspunkt",
     "curve_slope": "LOCAL.hk[0].heizkurve_steigung",
+    # status bits: the buffer (0x100) or the hot water (0x4000) asks the boiler, a step before the burner starts
+    "buffer_state": "LOCAL.L_pu[0].status",
+    "ecs_state": "LOCAL.L_ww[0].status",
 }
+OPTIONAL = {"burner", "buffer_state", "ecs_state"}  # the burner (portal only) or the demand (also local) is enough
 COMFORT_KEY = KEYS["comfort"]
 DWELL = 600  # s between two changes, except to stop for the burner, a manual change or missing data
 HYSTERESIS = 1.5  # K between the start and stop thresholds
@@ -139,7 +143,8 @@ def checks(written: float | None, now: datetime, v: dict, opt: Options, base: fl
     ``base``: the comfort to put back (default the current one).
     """
     active = written is not None
-    window = None if any(v.get(k) is None for k in KEYS) else sun_window(v["sun"], opt.after_sunrise, opt.before_sunset)
+    missing = any(v.get(k) is None for k in KEYS if k not in OPTIONAL) or v.get("burner") is None and v.get("buffer_state") is None
+    window = None if missing else sun_window(v["sun"], opt.after_sunrise, opt.before_sunset)
     if window is None:
         return [{"id": "missing_data", "ok": False, "value": None, "limit": None}]
     base = v["comfort"] if base is None else base
@@ -158,8 +163,9 @@ def checks(written: float | None, now: datetime, v: dict, opt: Options, base: fl
     reserve = max(opt.hot_water_reserve, v["ecs_set"] + 1) - (2 if active else 0)
     room = (written if active else (target or opt.target)) + (0.5 if active else -1)
     where = v.get("presence")
+    demand = int(v.get("buffer_state") or 0) & 0x100 or int(v.get("ecs_state") or 0) & 0x4000
     out = [
-        check("burner", not v["burner"], v["burner"]),
+        check("burner", not v.get("burner") and not demand, 1 if v.get("burner") else 2 if demand else 0),  # 2: asked
         check("occupied", where != "home", where),
         check("far_away", where != "far" or v["top"] >= opt.surplus, v["top"] if where == "far" else None, opt.surplus),
         check("heating_off", v["mode"] != 0 and v["season"] == 1),

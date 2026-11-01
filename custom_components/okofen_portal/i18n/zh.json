@@ -468,7 +468,7 @@
         "missing_data": "缺少数值"
       },
       "checks": {
-        "burner": "燃烧器关闭",
+        "burner": "燃烧器关闭，未请求锅炉",
         "manual": "设定未被手动更改",
         "heating_off": "采暖开启",
         "outside_window": "日照时段",
@@ -484,7 +484,8 @@
         "home": "在家",
         "near": "外出，较近",
         "far": "外出，较远"
-      }
+      },
+      "demand": "已请求锅炉"
     },
     "history": {
       "today": "今天",

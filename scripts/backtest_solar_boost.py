@@ -113,6 +113,12 @@ def offline() -> None:
     assert sb.decide(None, just, now, SUNNY, opt) == (None, "dwell")
     assert sb.decide(22.0, just, now, {**running, "forecast_clouds": 60}, opt, 20.0) == (22.0, "dwell")
     assert sb.decide(22.0, just, now, {**running, "burner": 1}, opt, 20.0) == (None, "burner")
+    # the boiler asked (status bits, a step before the burner): the same, and enough without the portal's burner
+    assert sb.decide(22.0, just, now, {**running, "buffer_state": 0x140}, opt, 20.0) == (None, "burner")  # buffer
+    assert sb.decide(22.0, just, now, {**running, "ecs_state": 0x4210}, opt, 20.0) == (None, "burner")  # hot water
+    assert sb.decide(None, None, now, {**SUNNY, "buffer_state": 0x290, "ecs_state": 0x2010}, opt) == (21.0, "running")
+    assert sb.decide(None, None, now, {**SUNNY, "burner": None, "buffer_state": 0x200}, opt) == (21.0, "running")
+    assert sb.decide(None, None, now, {**SUNNY, "burner": None}, opt)[1] == "missing_data"  # neither
     assert sb.decide(22.0, just, now, {**running, "comfort": 22.5}, opt, 20.0) == (None, "manual")
     assert sb.decide(None, t - 601, now, SUNNY, opt) == (21.0, "running")
     # restart in the middle of a boost: the stored target is what we wrote, it carries on climbing from there

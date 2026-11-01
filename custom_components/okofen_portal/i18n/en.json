@@ -468,7 +468,7 @@
         "missing_data": "Values missing"
       },
       "checks": {
-        "burner": "Burner off",
+        "burner": "Burner off, boiler not asked",
         "manual": "Setpoint not changed by hand",
         "heating_off": "Heating on",
         "outside_window": "Sun window",
@@ -484,7 +484,8 @@
         "home": "home",
         "near": "away, close",
         "far": "away, far"
-      }
+      },
+      "demand": "boiler asked"
     },
     "history": {
       "today": "Today",

@@ -468,7 +468,7 @@
         "missing_data": "Faltan valores"
       },
       "checks": {
-        "burner": "Quemador apagado",
+        "burner": "Quemador apagado, caldera no solicitada",
         "manual": "Consigna no cambiada a mano",
         "heating_off": "Calefacción encendida",
         "outside_window": "Ventana solar",
@@ -484,7 +484,8 @@
         "home": "en casa",
         "near": "fuera, cerca",
         "far": "fuera, lejos"
-      }
+      },
+      "demand": "caldera solicitada"
     },
     "history": {
       "today": "Hoy",

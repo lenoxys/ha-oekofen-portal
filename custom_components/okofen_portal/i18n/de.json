@@ -468,7 +468,7 @@
         "missing_data": "Werte fehlen"
       },
       "checks": {
-        "burner": "Brenner aus",
+        "burner": "Brenner aus, Kessel nicht angefordert",
         "manual": "Sollwert nicht von Hand geändert",
         "heating_off": "Heizung an",
         "outside_window": "Sonnenfenster",
@@ -484,7 +484,8 @@
         "home": "zu Hause",
         "near": "abwesend, nah",
         "far": "abwesend, weit"
-      }
+      },
+      "demand": "Kessel angefordert"
     },
     "history": {
       "today": "Heute",

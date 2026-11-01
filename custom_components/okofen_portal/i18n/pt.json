@@ -468,7 +468,7 @@
         "missing_data": "Valores em falta"
       },
       "checks": {
-        "burner": "Queimador parado",
+        "burner": "Queimador desligado, caldeira não solicitada",
         "manual": "Temperatura não mudada à mão",
         "heating_off": "Aquecimento ligado",
         "outside_window": "Janela solar",
@@ -484,7 +484,8 @@
         "home": "em casa",
         "near": "fora, perto",
         "far": "fora, longe"
-      }
+      },
+      "demand": "caldeira solicitada"
     },
     "history": {
       "today": "Hoje",

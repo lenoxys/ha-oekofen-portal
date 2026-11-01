@@ -582,7 +582,7 @@ class OkofenDashboard extends HTMLElement {
       switch (c.id) {
         case 'outside_window': return [hhmm(c.value), `${hhmm(c.limit[0])} – ${hhmm(c.limit[1])}`];
         case 'cloudy': return [pct(c.value), `≤ ${pct(c.limit)}`];
-        case 'burner': return [c.value ? t.on : t.off, ''];
+        case 'burner': return [c.value === 2 ? t.demand : c.value ? t.on : t.off, ''];
         case 'manual': return [deg(c.value), `= ${deg(c.limit)}`];
         case 'occupied': return [t.presence?.[c.value] || c.value, ''];
         case 'tank_cold': case 'hot_water_low': case 'far_away': return [deg(c.value), `≥ ${deg(c.limit)}`];
@@ -592,7 +592,7 @@ class OkofenDashboard extends HTMLElement {
     const reason = t.reasons[b.reason] || (t.checks[b.reason] ? `${t.waitingFor} ${t.checks[b.reason]}` : b.reason);
     const rows = b.checks.map((c) => {
       const [value, limit] = fmtCheck(c);
-      return `<tr class="${c.ok ? 'ok' : 'no'}"><td>${c.ok ? '✓' : '✗'}</td><td>${esc(t.checks[c.id] || c.id)}</td><td class="v">${esc(value)}</td><td class="l">${esc(limit)}</td></tr>`;
+      return `<tr class="${c.ok ? 'ok' : 'no'}"><td>${c.ok ? '✓' : '✗'}</td><td>${esc(t.checks[c.id] || t.reasons[c.id] || c.id)}</td><td class="v">${esc(value)}</td><td class="l">${esc(limit)}</td></tr>`;
     }).join('');
     const ses = b.session;
     el.innerHTML = `<div class="head"><span class="state ${b.state}">${esc(t.states[b.state] || b.state)}</span><span class="mut">${esc(reason)}</span>

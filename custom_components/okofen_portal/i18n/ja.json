@@ -468,7 +468,7 @@
         "missing_data": "値がありません"
       },
       "checks": {
-        "burner": "バーナー停止",
+        "burner": "バーナー停止、ボイラー要求なし",
         "manual": "設定の手動変更なし",
         "heating_off": "暖房オン",
         "outside_window": "日照時間帯",
@@ -484,7 +484,8 @@
         "home": "在宅",
         "near": "外出・近い",
         "far": "外出・遠い"
-      }
+      },
+      "demand": "ボイラー要求あり"
     },
     "history": {
       "today": "今日",

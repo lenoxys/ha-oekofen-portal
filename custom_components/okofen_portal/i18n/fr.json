@@ -468,7 +468,7 @@
         "missing_data": "Valeurs manquantes"
       },
       "checks": {
-        "burner": "Brûleur arrêté",
+        "burner": "Brûleur arrêté, chaudière non demandée",
         "manual": "Consigne non modifiée à la main",
         "heating_off": "Chauffage en marche",
         "outside_window": "Fenêtre solaire",
@@ -484,7 +484,8 @@
         "home": "à la maison",
         "near": "absent, proche",
         "far": "absent, loin"
-      }
+      },
+      "demand": "chaudière demandée"
     },
     "history": {
       "today": "Aujourd'hui",

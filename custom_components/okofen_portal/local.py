@@ -40,6 +40,14 @@ MAP: dict[str, tuple[str, str, int, str]] = {
     "LOCAL.L_hk[0].vorlauftemp_soll": ("hk1", "L_flowtemp_set", 10, "°C"),
     "LOCAL.L_hk[0].raumtemp_ist": ("hk1", "L_roomtemp_act", 10, "°C"),
     "LOCAL.L_hk[0].raumtemp_soll": ("hk1", "L_roomtemp_set", 10, "°C"),
+    # what the solar boost needs to run without the portal (same values, matched on a Touch V4.00b)
+    "LOCAL.L_pu[0].einschaltfuehler_soll": ("pu1", "L_tpo_set", 10, "°C"),
+    "LOCAL.L_pu[0].status": ("pu1", "L_state", 1, ""),  # status bits, 0x100: asks the boiler
+    "LOCAL.L_ww[0].temp_soll": ("ww1", "L_temp_set", 10, "°C"),
+    "LOCAL.L_ww[0].status": ("ww1", "L_state", 1, ""),  # 0x4000: asks the boiler
+    "LOCAL.weather_limit": ("weather", "cloud_limit", 1, "%"),
+    "LOCAL.L_weather_forecast_clouds": ("weather", "L_forecast_clouds", 1, "%"),
+    "LOCAL.L_weather[0]": ("forecast", "L_w_0", 1, ""),  # "...|C|07:48|17:50": sunrise and sunset
 }
 # settings the controller also takes locally (same raw values as the portal: index, or tenths of a degree);
 # matched on a Touch V4.00b: portal comfort 24 °C = hk1.temp_heat 240, hot water forced 55 °C = ww1 2 / 550
@@ -123,4 +131,6 @@ class OekofenLocalClient:
             raw = data.get(group, {}).get(field)
             if isinstance(raw, (int, float)):
                 out[key] = Reading(raw / divisor if divisor != 1 else raw, unit, None, float(divisor))
+            elif isinstance(raw, str):  # the forecast
+                out[key] = Reading(raw, unit, None)
         return out

@@ -57,6 +57,8 @@ CLIMATE_FAST = [
     "LOCAL.hk[0].raumtemp_heizen",
     "LOCAL.ww[0].betriebsart[1]",
     "LOCAL.ww[0].temp_heizen",
+    "LOCAL.L_pu[0].status",  # the buffer and hot water ask the boiler: the solar boost stops at once
+    "LOCAL.L_ww[0].status",
 ]
 FAST_VARIABLES = list(dict.fromkeys([*CURATED, *DASHBOARD.values(), *CLIMATE_FAST]))
 BURNER_KEY = "LOCAL.L_ke_brennerkontakt_1"
