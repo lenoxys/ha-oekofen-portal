@@ -1,0 +1,8 @@
+title: ÖkoFEN Portal for Home Assistant
+description: The controller's parameters, their names, and how the integration uses them
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+plugins:
+  - jekyll-remote-theme
+aux_links:
+  GitHub: https://github.com/lenoxys/ha-oekofen-portal
+search_enabled: true

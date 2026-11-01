@@ -128,7 +128,9 @@ A short list of settings is available as number and select entities (configurati
 - Main values (temperatures, pumps, burner, thermostats): every **30 seconds** from the portal, or every **10 seconds** from the local interface if configured.
 - Everything else: every **5 minutes**.
 - If the portal does not answer, the integration retries after 10, 20, 30 and 60 seconds, then every 5 minutes, then every 15 minutes.
-- Settings are written through the portal and shown at once; the next update confirms them.
+- Settings are written through the local interface when it has them (thermostats, hot water), otherwise through the portal, and shown at once; the next update confirms them.
+
+The [documentation](https://lenoxys.github.io/ha-oekofen-portal/) explains the controller's parameters and their names, with a reference of every variable.
 
 ## Known limitations
 
