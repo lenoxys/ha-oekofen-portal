@@ -1,15 +1,34 @@
 <!doctype html>
 <!-- Opens the sidebar panel outside Home Assistant, with sample values.
-     Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr (add &night=1 for the moon, &dark for the dark theme, &boost=active for a running solar boost, &code=601 for an OpenWeatherMap weather code: 211 storm, 501 rain, 601 snow, 741 fog) -->
+     Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr (add &night=1 for the moon, &dark for the dark theme, &boost=active for a running solar boost, &code=601 for an OpenWeatherMap weather code: 211 storm, 501 rain, 601 snow, 741 fog,
+     &season=summer|winter to move the clock to mid-July or mid-January, same time of day) -->
 <meta charset="utf-8">
 <body style="margin:0">
 <script src="../custom_components/okofen_portal/frontend/okofen-dashboard.js"></script>
 <script type="module">
   const params = new URLSearchParams(location.search);
+  const season = params.get('season');  // summer: heating off, the pool takes the surplus; winter: heating on, pool off
+  if (season) {  // the whole page lives on the 15th of July or January, at the real time of day
+    const RealDate = Date, now = new RealDate(), there = new RealDate(now);
+    there.setMonth(season === 'summer' ? 6 : 0, 15);
+    if (there > now) there.setFullYear(there.getFullYear() - 1);
+    const shift = there - now;
+    globalThis.Date = class extends RealDate {
+      constructor(...a) { super(...(a.length ? a : [RealDate.now() + shift])); }
+      static now() { return RealDate.now() + shift; }
+    };
+  }
+  const summer = season === 'summer';
   const sample = {coll: 68.4, tank_top: 65.2, tank_mid: 63.6, tank_bottom: 59.9, ecs_probe: 67, solar_pump: 73, boiler_pump: 0,
     heating_pump: 1, flow: 44.7, room: 22.1, outdoor: 11.8, pool: 15.6, pool_pump: 0, burner: 0, boiler_temp: 55.6, mixer: 2,
-    tank_set: 58, room_set: 20, flow_set: 45, ecs_set: 50, ecs_pump: 0};
-  const weather = {icon: params.get('night') ? '01n' : '01d', code: +(params.get('code') || 800), clouds: +(params.get('clouds') || 5), wind: '9 km/h', sunrise: '07:45', sunset: '17:53', forecast_temp: 16, forecast_clouds: 10};
+    tank_set: 58, room_set: 20, flow_set: 45, ecs_set: 50, ecs_pump: 0,
+    ...(summer && {coll: 88.6, tank_top: 71.2, tank_mid: 69.8, tank_bottom: 66.1, ecs_probe: 70.4, solar_pump: 100, heating_pump: 0, flow: 24.1,
+      room: 23.4, outdoor: 27.5, pool: 25.8, pool_pump: 1, boiler_temp: 31.2, mixer: 0, tank_set: 8, room_set: 8, flow_set: 8}),
+    ...(season === 'winter' && {coll: 31.5, tank_top: 52.4, tank_mid: 46.8, tank_bottom: 33.9, ecs_probe: 54.1, solar_pump: 0, flow: 51.3,
+      room: 20.6, outdoor: 2.4, pool: 6.8, boiler_temp: 62.5})};
+  const weather = {icon: params.get('night') ? '01n' : '01d', code: +(params.get('code') || 800), clouds: +(params.get('clouds') || 5), wind: '9 km/h',
+    sunrise: summer ? '06:12' : season === 'winter' ? '08:58' : '07:45', sunset: summer ? '22:01' : season === 'winter' ? '17:41' : '17:53',
+    forecast_temp: summer ? 29 : season === 'winter' ? 4 : 16, forecast_clouds: 10};
   const lang = params.get('lang') || 'en';
   const strings = (await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json()).panel;
   // &dark: the variables Home Assistant's default dark theme gives the panel
@@ -45,13 +64,15 @@
     for (let ts = start / 1000, n = 0; ts < Date.now() / 1000; ts += 60, n++) {
       const d = new Date(ts * 1000), day = Math.floor(n / 1440), h = d.getHours() + d.getMinutes() / 60;
       const sf = SUN[(day + 10 - days % 10) % 10], [clouds, code] = sky(sf, day + 10 - days % 10);
-      const sun = Math.max(0, Math.sin((h - 8) / 9.5 * Math.PI)) * sf;
-      const heating = h > 5.5 && h < 22.5 && h % 2 < 1.4, coll = 8 + 70 * sun, bottom = top - 16 + 10 * sun, solar = coll > bottom + 6;
+      const [rise, length] = summer ? [6.2, 15.8] : season === 'winter' ? [9, 8.7] : [8, 9.5];  // daylight, in hours
+      const sun = Math.max(0, Math.sin((h - rise) / length * Math.PI)) * sf;
+      const heating = !summer && h > 5.5 && h < 22.5 && h % 2 < 1.4, coll = 8 + 70 * sun, bottom = top - 16 + 10 * sun, solar = coll > bottom + 6;
       // the buffer tank: warmed by the sun, cooled by the heating, the burner keeps it above 45 °C
       top += (solar ? 0.035 * sf : 0) - (heating ? 0.012 : 0.003) + (burning ? 0.15 : 0);
+      top = Math.min(top, 72);  // the solar circuit stops at the tank's maximum
       if (top < 45) burning = true; else if (top > 55) burning = false;
-      const pool = sf > 0.6 && h > 10 && h < 16, boost = sf > 0.85 && h > 11 && h < 15;
-      const row = [top, top - 4, bottom, top - 1, coll, heating ? 38 + 4 * Math.sin(h) : 22, 20.3 + sun * 1.6 + (boost ? 1.5 : 0), 2 + day % 4 + 8 * sun,
+      const pool = season !== 'winter' && sf > 0.6 && h > 10 && h < (summer ? 19 : 16), boost = !summer && sf > 0.85 && h > 11 && h < 15;
+      const row = [top, top - 4, bottom, top - 1, coll, heating ? 38 + 4 * Math.sin(h) : 22, 20.3 + sun * 1.6 + (boost ? 1.5 : 0), (summer ? 15 : season === 'winter' ? -3 : 2) + day % 4 + (summer ? 13 : 8) * sun,
         +burning, +burning, solar ? 60 : 0, heating ? 45 : 0, +pool, +boost, clouds, code, null];
       // a Home Assistant restart four days ago at 02:00: 40 minutes not recorded
       points.push([ts, ...(day === days - 5 && h >= 2 && h < 2.67 ? row.map((v, i) => (i >= 13 ? v : null)) : row)]);

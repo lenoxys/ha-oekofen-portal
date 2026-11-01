@@ -13,9 +13,10 @@ const lang = ref('en')
 const night = ref(false)
 const boost = ref(false)
 const code = ref('800')
+const season = ref('summer')
 
 const src = computed(() => {
-  const q = new URLSearchParams({ lang: lang.value, fake: '10', code: code.value })
+  const q = new URLSearchParams({ lang: lang.value, fake: '10', code: code.value, season: season.value })
   if (night.value) q.set('night', '1')
   if (boost.value) q.set('boost', 'active')
   if (isDark.value) q.set('dark', '')
@@ -63,6 +64,11 @@ const bottom = computed(() => {
           <option value="en">English</option><option value="fr">Français</option><option value="de">Deutsch</option>
           <option value="es">Español</option><option value="pt">Português</option><option value="ja">日本語</option>
           <option value="zh">中文</option>
+        </select>
+      </label>
+      <label>Season
+        <select v-model="season">
+          <option value="summer">Summer (pool)</option><option value="winter">Winter (heating)</option>
         </select>
       </label>
       <label>Weather
