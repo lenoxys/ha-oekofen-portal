@@ -46,8 +46,10 @@ class SolarBoostSwitch(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         self._boost.enabled = True
+        self.async_write_ha_state()  # not polled: Home Assistant does not write it after the service call
         await self._boost.async_run()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         self._boost.enabled = False
+        self.async_write_ha_state()
         await self._boost.async_run()
