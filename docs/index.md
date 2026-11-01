@@ -13,5 +13,6 @@ Installation, entities and the solar boost are described in the [README](https:/
 
 - [Parameters and nomenclature](parameters.md): how to reach the values, how the variables are named, scales, modes, status bits and schedules, and a German glossary.
 - [Variable reference](variables.md): every variable of the portal, with its English name, its local JSON field and what the integration does with it.
+- [Local JSON interface](local.md): every field of the controller's local interface, with its unit, factor, bounds and portal name.
 
 Unofficial: not affiliated with ÖkoFEN. Everything here was observed on a Pelletronic Touch (JSON interface V4.00b); other versions may differ.

@@ -23,7 +23,7 @@ What the integration learned about the controller: where the values come from, h
 
 **Portal.** The integration logs in like the portal's web app (OAuth2 with your account) and reads the plant id from the plant list. A read answers `{"name", "value", "divisor", "unitText", "formatTexts"}` per variable; the real value is `value / divisor`. A 404 on `remotecontrol/variables` means the portal cannot reach the controller at the moment.
 
-**Local interface.** Other commands: one group (`hk1`, `pu1`, `ww1`, `sk1`, `system`, `weather`, `forecast`, `error`…); a group the plant does not have answers with a help page. A write answers with the field and the value it accepted (`hk1_temp_heat=225`); anything else is a refusal. Too fast a request answers `Wait at least …`: wait and retry. Fields starting with `L_` are read only.
+**Local interface.** Every field is listed on the [local JSON interface](local.md) page. Other commands: one group (`hk1`, `pu1`, `ww1`, `sk1`, `system`, `weather`, `forecast`, `error`…); a group the plant does not have answers with a help page. A write answers with the field and the value it accepted (`hk1_temp_heat=225`); anything else is a refusal. Too fast a request answers `Wait at least …`: wait and retry. Fields starting with `L_` are read only.
 
 The integration reads the local interface every 10 seconds when it is configured, writes there what the local interface knows (thermostat mode, comfort temperature, eco mode, hot water mode and target) and uses the portal for the rest.
 
@@ -39,7 +39,7 @@ Portal names look like `CAPPL:LOCAL.hk[0].raumtemp_heizen`:
 | `L_` | a measurement or a state (`L_hk[0].vorlauf_ist`): read only. Without it: a setting |
 | `[1]` after a field | an index inside the field (`betriebsart[1]`, `zeitprogramm[1].tag[3]`) |
 
-The local interface uses its own, mostly English, field names (`hk1.temp_heat` = `hk[0].raumtemp_heizen`). The [variable reference](variables.md) lists the pairs the integration knows.
+The local interface uses its own, mostly English, field names (`hk1.temp_heat` = `hk[0].raumtemp_heizen`). The [variable reference](variables.md) covers the portal, the [local JSON interface](local.md) page the local fields; both show the pairs the integration knows.
 
 ### Groups
 
