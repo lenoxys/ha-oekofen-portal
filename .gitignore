@@ -7,3 +7,4 @@ scripts/preview-history.json
 docs/node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+docs/public/demo/

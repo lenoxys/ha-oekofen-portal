@@ -3,7 +3,12 @@ name: Docs
 on:
   push:
     branches: [main]
-    paths: ["docs/**", ".github/workflows/docs.yml"]
+    paths:
+      - "docs/**"
+      - "custom_components/okofen_portal/frontend/**"
+      - "custom_components/okofen_portal/i18n/**"
+      - "scripts/preview.html"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:

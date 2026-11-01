@@ -12,6 +12,9 @@
   const weather = {icon: params.get('night') ? '01n' : '01d', code: +(params.get('code') || 800), clouds: +(params.get('clouds') || 5), wind: '9 km/h', sunrise: '07:45', sunset: '17:53', forecast_temp: 16, forecast_clouds: 10};
   const lang = params.get('lang') || 'en';
   const strings = (await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json()).panel;
+  // &dark: the variables Home Assistant's default dark theme gives the panel
+  if (params.has('dark')) document.documentElement.style.cssText = '--primary-background-color:#111111;--card-background-color:#1c1c1c;'
+    + '--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--divider-color:rgba(225,225,225,0.12);background:#111111';
   const panel = document.createElement('okofen-dashboard');
   panel._tab = params.get('tab') || 'scheme';  // &tab=solar or &tab=history
   document.body.append(panel);

@@ -26,6 +26,12 @@ features:
     link: /local
 ---
 
-![ÖkoFEN panel](./panel-light.gif)
+<script setup>
+import PanelDemo from './.vitepress/components/PanelDemo.vue'
+</script>
+
+## Try the panel
+
+<PanelDemo />
 
 Unofficial: not affiliated with ÖkoFEN. Everything here was observed on a Pelletronic Touch (JSON interface V4.00b); other versions may differ.

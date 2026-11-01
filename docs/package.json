@@ -2,7 +2,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "demo": "rm -rf public/demo && mkdir -p public/demo/scripts public/demo/custom_components/okofen_portal && cp ../scripts/preview.html public/demo/scripts/ && cp -R ../custom_components/okofen_portal/frontend ../custom_components/okofen_portal/i18n public/demo/custom_components/okofen_portal/",
+    "predev": "npm run demo",
     "dev": "vitepress dev",
+    "prebuild": "npm run demo",
     "build": "vitepress build",
     "preview": "vitepress preview"
   },
