@@ -152,7 +152,7 @@ def local_doc(host: str, password: str) -> None:
             break
         time.sleep(local.RATE_LIMIT / 2)
     meta = json.loads(text)
-    portal = {(g, f): k for k, (g, f, _, _) in MAP.items()}
+    portal = {(re.sub(r"\d+$", "", g), f): k for k, (g, f, _, _) in MAP.items()}  # any instance
     lines = [
         "---", "title: Local JSON interface", "nav_order: 4", "---", "",
         "# Local JSON interface", "",
@@ -183,7 +183,7 @@ def local_doc(host: str, password: str) -> None:
             kind = ("options" if "format" in spec else "text" if "length" in spec or not spec
                     else "status" if field == "L_state" else "number")
             name = "L_w_n" if field == "L_w_0" else field
-            key = portal.get((group, field), "")
+            key = portal.get((prefix, field), "")
             uses = "set locally" if key in LOCAL_SETTINGS else "read every 10 s" if key else ""
             lines.append(
                 f"| `{name}` | {spec.get('unit', '')} | {spec.get('factor', '')} "

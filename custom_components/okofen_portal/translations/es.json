@@ -134,6 +134,13 @@
           "summer": "Verano (solo agua caliente)"
         }
       },
+      "solar_circuit_2_mode": {
+        "name": "Funcionamiento",
+        "state": {
+          "off": "Apagado",
+          "on": "Encendido"
+        }
+      },
       "eco_mode_heating": {
         "name": "Modo eco (calefacción)",
         "state": {

@@ -134,6 +134,13 @@
           "summer": "夏季（仅生活热水）"
         }
       },
+      "solar_circuit_2_mode": {
+        "name": "运行",
+        "state": {
+          "off": "关闭",
+          "on": "开启"
+        }
+      },
       "eco_mode_heating": {
         "name": "节能模式（采暖）",
         "state": {

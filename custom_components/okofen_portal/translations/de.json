@@ -134,6 +134,13 @@
           "summer": "Sommer (nur Warmwasser)"
         }
       },
+      "solar_circuit_2_mode": {
+        "name": "Betrieb",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
       "eco_mode_heating": {
         "name": "Öko-Modus (Heizung)",
         "state": {

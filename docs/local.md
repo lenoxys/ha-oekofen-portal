@@ -122,7 +122,7 @@ The fields of the controller's local interface (`http://<controller>:4321/<passw
 | `L_pump` | % | 1 | 0 to 100 | number | read only | `L_sk[n].pumpe` | read every 10 s |
 | `L_state` |  | 1 |  | status | read only |  |  |
 | `L_statetext` |  |  |  | text | read only |  |  |
-| `mode` |  |  |  | options | read / write |  |  |
+| `mode` |  |  |  | options | read / write | `sk[n].betriebsart` | set locally |
 | `cooling` |  |  |  | options | read / write |  |  |
 | `spu_max` | °C | 0.1 | 200 to 900 | number | read / write |  |  |
 | `name` |  |  |  | text | read / write |  |  |

@@ -77,6 +77,7 @@ LOCAL_SETTINGS: dict[str, tuple[str, str, int, str]] = {
             (f"LOCAL.ww[{n}].oekomode", (f"ww{n + 1}", "oekomode", 1, "")),
         )
     },
+    "LOCAL.sk[1].betriebsart": ("sk2", "mode", 1, ""),
 }
 MAP.update(LOCAL_SETTINGS)
 

@@ -134,6 +134,13 @@
           "summer": "Été (eau chaude seule)"
         }
       },
+      "solar_circuit_2_mode": {
+        "name": "Fonctionnement",
+        "state": {
+          "off": "Arrêt",
+          "on": "Marche"
+        }
+      },
       "eco_mode_heating": {
         "name": "Mode écolo (chauffage)",
         "state": {

@@ -41,6 +41,8 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("LOCAL.hk[0].heizgrenze_absenken", "number", "heating_limit_setback", 5, 25, 1, "°C"),
     # summer / winter switch; "off" (0) is left out on purpose: it would stop the whole installation
     Setting("LOCAL.anlage_betriebsart", "select", "season_mode", options={1: "winter", 2: "summer"}),
+    # second solar circuit (often a pool exchanger); the first one is left out: off, the collectors overheat
+    Setting("LOCAL.sk[1].betriebsart", "select", "solar_circuit_2_mode", options={0: "off", 1: "on"}),
 )
 
 ECO_OPTIONS = {0: "off", 1: "comfort", 2: "intermediate", 3: "ecological"}

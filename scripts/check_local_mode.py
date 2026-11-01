@@ -72,6 +72,8 @@ async def writes() -> None:
     assert session.urls[-1] == "http://192.168.1.150:4321/pw/hk1_temp_heat=225", session.urls
     await local.async_write("LOCAL.ww[0].betriebsart[1]", 2)
     assert session.urls[-1].endswith("/pw/ww1_mode_auto=2")
+    await local.async_write("LOCAL.sk[1].betriebsart", 1)
+    assert session.urls[-1].endswith("/pw/sk2_mode=1")
     session.refuse = True
     try:
         await local.async_write("LOCAL.hk[0].raumtemp_heizen", 230)

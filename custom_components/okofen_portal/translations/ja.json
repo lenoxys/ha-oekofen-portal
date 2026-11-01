@@ -134,6 +134,13 @@
           "summer": "夏（給湯のみ）"
         }
       },
+      "solar_circuit_2_mode": {
+        "name": "運転",
+        "state": {
+          "off": "オフ",
+          "on": "オン"
+        }
+      },
       "eco_mode_heating": {
         "name": "エコモード（暖房）",
         "state": {

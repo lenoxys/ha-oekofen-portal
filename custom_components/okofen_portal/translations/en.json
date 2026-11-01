@@ -134,6 +134,13 @@
           "summer": "Summer (hot water only)"
         }
       },
+      "solar_circuit_2_mode": {
+        "name": "Operation",
+        "state": {
+          "off": "Off",
+          "on": "On"
+        }
+      },
       "eco_mode_heating": {
         "name": "Eco mode (heating)",
         "state": {

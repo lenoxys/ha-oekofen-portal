@@ -120,6 +120,7 @@ A short list of settings is available as number and select entities (configurati
 | Heating limit outdoor temperature, comfort / setback | 10-30 / 5-25 °C |
 | Eco mode, heating / hot water | off, comfort, intermediate, ecological |
 | Summer / winter mode | winter (heating and hot water) or summer (hot water only) |
+| Solar circuit 2 (often a pool exchanger) | off / on |
 
 **You are changing the settings of your heating system.** Note the values before changing them. The portal and the controller's screen show the same settings, so you can always set them back there.
 
