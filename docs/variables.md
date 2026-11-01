@@ -1,6 +1,5 @@
 ---
 title: Variable reference
-nav_order: 3
 ---
 
 # Variable reference

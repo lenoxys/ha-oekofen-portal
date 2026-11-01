@@ -1,15 +1,10 @@
 ---
 title: Parameters and nomenclature
-nav_order: 2
 ---
 
 # Parameters and nomenclature
-{: .no_toc }
 
 What the integration learned about the controller: where the values come from, how they are named and how to read them. Observed on a Pelletronic Touch with JSON interface V4.00b; treat anything marked *observed* as a finding on one installation, not a specification.
-
-1. TOC
-{:toc}
 
 ## Two ways to the controller
 

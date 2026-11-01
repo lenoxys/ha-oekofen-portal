@@ -1,6 +1,5 @@
 ---
 title: Local JSON interface
-nav_order: 4
 ---
 
 # Local JSON interface
