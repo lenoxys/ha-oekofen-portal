@@ -8,6 +8,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.util import dt as dt_util
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -49,6 +50,10 @@ class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
         self.names = names
         self._interval = interval
         self._failures = 0
+        self.portal_error: str | None = None  # why the portal did not answer, None while it does
+        self._portal_failures = 0
+        self._repairs = label == "fast"  # one coordinator raises the repair, the slow one fails now and then on its own
+        self._issue = f"portal_unreachable_{entry.entry_id}"
 
     async def _async_update_data(self) -> dict[str, Reading]:
         """Read, and space out the next tries while the portal does not answer."""
@@ -58,24 +63,48 @@ class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
             delay = RETRY_DELAYS[self._failures] if self._failures < len(RETRY_DELAYS) else RETRY_MAX
             self._failures += 1
             self.update_interval = timedelta(seconds=delay)
+            self._report(local=False)
             raise
         self._failures = 0
         self.update_interval = self._interval
+        self._report(local=True)
         return data
+
+    def _portal(self, err: Exception | None) -> None:
+        self.portal_error = None if err is None else str(err)
+        self._portal_failures = 0 if err is None else self._portal_failures + 1
+
+    def _report(self, local: bool) -> None:
+        """Setting up (no data yet) or 3 portal failures in a row: tell the user in Repairs, until it answers."""
+        if not self._repairs:
+            return
+        if self.portal_error is None:
+            ir.async_delete_issue(self.hass, DOMAIN, self._issue)
+        elif self.data is None or self._portal_failures >= 3:
+            ir.async_create_issue(
+                self.hass, DOMAIN, self._issue, is_fixable=False,
+                severity=ir.IssueSeverity.WARNING if local else ir.IssueSeverity.ERROR,
+                translation_key="portal_unreachable_local" if local else "portal_unreachable",
+                translation_placeholders={"error": self.portal_error},
+            )
 
     async def _read(self) -> dict[str, Reading]:
         try:
-            return await self.client.async_read(self.names)
+            data = await self.client.async_read(self.names)
         except OekofenAuthError as err:
             raise ConfigEntryAuthFailed from err
         except OekofenConnectionError as err:
+            self._portal(err)
             raise UpdateFailed(f"Portal unreachable: {err}") from err
+        self._portal(None)
+        return data
 
 
 class HybridCoordinator(OekofenCoordinator):
     """The fast variables: the local interface often, the portal for what only it knows.
 
     If the local interface does not answer, the whole list is read from the portal for that cycle.
+    If the portal does not answer, the local values go on alone (the portal ones go after 3 tries).
     """
 
     def __init__(self, *args, local: OekofenLocalClient, cloud_interval: timedelta, **kwargs) -> None:
@@ -100,9 +129,11 @@ class HybridCoordinator(OekofenCoordinator):
             except OekofenAuthError as err:
                 raise ConfigEntryAuthFailed from err
             except OekofenConnectionError as err:
-                if not self._cloud:  # otherwise keep the last portal values until it answers again
-                    raise UpdateFailed(f"Portal unreachable: {err}") from err
-                _LOGGER.debug("Portal unreachable, keeping the last values: %s", err)
+                self._portal(err)
+                if self._portal_failures >= 3:  # a blip keeps the last values, an outage does not
+                    self._cloud = {}
+                _LOGGER.debug("Portal unreachable, local values only: %s", err)
             else:
-                self._cloud_at = now
+                self._portal(None)
+            self._cloud_at = now  # next try of the portal in cloud_interval, answer or not
         return {**self._cloud, **local}

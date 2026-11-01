@@ -2,7 +2,8 @@
 
 Does not import Home Assistant. It answers every few seconds without the cloud, but only knows about a
 hundred variables, with its own names: ``MAP`` translates the ones the integration polls often to the
-portal names, so that everything downstream stays the same. Writes and the rest stay on the portal.
+portal names, so that everything downstream stays the same. The settings of ``LOCAL_SETTINGS`` are
+written here too; the rest (heating curve, solar discharge, burner...) stays on the portal.
 """
 
 from __future__ import annotations
@@ -40,6 +41,29 @@ MAP: dict[str, tuple[str, str, int, str]] = {
     "LOCAL.L_hk[0].raumtemp_ist": ("hk1", "L_roomtemp_act", 10, "°C"),
     "LOCAL.L_hk[0].raumtemp_soll": ("hk1", "L_roomtemp_set", 10, "°C"),
 }
+# settings the controller also takes locally (same raw values as the portal: index, or tenths of a degree);
+# matched on a Touch V4.00b: portal comfort 24 °C = hk1.temp_heat 240, hot water forced 55 °C = ww1 2 / 550
+LOCAL_SETTINGS: dict[str, tuple[str, str, int, str]] = {
+    **{
+        k: v
+        for n in range(6)
+        for k, v in (
+            (f"LOCAL.hk[{n}].betriebsart[1]", (f"hk{n + 1}", "mode_auto", 1, "")),
+            (f"LOCAL.hk[{n}].raumtemp_heizen", (f"hk{n + 1}", "temp_heat", 10, "°C")),
+            (f"LOCAL.hk[{n}].oekomode", (f"hk{n + 1}", "oekomode", 1, "")),
+        )
+    },
+    **{
+        k: v
+        for n in range(3)
+        for k, v in (
+            (f"LOCAL.ww[{n}].betriebsart[1]", (f"ww{n + 1}", "mode_auto", 1, "")),
+            (f"LOCAL.ww[{n}].temp_heizen", (f"ww{n + 1}", "temp_max_set", 10, "°C")),
+            (f"LOCAL.ww[{n}].oekomode", (f"ww{n + 1}", "oekomode", 1, "")),
+        )
+    },
+}
+MAP.update(LOCAL_SETTINGS)
 
 
 def local_url(host: str, password: str) -> str:
@@ -52,25 +76,45 @@ def local_url(host: str, password: str) -> str:
 
 
 class OekofenLocalClient:
-    """Read-only client of the local interface."""
+    """Client of the local interface: everything of ``MAP`` read, ``LOCAL_SETTINGS`` written."""
 
     def __init__(self, session: aiohttp.ClientSession, host: str, password: str) -> None:
         self._url = local_url(host, password)
         self._session = session
+        self._lock = asyncio.Lock()  # one request at a time, the controller refuses them too close
+
+    async def _get(self, command: str) -> str:
+        url = self._url.removesuffix("all") + command
+        async with self._lock:
+            try:
+                for _ in range(3):  # another client (e.g. the Pellematic integration) may have just asked
+                    async with self._session.get(url, timeout=_TIMEOUT) as resp:
+                        resp.raise_for_status()
+                        # the controller answers in latin-1 without saying so
+                        text = (await resp.read()).decode("latin-1")
+                    if not text.startswith("Wait at least"):
+                        return text
+                    await asyncio.sleep(RATE_LIMIT)
+            except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+                raise OekofenConnectionError(f"local interface: {type(err).__name__}") from err
+        raise OekofenConnectionError("local interface: busy")
+
+    @staticmethod
+    def writes(name: str) -> bool:
+        return name in LOCAL_SETTINGS
+
+    async def async_write(self, name: str, raw: int) -> None:
+        """Write one setting of ``LOCAL_SETTINGS``; the controller echoes ``hk1_temp_heat=225`` when it takes it."""
+        group, field, _, _ = LOCAL_SETTINGS[name]
+        command = f"{group}_{field}={int(raw)}"
+        if (await self._get(command)).strip() != command:
+            raise OekofenConnectionError(f"local interface refused {command}")
 
     async def async_read(self) -> dict[str, Reading]:
         """Every variable of ``MAP`` the controller answers for, under its portal name."""
         try:
-            for _ in range(3):  # another client (e.g. the Pellematic integration) may have just asked
-                async with self._session.get(self._url, timeout=_TIMEOUT) as resp:
-                    resp.raise_for_status()
-                    # the controller answers in latin-1 without saying so
-                    text = (await resp.read()).decode("latin-1")
-                if not text.startswith("Wait at least"):
-                    break
-                await asyncio.sleep(RATE_LIMIT)
-            data: dict[str, Any] = json.loads(text)
-        except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as err:
+            data: dict[str, Any] = json.loads(await self._get("all"))
+        except ValueError as err:
             raise OekofenConnectionError(f"local interface: {type(err).__name__}") from err
         if not isinstance(data, dict) or "system" not in data:  # e.g. "Wait at least 2500ms", wrong password
             raise OekofenConnectionError("local interface: unexpected answer")

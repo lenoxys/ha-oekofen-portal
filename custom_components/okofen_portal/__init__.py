@@ -12,11 +12,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
-from homeassistant.helpers import config_validation as cv, device_registry as dr
+from homeassistant.helpers import config_validation as cv, device_registry as dr, issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 
-from .api import OekofenPortalClient
+from .api import OekofenConnectionError, OekofenPortalClient, Reading
 from .boost import SolarBoost
 from .local import OekofenLocalClient
 from .catalog import group_of, kind, load_catalog
@@ -107,11 +107,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
     session = async_get_clientsession(hass)
     client = OekofenPortalClient(session, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
     catalog = await hass.async_add_executor_job(load_catalog)
-    if entry.data.get(CONF_LOCAL_HOST):  # optional: local interface for the fast variables
+    local = entry.data.get(CONF_LOCAL_HOST)
+    if local:  # optional: local interface for the fast variables and the settings it has
+        client.local = OekofenLocalClient(session, local, entry.data.get(CONF_LOCAL_PASSWORD, ""))
         fast = HybridCoordinator(
-            hass, entry, client, FAST_VARIABLES, LOCAL_INTERVAL, "fast",
-            local=OekofenLocalClient(session, entry.data[CONF_LOCAL_HOST], entry.data.get(CONF_LOCAL_PASSWORD, "")),
-            cloud_interval=FAST_INTERVAL,
+            hass, entry, client, FAST_VARIABLES, LOCAL_INTERVAL, "fast", local=client.local, cloud_interval=FAST_INTERVAL
         )
     else:
         fast = OekofenCoordinator(hass, entry, client, FAST_VARIABLES, FAST_INTERVAL, "fast")
@@ -125,11 +125,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         "slow",
     )
     await fast.async_config_entry_first_refresh()
-    await slow.async_config_entry_first_refresh()
+    # what the portal said last time, to start with the local interface alone when it does not answer
+    cache: Store = Store(hass, 1, f"{DOMAIN}_cache_{entry.entry_id}")
+    cached = await cache.async_load() or {}
+    offline = False
+    if local:
+        await slow.async_refresh()
+        if offline := not slow.last_update_success:
+            # its entities stay unavailable, but the settings are known (solar boost); full set once it answers
+            slow.data = {k: Reading(v, u, tuple(s) if s else None, d) for k, (v, u, s, d) in cached.get("slow", {}).items()}
+            entry.async_on_unload(slow.async_add_listener(
+                lambda: slow.last_update_success and hass.config_entries.async_schedule_reload(entry.entry_id)
+            ))
+    else:
+        await slow.async_config_entry_first_refresh()
     texts = await hass.async_add_executor_job(Texts.load, hass.config.language)
     readings = {k: r for k, r in {**fast.data, **slow.data}.items() if kind(r) != "text"}
     # the portal answers for circuits the controller does not have: leave those out
-    hidden = hidden_groups(await client.async_read(FLAG_KEYS), readings)
+    try:
+        hidden = set(cached.get("hidden", [])) if offline else hidden_groups(await client.async_read(FLAG_KEYS), readings)
+    except OekofenConnectionError:
+        hidden = set(cached.get("hidden", []))
+    if not offline:
+        await cache.async_save({"slow": slow.data, "hidden": sorted(hidden)})
     shown = [k for k in readings if group_of(k) not in hidden]
     entry.runtime_data = OekofenData(
         fast,
@@ -162,3 +180,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> 
     """Unload a config entry, putting back what the solar boost changed."""
     await entry.runtime_data.boost.async_stop()
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> None:
+    """Integration deleted: no repair or cache left behind."""
+    ir.async_delete_issue(hass, DOMAIN, f"portal_unreachable_{entry.entry_id}")
+    await Store(hass, 1, f"{DOMAIN}_cache_{entry.entry_id}").async_remove()

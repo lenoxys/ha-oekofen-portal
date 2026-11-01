@@ -206,5 +206,15 @@
         }
       }
     }
+  },
+  "issues": {
+    "portal_unreachable": {
+      "title": "ÖkoFEN portal unreachable",
+      "description": "Home Assistant cannot read your installation from my.oekofen.info, so its values are unavailable and nothing can be changed.\n\nPortal answer: `{error}`\n\nA 404 usually means the portal cannot reach your controller: check its internet connection on the Touch screen, or restart it. If the solar boost was running, the comfort temperature and radiator valves stay as it set them until the portal answers again.\n\nThis message goes away by itself once the portal answers.\n\nTip: with the controller's local address (**ÖkoFEN Portal → ⋮ → Reconfigure**), the integration keeps running without the portal."
+    },
+    "portal_unreachable_local": {
+      "title": "ÖkoFEN portal unreachable, running locally",
+      "description": "my.oekofen.info does not answer, so the integration runs on your controller's local interface: temperatures, pumps, thermostats and hot water still work and can be changed, but what only the portal knows (burner, existing boiler, heating curve and other settings, weather) is unavailable and the solar boost waits.\n\nPortal answer: `{error}`\n\nA 404 usually means the portal cannot reach your controller: check its internet connection on the Touch screen. This message goes away by itself once the portal answers."
+    }
   }
 }

@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 from typing import Any, NamedTuple
 
 import aiohttp
+
+_LOGGER = logging.getLogger(__name__)
 
 BASE = "https://my.oekofen.info"
 API = f"{BASE}/api/pwa"
@@ -54,6 +57,7 @@ class OekofenPortalClient:
         self._client: tuple[str, str] | None = None
         self._token: str | None = None
         self._plant_id: str | None = None
+        self.local: Any = None  # OekofenLocalClient: writes the settings it has, the portal does the rest
 
     async def _discover_client(self) -> tuple[str, str]:
         """Read the web app's public OAuth client id/secret from its JavaScript."""
@@ -172,7 +176,16 @@ class OekofenPortalClient:
         return out
 
     async def async_write(self, name: str, raw: int) -> None:
-        """Write one setting. ``raw`` is the portal's own integer (a temperature in tenths of a degree...)."""
+        """Write one setting. ``raw`` is the portal's own integer (a temperature in tenths of a degree...).
+
+        Through the local interface when it has this setting, the portal if it does not answer.
+        """
+        if self.local is not None and self.local.writes(name):
+            try:
+                await self.local.async_write(name, raw)
+                return
+            except OekofenConnectionError as err:
+                _LOGGER.warning("Local write of %s failed, using the portal: %s", name, err)
         plant = await self.async_plant_id()
         data = await self._request(
             "PUT",

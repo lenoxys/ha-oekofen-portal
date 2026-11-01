@@ -206,5 +206,15 @@
         }
       }
     }
+  },
+  "issues": {
+    "portal_unreachable": {
+      "title": "ÖkoFEN-Portal nicht erreichbar",
+      "description": "Home Assistant kann Ihre Anlage nicht über my.oekofen.info lesen: die Werte sind nicht verfügbar und nichts kann geändert werden.\n\nAntwort des Portals: `{error}`\n\nEin 404 bedeutet meist, dass das Portal Ihre Regelung nicht erreicht: prüfen Sie die Internetverbindung am Touch-Display oder starten Sie die Regelung neu. Lief der Solar-Boost, bleiben Komforttemperatur und Heizkörperventile so, wie er sie gesetzt hat, bis das Portal wieder antwortet.\n\nDiese Meldung verschwindet von selbst, sobald das Portal antwortet.\n\nTipp: mit der lokalen Adresse der Regelung (**ÖkoFEN Portal → ⋮ → Neu konfigurieren**) läuft die Integration auch ohne Portal weiter."
+    },
+    "portal_unreachable_local": {
+      "title": "ÖkoFEN-Portal nicht erreichbar, lokaler Betrieb",
+      "description": "my.oekofen.info antwortet nicht, die Integration läuft über die lokale Schnittstelle Ihrer Regelung: Temperaturen, Pumpen, Thermostate und Warmwasser funktionieren und lassen sich ändern, aber was nur das Portal kennt (Brenner, bestehender Kessel, Heizkurve und weitere Einstellungen, Wetter) ist nicht verfügbar und der Solar-Boost wartet.\n\nAntwort des Portals: `{error}`\n\nEin 404 bedeutet meist, dass das Portal Ihre Regelung nicht erreicht: prüfen Sie die Internetverbindung am Touch-Display. Diese Meldung verschwindet von selbst, sobald das Portal antwortet."
+    }
   }
 }

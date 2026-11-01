@@ -24,7 +24,7 @@ Bring your ÖkoFEN heating system (Pellematic, Touch controller) into Home Assis
 - **Solar boost** (experimental): on sunny days, raises the comfort temperature and opens your radiator valves so the house is heated by the solar buffer tank instead of the boiler.
 - **A few safe settings** you can change from Home Assistant: solar discharge, heating curve, buffer overshoot, summer / winter mode, eco mode.
 - **Readable names in your language**: English, French, German, Spanish, Portuguese, Japanese and Simplified Chinese, with ÖkoFEN's own help texts and status messages.
-- **Optional local mode**: if your Touch controller's local JSON interface is enabled, the main temperatures and pumps are read locally every 10 seconds.
+- **Local mode (recommended)**: if your Touch controller's local JSON interface is enabled, the main temperatures and pumps are read locally every 10 seconds, the thermostats and hot water are set locally, and the integration keeps running when the portal is down. The portal adds what only it knows.
 
 ## Requirements
 
@@ -38,7 +38,7 @@ Bring your ÖkoFEN heating system (Pellematic, Touch controller) into Home Assis
 2. Download **ÖkoFEN Portal** in HACS and restart Home Assistant.
 3. Go to **Settings → Devices & services → Add integration**, search for **ÖkoFEN Portal**.
 4. Enter your my.oekofen.info username and password.
-   - Optional: the controller's local address (for example `192.168.0.10`) and its local password, or the full local URL shown on the Touch screen. Leave empty to use the portal only.
+   - Recommended: the controller's local address (for example `192.168.0.10`) and its local password, or the full local URL shown on the Touch screen. Leave empty to use the portal only.
 
 To change the account or the local address later: **ÖkoFEN Portal → ⋮ → Reconfigure**. If the portal refuses your password, Home Assistant asks you to sign in again.
 
@@ -135,7 +135,7 @@ A short list of settings is available as number and select entities (configurati
 - Only the first installation of the account is used.
 - The settings you can change are those of heating circuit 1 and hot water circuit 1 (thermostats work on every circuit).
 - Text values of the controller are not exposed.
-- Needs the portal to be online, even with the local interface (burner, writes and most values only come from the portal).
+- Without the local interface, needs the portal to be online. With it, the integration starts and runs without the portal: temperatures, pumps, thermostats (mode, comfort, eco mode) and hot water (operation, target, eco mode) keep working locally; the burner, the existing boiler, the other settings and the weather come back with the portal, and the solar boost waits for it. A repair in **Settings → Repairs** says when the portal does not answer.
 - The translations other than English and French were machine-translated: corrections are welcome.
 
 This integration **complements** integrations of the controller's local interface, such as [Ökofen Pellematic Compact](https://github.com/dominikamann/oekofen-pellematic-compact): use both if you like.

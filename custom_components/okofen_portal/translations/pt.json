@@ -206,5 +206,15 @@
         }
       }
     }
+  },
+  "issues": {
+    "portal_unreachable": {
+      "title": "Portal ÖkoFEN inacessível",
+      "description": "O Home Assistant não consegue ler a sua instalação em my.oekofen.info: os valores estão indisponíveis e nada pode ser alterado.\n\nResposta do portal: `{error}`\n\nUm 404 significa normalmente que o portal não chega ao seu controlador: verifique a ligação à internet no ecrã Touch ou reinicie-o. Se o reforço solar estava ativo, a temperatura de conforto e as válvulas dos radiadores ficam como ele as deixou até o portal voltar a responder.\n\nEsta mensagem desaparece sozinha assim que o portal responder.\n\nDica: com o endereço local do controlador (**ÖkoFEN Portal → ⋮ → Reconfigurar**), a integração continua a funcionar sem o portal."
+    },
+    "portal_unreachable_local": {
+      "title": "Portal ÖkoFEN inacessível, funcionamento local",
+      "description": "my.oekofen.info não responde: a integração funciona com a interface local do seu controlador. Temperaturas, bombas, termóstatos e água quente funcionam e podem ser alterados, mas o que só o portal conhece (queimador, caldeira existente, curva de aquecimento e outras definições, meteorologia) está indisponível e o reforço solar espera.\n\nResposta do portal: `{error}`\n\nUm 404 significa normalmente que o portal não chega ao seu controlador: verifique a ligação à internet no ecrã Touch. Esta mensagem desaparece sozinha assim que o portal responder."
+    }
   }
 }

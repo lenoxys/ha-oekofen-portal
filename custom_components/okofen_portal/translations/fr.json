@@ -206,5 +206,15 @@
         }
       }
     }
+  },
+  "issues": {
+    "portal_unreachable": {
+      "title": "Portail ÖkoFEN injoignable",
+      "description": "Home Assistant n'arrive pas à lire votre installation sur my.oekofen.info : ses valeurs sont indisponibles et rien ne peut être modifié.\n\nRéponse du portail : `{error}`\n\nUn 404 veut généralement dire que le portail n'atteint pas votre régulateur : vérifiez sa connexion internet sur l'écran Touch, ou redémarrez-le. Si la surchauffe solaire était en cours, la température de confort et les têtes de radiateur restent telles qu'elle les a réglées jusqu'à ce que le portail réponde.\n\nCe message disparaît de lui-même dès que le portail répond.\n\nAstuce : avec l'adresse locale du régulateur (**ÖkoFEN Portal → ⋮ → Reconfigurer**), l'intégration continue de fonctionner sans le portail."
+    },
+    "portal_unreachable_local": {
+      "title": "Portail ÖkoFEN injoignable, fonctionnement en local",
+      "description": "my.oekofen.info ne répond pas : l'intégration fonctionne avec l'interface locale de votre régulateur. Températures, pompes, thermostats et eau chaude marchent et restent modifiables, mais ce que seul le portail connaît (brûleur, chaudière existante, courbe de chauffe et autres réglages, météo) est indisponible et la surchauffe solaire attend.\n\nRéponse du portail : `{error}`\n\nUn 404 veut généralement dire que le portail n'atteint pas votre régulateur : vérifiez sa connexion internet sur l'écran Touch. Ce message disparaît de lui-même dès que le portail répond."
+    }
   }
 }
