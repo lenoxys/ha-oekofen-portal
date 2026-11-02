@@ -82,6 +82,13 @@
           "active": "Aktiv",
           "restoring": "Wird zurückgesetzt"
         }
+      },
+      "heating_learning": {
+        "name": "Heizungs-Lernen",
+        "state": {
+          "learning": "Lernt",
+          "ready": "Bereit"
+        }
       }
     },
     "number": {

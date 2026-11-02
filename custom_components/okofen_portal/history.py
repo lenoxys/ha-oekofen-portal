@@ -6,6 +6,7 @@ with the time of the first thing the recorder still has, so the panel knows how 
 
 from __future__ import annotations
 
+from datetime import timedelta
 import time
 
 from homeassistant.core import HomeAssistant, State
@@ -13,6 +14,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
 from .const import DASHBOARD, DOMAIN, MIXER_STATES
+from .learning import Hour, learn
 
 WEATHER = ("clouds", "code", "icon")
 SERIES = (*DASHBOARD, "boost", *WEATHER)
@@ -66,6 +68,35 @@ async def async_points(hass: HomeAssistant, entry_id: str, start: float | None =
 
     out["points"], out["first"] = await get_instance(hass).async_add_executor_job(read)
     return out
+
+
+LEARN_DAYS = 365  # a whole heating season: the house does not change from one winter to the next
+LEARN_KEYS = {"room": "mean", "room_set": "max", "outdoor": "mean", "flow": "mean"}  # DASHBOARD name -> statistic
+
+
+async def async_learning(hass: HomeAssistant, entry_id: str) -> dict | None:
+    """The inertia learnt from the recorder's hourly statistics of the first heating circuit (None without recorder)."""
+    if "recorder" not in hass.config.components:
+        return None
+    from homeassistant.components.recorder import get_instance  # noqa: PLC0415 (optional)
+    from homeassistant.components.recorder.statistics import statistics_during_period  # noqa: PLC0415
+
+    registry = er.async_get(hass)
+    ids = {name: registry.async_get_entity_id("sensor", DOMAIN, f"{entry_id}_{DASHBOARD[name]}") for name in LEARN_KEYS}
+    if not all(ids.values()):
+        return None
+    start = dt_util.utcnow() - timedelta(days=LEARN_DAYS)
+    stats = await get_instance(hass).async_add_executor_job(
+        statistics_during_period, hass, start, None, set(ids.values()), "hour", None, {"mean", "max"}
+    )
+    series = {name: {r["start"]: r.get(stat) for r in stats.get(ids[name], [])} for name, stat in LEARN_KEYS.items()}
+    rows = []
+    for ts, room in series["room"].items():
+        values = [room, *(series[name].get(ts) for name in ("room_set", "outdoor", "flow"))]
+        if None not in values:
+            local = dt_util.as_local(dt_util.utc_from_timestamp(ts))
+            rows.append(Hour(ts, local.hour, local.date().isoformat(), *values))
+    return learn(rows)
 
 
 def resample(states: dict[str, list], start: float, end: float) -> list[list]:

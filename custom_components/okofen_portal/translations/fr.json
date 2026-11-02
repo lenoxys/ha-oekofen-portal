@@ -82,6 +82,13 @@
           "active": "En cours",
           "restoring": "Restauration"
         }
+      },
+      "heating_learning": {
+        "name": "Apprentissage chauffage",
+        "state": {
+          "learning": "Apprentissage",
+          "ready": "Prêt"
+        }
       }
     },
     "number": {

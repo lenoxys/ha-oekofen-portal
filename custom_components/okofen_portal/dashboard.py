@@ -98,7 +98,8 @@ async def ws_schedules(hass: HomeAssistant, connection: websocket_api.ActiveConn
         return
     values = {k: r.value for k, r in read.items()}
     connection.send_result(
-        msg["id"], {"circuits": [{**schedules.week(g, values), "title": texts.group_title(g)} for g in groups]}
+        msg["id"],
+        {"circuits": [{**schedules.week(g, values), "title": texts.group_title(g)} for g in groups], "learning": data.learning},
     )
 
 

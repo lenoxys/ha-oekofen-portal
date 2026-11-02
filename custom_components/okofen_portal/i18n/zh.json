@@ -526,7 +526,21 @@
       "reduced": "舒适 −1 °C",
       "raised": "舒适 +1 °C",
       "setback": "降温",
-      "hotWater": "加热热水"
+      "hotWater": "加热热水",
+      "inertia": {
+        "title": "房屋热惯性",
+        "learning": "正在从 Home Assistant 历史中学习，数据足够前不提供建议：",
+        "days": "供暖天数",
+        "nights": "停暖的夜晚",
+        "warmups": "升温过程",
+        "span": "室外温度范围",
+        "hoursPerK": "升高 1 K 所需供暖时间（降温到舒适）",
+        "outdoor": "室外",
+        "cooling": "停暖时的降温",
+        "gap": "室内 − 室外",
+        "perHour": "每小时",
+        "none": "尚未计算（需要记录器以及室温、设定、室外和供水温度传感器）。"
+      }
     }
   }
 }

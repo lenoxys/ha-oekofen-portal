@@ -82,6 +82,13 @@
           "active": "运行中",
           "restoring": "恢复中"
         }
+      },
+      "heating_learning": {
+        "name": "供暖学习",
+        "state": {
+          "learning": "学习中",
+          "ready": "就绪"
+        }
       }
     },
     "number": {

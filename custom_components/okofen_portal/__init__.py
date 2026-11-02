@@ -67,6 +67,7 @@ class OekofenData:
     hidden: set[str]
     boost: SolarBoost | None = None
     main_device_id: str = ""  # registry id of the main ÖkoFEN device, parent of the per-circuit devices
+    learning: dict | None = None  # the house's inertia, see learning.py (updated by the heating learning sensor)
 
     def reading(self, key: str):
         """A variable from whichever coordinator reads it."""

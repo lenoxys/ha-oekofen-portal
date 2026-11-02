@@ -82,6 +82,13 @@
           "active": "Activo",
           "restoring": "Restaurando"
         }
+      },
+      "heating_learning": {
+        "name": "Aprendizaje calefacción",
+        "state": {
+          "learning": "Aprendiendo",
+          "ready": "Listo"
+        }
       }
     },
     "number": {

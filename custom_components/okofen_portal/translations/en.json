@@ -82,6 +82,13 @@
           "active": "Boosting",
           "restoring": "Restoring"
         }
+      },
+      "heating_learning": {
+        "name": "Heating learning",
+        "state": {
+          "learning": "Learning",
+          "ready": "Ready"
+        }
       }
     },
     "number": {

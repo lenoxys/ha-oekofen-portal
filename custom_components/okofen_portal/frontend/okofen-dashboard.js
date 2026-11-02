@@ -87,11 +87,13 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 .hist .cross{stroke:var(--mut);stroke-width:1}
 .progs h2{font-size:inherit;font-weight:600;margin:14px 0 6px}.progs h2:first-of-type{margin-top:4px}
 .progs h3{font-size:inherit;font-weight:400;color:var(--mut);margin:8px 0 4px}.progs h3 b{color:var(--fg);font-weight:500}
+.progs summary{cursor:pointer;color:var(--mut)}.progs summary h3{display:inline-block}
+.progs table{border-collapse:collapse;max-width:480px;width:100%}.progs td{padding:4px 8px;border-top:1px solid var(--line)}
+.progs td.v{text-align:right;white-space:nowrap}.progs td.l,.progs tr.no td{color:var(--mut)}.progs td:first-child:not(.l){width:1.6em;text-align:center}
 .week{display:grid;grid-template-columns:3.5em 1fr;gap:3px 8px;align-items:center}
 .week .d{color:var(--mut)}.week .today{color:var(--fg);font-weight:600}
 .bar{position:relative;height:16px;border-radius:4px;background:var(--line)}
-.bar i{position:absolute;top:0;bottom:0;border-radius:4px;box-shadow:0 0 0 1px var(--card)}
-.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg)}
+.bar i{position:absolute;top:0;bottom:0;border-radius:4px;box-shadow:0 0 0 1px var(--card)}.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg)}
 .hours{position:relative;height:1.4em;color:var(--mut);font-size:12px}.hours span{position:absolute;transform:translateX(-50%)}
 .lv-1{background:var(--cold)}.lv0{background:var(--warm)}.lv1{background:var(--hot)}.lvw{background:var(--solar)}
 .progs .legend i{height:10px}
@@ -886,15 +888,30 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     el.innerHTML = this._sched.circuits.map((c) => {
       const ww = c.group.startsWith('ww');
       const legend = `<div class="legend">${key(c).map(([l, label]) => `<span><i class="lv${l}"></i> ${esc(label)}</span>`).join('')}${ww ? '' : `<span><i style="background:var(--line)"></i> ${esc(t.setback)}</span>`}</div>`;
-      return `<h2>${esc(c.title)}</h2>${legend}` + c.programs.map((week, p) => `<h3>${esc(t.program)} ${p + 1}${p === c.active ? ` <b>· ${esc(t.active)}</b>` : ''}</h3><div class="week">${hours}${order.map((d) => {
+      return `<h2>${esc(c.title)}</h2>${legend}` + c.programs.map((week, p) => (c.active != null && p !== c.active ? '<details><summary>' : '') + `<h3>${esc(t.program)} ${p + 1}${p === c.active ? ` <b>· ${esc(t.active)}</b>` : ''}</h3>${c.active != null && p !== c.active ? '</summary>' : ''}<div class="week">${hours}${order.map((d) => {
         const today = p === c.active && d === now.getDay();
         const slots = week[d].map(([s, e, l]) => {
           const label = `${hm(s)}–${hm(e)} ${ww ? t.hotWater : l < 0 ? t.reduced : l > 0 ? t.raised : t.comfort}`;
           return `<i class="lv${ww ? 'w' : l}" style="left:${s / 14.4}%;width:${(e - s) / 14.4}%" title="${esc(label)}" aria-label="${esc(label)}"></i>`;
         }).join('');
         return `<span class="d${today ? ' today' : ''}">${esc(dayName(d))}</span><div class="bar">${slots}${today ? `<b style="left:${nowMin / 14.4}%"></b>` : ''}</div>`;
-      }).join('')}</div>`).join('');
-    }).join('');
+      }).join('')}</div>` + (c.active != null && p !== c.active ? '</details>' : '')).join('');  // the other program folded away
+    }).join('') + this._inertia(t.inertia, this._sched.learning);
+  }
+
+  // what the integration learnt of the house (learning.py): its progress until there is enough, then the values
+  _inertia(t, l) {
+    let body;
+    if (!l) body = `<p class="mut">${esc(t.none)}</p>`;
+    else if (l.state !== 'ready') {
+      body = `<p class="mut">${esc(t.learning)}</p><table>${['days', 'nights', 'warmups', 'span'].map((k) =>
+        `<tr${l.progress[k] >= l.needed[k] ? '' : ' class="no"'}><td>${l.progress[k] >= l.needed[k] ? '✓' : '…'}</td><td>${esc(t[k])}</td><td class="v">${l.progress[k]} / ${l.needed[k]}${k === 'span' ? ' °C' : ''}</td></tr>`).join('')}</table>`;
+    } else {
+      const hm = (h) => `${h | 0} h ${String(Math.round(h % 1 * 60)).padStart(2, '0')}`;
+      body = `<h3>${esc(t.hoursPerK)}</h3><table>${l.hours_per_k.map(([o, h]) => `<tr><td class="l">${esc(t.outdoor)} ${o} °C</td><td class="v">${hm(h)}</td></tr>`).join('')}</table>`
+        + `<h3>${esc(t.cooling)}</h3><table>${l.cooling.map(([lo, hi, r]) => `<tr><td class="l">${esc(t.gap)} ${lo}–${hi} K</td><td class="v">${r.toFixed(2)} K ${esc(t.perHour)}</td></tr>`).join('')}</table>`;
+    }
+    return `<h2>${esc(t.title)}</h2>${body}`;
   }
 
   _hideTip() { const tip = this._q('tip'); if (tip) tip.hidden = true; this._tipKey = null; }

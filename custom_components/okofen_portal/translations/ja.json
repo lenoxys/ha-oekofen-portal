@@ -82,6 +82,13 @@
           "active": "運転中",
           "restoring": "復元中"
         }
+      },
+      "heating_learning": {
+        "name": "暖房の学習",
+        "state": {
+          "learning": "学習中",
+          "ready": "完了"
+        }
       }
     },
     "number": {

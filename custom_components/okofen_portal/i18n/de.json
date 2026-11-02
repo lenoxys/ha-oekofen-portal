@@ -526,7 +526,21 @@
       "reduced": "Komfort −1 °C",
       "raised": "Komfort +1 °C",
       "setback": "Absenkung",
-      "hotWater": "Wasser wird geheizt"
+      "hotWater": "Wasser wird geheizt",
+      "inertia": {
+        "title": "Trägheit des Hauses",
+        "learning": "Lernt aus dem Verlauf von Home Assistant, ohne Vorschlag, bis genug Daten da sind:",
+        "days": "Heiztage",
+        "nights": "Nächte ohne Heizung",
+        "warmups": "Aufheizphasen",
+        "span": "Spanne der Außentemperatur",
+        "hoursPerK": "Heizdauer für 1 K mehr (Absenkung zu Komfort)",
+        "outdoor": "außen",
+        "cooling": "Abkühlung ohne Heizung",
+        "gap": "Raum − außen",
+        "perHour": "pro Stunde",
+        "none": "Noch nicht berechnet (braucht den Recorder und die Sensoren Raum, Sollwert, außen und Vorlauf)."
+      }
     }
   }
 }

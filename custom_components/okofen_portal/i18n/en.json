@@ -526,7 +526,21 @@
       "reduced": "Comfort −1 °C",
       "raised": "Comfort +1 °C",
       "setback": "Setback",
-      "hotWater": "Heating the water"
+      "hotWater": "Heating the water",
+      "inertia": {
+        "title": "Inertia of the house",
+        "learning": "Learning from Home Assistant's history, nothing is suggested until there is enough of it:",
+        "days": "heating days",
+        "nights": "nights with the heating off",
+        "warmups": "warm-ups",
+        "span": "outdoor spread",
+        "hoursPerK": "Heating needed to gain 1 K (reduced to comfort)",
+        "outdoor": "outdoor",
+        "cooling": "Cooling with the heating off",
+        "gap": "room − outdoor",
+        "perHour": "per hour",
+        "none": "Not computed yet (needs the recorder and the room, setpoint, outdoor and flow sensors)."
+      }
     }
   }
 }

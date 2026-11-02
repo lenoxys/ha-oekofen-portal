@@ -97,3 +97,24 @@ day = asyncio.run(history.async_points(hass, "e1", NOW - 30 * H, NOW - 20 * H))[
 assert 595 < len(day) <= 600 and day[0][0] >= NOW - 30 * H and day[-1][0] < NOW - 20 * H, len(day)
 assert asyncio.run(history.async_points(types.SimpleNamespace(config=types.SimpleNamespace(components=set())), "e1"))["points"] == []
 print("historique du panneau lu depuis le recorder: valeurs, brûleur, vanne, surchauffe, ciel, entités désactivées: OK")
+
+# the inertia learnt from the hourly statistics: room mean, highest setpoint of the hour, outdoor and flow means
+for name in history.LEARN_KEYS:
+    UNIQUE[f"e1_{DASHBOARD[name]}"] = (f"sensor.{name}", False)
+stats_asked, seen = [], []
+T0 = 1_800_000_000  # a whole hour
+
+
+def statistics_during_period(hass, start, end, ids, period, units, types_):
+    stats_asked.append((set(ids), period, types_))
+    row = lambda i, mean, high: {"start": T0 + i * H, "mean": mean, "max": high}  # noqa: E731
+    return {"sensor.room": [row(0, 19.5, 19.6), row(1, 19.8, 20)], "sensor.room_set": [row(0, 8, 8), row(1, 14, 20)],
+            "sensor.outdoor": [row(0, 4, 5), row(1, 4, 5)], "sensor.flow": [row(0, 22, 23)]}  # flow missing for the 2nd hour
+
+
+sys.modules["homeassistant.components.recorder.statistics"] = types.SimpleNamespace(statistics_during_period=statistics_during_period)
+history.learn = lambda rows: seen.extend(rows) or {"state": "learning"}
+assert asyncio.run(history.async_learning(hass, "e1")) == {"state": "learning"}
+assert stats_asked == [({"sensor.room", "sensor.room_set", "sensor.outdoor", "sensor.flow"}, "hour", {"mean", "max"})], stats_asked
+assert [(h.ts, h.room, h.set, h.out, h.flow) for h in seen] == [(T0, 19.5, 8, 4, 22)], seen  # set = max, incomplete hour left out
+print("apprentissage de l'inertie lu depuis les statistiques horaires: OK")

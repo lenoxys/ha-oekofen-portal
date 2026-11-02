@@ -526,7 +526,21 @@
       "reduced": "Confort −1 °C",
       "raised": "Confort +1 °C",
       "setback": "Reducción",
-      "hotWater": "Calentando el agua"
+      "hotWater": "Calentando el agua",
+      "inertia": {
+        "title": "Inercia de la casa",
+        "learning": "Aprende del historial de Home Assistant, sin sugerencias hasta tener suficientes datos:",
+        "days": "días de calefacción",
+        "nights": "noches sin calefacción",
+        "warmups": "subidas de temperatura",
+        "span": "rango de temperatura exterior",
+        "hoursPerK": "Calefacción necesaria para ganar 1 K (reducido a confort)",
+        "outdoor": "exterior",
+        "cooling": "Enfriamiento sin calefacción",
+        "gap": "salón − exterior",
+        "perHour": "por hora",
+        "none": "Aún no calculado (necesita el historial y los sensores de sala, consigna, exterior e impulsión)."
+      }
     }
   }
 }

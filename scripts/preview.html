@@ -38,7 +38,11 @@
       weekend(every([[0, 420, -1], [420, 1080, 0], [1080, 1440, 1]]), [[0, 540, -1], [540, 1080, 0], [1080, 1440, 1]]),
       every([[0, 330, -1], [330, 1260, 0], [1260, 1440, -1]])]},
     {group: 'ww0', title: `${i18n.groups.ww.label} 1`, active: 0, programs: [
-      weekend(every([[1110, 1260, 0]]).map((s, d) => (d === 2 ? [[480, 540, 0], ...s] : s)), [[1080, 1260, 0]]), every([])]}]};
+      weekend(every([[1110, 1260, 0]]).map((s, d) => (d === 2 ? [[480, 540, 0], ...s] : s)), [[1080, 1260, 0]]), every([])]}],
+    // the house's inertia: still learning, or &learn=ready
+    learning: {state: params.get('learn') || 'learning', needed: {days: 30, nights: 15, warmups: 10, span: 5},
+      progress: params.get('learn') ? {days: 34, nights: 19, warmups: 22, span: 11.3} : {days: 24, nights: 6, warmups: 14, span: 11.3},
+      hours_per_k: [[-5, 1.6], [0, 2.1], [5, 2.9], [10, 4.4]], cooling: [[3, 8, -0.08, 12], [8, 12, -0.17, 40], [12, 16, -0.21, 31]]}};
   // &dark: the variables Home Assistant's default dark theme gives the panel
   if (params.has('dark')) document.documentElement.style.cssText = '--primary-background-color:#111111;--card-background-color:#1c1c1c;'
     + '--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--divider-color:rgba(225,225,225,0.12);background:#111111';

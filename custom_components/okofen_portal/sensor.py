@@ -19,6 +19,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_call_later, async_track_time_change
 
 from . import OekofenConfigEntry
 from .api import Reading
@@ -27,6 +28,7 @@ from .catalog import kind
 from .const import CLOCK_KEYS, FORECAST_DAY_KEY, FORECAST_DAY_STATES, MIXER_KEY, MIXER_STATES
 from .coordinator import OekofenCoordinator
 from .entity import OekofenEntity, describe, main_device_info, visible
+from .history import async_learning
 from .settings import SETTING_KEYS
 
 # portal unit text -> (device class, Home Assistant unit); anything else keeps its own unit
@@ -51,7 +53,7 @@ async def async_setup_entry(
 ) -> None:
     """Create one sensor per numeric or multi-state variable the controller returned."""
     data = entry.runtime_data
-    entities: list[SensorEntity] = [SolarBoostSensor(entry)]
+    entities: list[SensorEntity] = [SolarBoostSensor(entry), LearningSensor(entry)]
     for coordinator in (data.fast, data.slow):
         for key, reading in coordinator.data.items():
             if not visible(data, key) or kind(reading) == "text" or key in SETTING_KEYS:
@@ -176,3 +178,36 @@ class SolarBoostSensor(SensorEntity):
 
     async def async_added_to_hass(self) -> None:
         self.async_on_remove(async_dispatcher_connect(self.hass, self._boost.signal, self.async_write_ha_state))
+
+
+class LearningSensor(SensorEntity):
+    """The house's inertia learnt from the recorder (learning.py): *learning* with its progress, then *ready* with the values."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "heating_learning"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["learning", "ready"]
+    _attr_should_poll = False
+
+    def __init__(self, entry: OekofenConfigEntry) -> None:
+        self._data = entry.runtime_data
+        self._entry_id = entry.entry_id
+        self._attr_unique_id = f"{entry.entry_id}_heating_learning"
+        self._attr_device_info = main_device_info(entry.entry_id, entry.runtime_data.texts)
+
+    @property
+    def native_value(self) -> str | None:
+        return self._data.learning and self._data.learning["state"]
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        return {k: v for k, v in (self._data.learning or {}).items() if k != "state"}
+
+    async def _update(self, _now=None) -> None:
+        self._data.learning = await async_learning(self.hass, self._entry_id)
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        # once at start (the recorder may still be loading: a few minutes later), then every night
+        self.async_on_remove(async_call_later(self.hass, 120, self._update))
+        self.async_on_remove(async_track_time_change(self.hass, self._update, hour=4, minute=10, second=0))

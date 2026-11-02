@@ -526,7 +526,21 @@
       "reduced": "Confort −1 °C",
       "raised": "Confort +1 °C",
       "setback": "Abaissement",
-      "hotWater": "Chauffe de l'eau"
+      "hotWater": "Chauffe de l'eau",
+      "inertia": {
+        "title": "Inertie de la maison",
+        "learning": "Apprentissage sur l'historique de Home Assistant, aucune proposition tant qu'il n'y en a pas assez :",
+        "days": "jours de chauffe",
+        "nights": "nuits chauffage arrêté",
+        "warmups": "montées en température",
+        "span": "écart de températures extérieures",
+        "hoursPerK": "Chauffe nécessaire pour gagner 1 K (réduit vers confort)",
+        "outdoor": "dehors",
+        "cooling": "Refroidissement chauffage arrêté",
+        "gap": "salon − dehors",
+        "perHour": "par heure",
+        "none": "Pas encore calculé (il faut l'historique et les capteurs salon, consigne, extérieur et départ)."
+      }
     }
   }
 }

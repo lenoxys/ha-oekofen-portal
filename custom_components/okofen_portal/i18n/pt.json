@@ -526,7 +526,21 @@
       "reduced": "Conforto −1 °C",
       "raised": "Conforto +1 °C",
       "setback": "Redução",
-      "hotWater": "A aquecer a água"
+      "hotWater": "A aquecer a água",
+      "inertia": {
+        "title": "Inércia da casa",
+        "learning": "Aprende com o histórico do Home Assistant, sem sugestões enquanto não houver dados suficientes:",
+        "days": "dias de aquecimento",
+        "nights": "noites sem aquecimento",
+        "warmups": "subidas de temperatura",
+        "span": "amplitude da temperatura exterior",
+        "hoursPerK": "Aquecimento necessário para ganhar 1 K (reduzido para conforto)",
+        "outdoor": "exterior",
+        "cooling": "Arrefecimento sem aquecimento",
+        "gap": "sala − exterior",
+        "perHour": "por hora",
+        "none": "Ainda não calculado (precisa do histórico e dos sensores de sala, consigna, exterior e ida)."
+      }
     }
   }
 }

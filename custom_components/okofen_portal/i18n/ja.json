@@ -526,7 +526,21 @@
       "reduced": "快適 −1 °C",
       "raised": "快適 +1 °C",
       "setback": "節約",
-      "hotWater": "給湯の加熱"
+      "hotWater": "給湯の加熱",
+      "inertia": {
+        "title": "住宅の熱慣性",
+        "learning": "Home Assistant の履歴から学習中。十分なデータが揃うまで提案はしません：",
+        "days": "暖房日",
+        "nights": "暖房停止の夜",
+        "warmups": "昇温",
+        "span": "外気温の幅",
+        "hoursPerK": "1 K 上げるのに必要な暖房時間（節約から快適へ）",
+        "outdoor": "外気",
+        "cooling": "暖房停止時の冷え方",
+        "gap": "室内 − 外気",
+        "perHour": "1時間あたり",
+        "none": "まだ計算されていません（レコーダーと室温・設定・外気・往き温度のセンサーが必要）。"
+      }
     }
   }
 }

@@ -82,6 +82,13 @@
           "active": "Ativo",
           "restoring": "A restaurar"
         }
+      },
+      "heating_learning": {
+        "name": "Aprendizagem aquecimento",
+        "state": {
+          "learning": "A aprender",
+          "ready": "Pronto"
+        }
       }
     },
     "number": {
