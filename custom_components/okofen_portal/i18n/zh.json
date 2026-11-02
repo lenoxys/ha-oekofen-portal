@@ -453,7 +453,8 @@
       "tabs": {
         "scheme": "系统",
         "solar": "太阳能优化",
-        "history": "历史"
+        "history": "历史",
+        "programs": "程序"
       },
       "states": {
         "inactive": "关闭",
@@ -517,6 +518,15 @@
       "live": "实时",
       "position": "过去两天中的位置",
       "empty": "暂无历史"
+    },
+    "programs": {
+      "program": "程序",
+      "active": "使用中",
+      "comfort": "舒适",
+      "reduced": "舒适 −1 °C",
+      "raised": "舒适 +1 °C",
+      "setback": "降温",
+      "hotWater": "加热热水"
     }
   }
 }

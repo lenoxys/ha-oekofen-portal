@@ -12,6 +12,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.loader import async_get_integration
 
+from . import schedules
+from .api import OekofenError
+from .catalog import group_of
 from .const import DASHBOARD, DOMAIN
 from .history import async_points
 from .names import Texts
@@ -75,10 +78,35 @@ async def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnec
     connection.send_result(msg["id"], await async_points(hass, entries[0].entry_id, msg.get("start"), msg.get("end")))
 
 
+@websocket_api.websocket_command(
+    {vol.Required("type"): f"{DOMAIN}/schedules", vol.Optional("language"): str}
+)
+@websocket_api.async_response
+async def ws_schedules(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
+    """The week programs of the heating circuits and hot water, read from the portal when the tab opens."""
+    entries = hass.config_entries.async_loaded_entries(DOMAIN)
+    if not entries:
+        connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
+        return
+    data = entries[0].runtime_data
+    texts = await _panel_texts(hass, msg.get("language"), data.texts)
+    groups = sorted({g for g in map(group_of, data.names) if g[:2] in ("hk", "ww")})
+    try:
+        read = await data.fast.client.async_read([k for g in groups for k in schedules.keys(g)])
+    except OekofenError as err:
+        connection.send_error(msg["id"], "portal_error", str(err))
+        return
+    values = {k: r.value for k, r in read.items()}
+    connection.send_result(
+        msg["id"], {"circuits": [{**schedules.week(g, values), "title": texts.group_title(g)} for g in groups]}
+    )
+
+
 async def async_setup_dashboard(hass: HomeAssistant) -> None:
     """Register the websocket commands and the sidebar panel (once per Home Assistant)."""
     websocket_api.async_register_command(hass, ws_dashboard)
     websocket_api.async_register_command(hass, ws_history)
+    websocket_api.async_register_command(hass, ws_schedules)
     folder = Path(__file__).parent / "frontend"
     await hass.http.async_register_static_paths([
         StaticPathConfig(STATIC_URL, str(folder / "okofen-dashboard.js"), False),

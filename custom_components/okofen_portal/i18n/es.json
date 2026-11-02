@@ -453,7 +453,8 @@
       "tabs": {
         "scheme": "Instalación",
         "solar": "Optimización solar",
-        "history": "Historial"
+        "history": "Historial",
+        "programs": "Programas"
       },
       "states": {
         "inactive": "Apagado",
@@ -517,6 +518,15 @@
       "live": "en directo",
       "position": "Posición en los dos últimos días",
       "empty": "aún sin historial"
+    },
+    "programs": {
+      "program": "Programa",
+      "active": "activo",
+      "comfort": "Confort",
+      "reduced": "Confort −1 °C",
+      "raised": "Confort +1 °C",
+      "setback": "Reducción",
+      "hotWater": "Calentando el agua"
     }
   }
 }

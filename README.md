@@ -20,7 +20,7 @@ Bring your ÖkoFEN heating system (Pellematic, Touch controller) into Home Assis
 - **Thermostats and hot water**: one `climate` entity per heating circuit and one `water_heater` per hot water circuit, with mode and target temperature.
 - **What the controller's local interface does not give**: the burner of the existing boiler (on / off, start and stop events with run time), the boiler temperature, the heating mixing valve.
 - **Everything else the portal knows**: about 440 values on a typical installation (temperatures, pumps, status, pellet boiler, weather), grouped into one device per circuit. Most are disabled by default; enable the ones you need.
-- **ÖkoFEN sidebar panel**: a live, animated schematic of the installation, a replay of yesterday and today, a history chart and the solar boost dashboard.
+- **ÖkoFEN sidebar panel**: a live, animated schematic of the installation, a replay of yesterday and today, a history chart, the week programs and the solar boost dashboard.
 - **Solar boost** (experimental): on sunny days, raises the comfort temperature and opens your radiator valves so the house is heated by the solar buffer tank instead of the boiler.
 - **A few safe settings** you can change from Home Assistant: solar discharge, heating curve, buffer overshoot, summer / winter mode, eco mode.
 - **Readable names in your language**: English, French, German, Spanish, Portuguese, Japanese and Simplified Chinese, with ÖkoFEN's own help texts and status messages.
@@ -69,6 +69,7 @@ An **ÖkoFEN** entry appears in the sidebar, for every user. It follows your pro
   Under the schematic, the **replay bar** plays yesterday and today back: press ▶, drag the handle, or press **Now** to go back to live. ‹ and › move back and forth one day at a time. Burner, boiler pump, solar pump, heating pump and pool pump runs are marked under the track; hover them for their times.
 - **Solar optimisation**: the state of the solar boost, every condition with its current value and threshold, and a button to turn it on or off.
 - **History**: today and yesterday, with the tank, collector, flow, room and outdoor temperatures, and lanes for the burner, the pumps and the solar boost. Click a legend entry to hide a curve.
+- **Programs**: the two week programs of each heating circuit (comfort, comfort −1 °C, comfort +1 °C, setback) and hot water circuit (when the water is heated), one bar per day, the active one marked. Read from the portal when you open the tab; change them on the Touch or the portal.
 
 The replay and history come from Home Assistant's own history (the recorder), so yesterday is there as soon as the panel's entities have been recorded, and you can go back as far as Home Assistant keeps it (10 days by default, `purge_keep_days`). Hours with nothing recorded are shown dotted or hatched. These entities (burner, buffer tank, collector, flow, room, outdoor, pumps, weather, solar boost) are enabled by default on new installs; if you installed before v0.13.0, enable any that are still disabled in **Settings → Devices & services → ÖkoFEN Portal → Entities**. The schematic is one fixed layout (buffer tank with a solar coil, hot water by plate exchanger, pool exchanger); parts your controller does not report show "–".
 

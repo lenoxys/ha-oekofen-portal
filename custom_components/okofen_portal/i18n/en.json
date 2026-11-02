@@ -453,7 +453,8 @@
       "tabs": {
         "scheme": "Installation",
         "solar": "Solar optimisation",
-        "history": "History"
+        "history": "History",
+        "programs": "Programs"
       },
       "states": {
         "inactive": "Off",
@@ -517,6 +518,15 @@
       "live": "live",
       "position": "Position in the last two days",
       "empty": "no history yet"
+    },
+    "programs": {
+      "program": "Program",
+      "active": "active",
+      "comfort": "Comfort",
+      "reduced": "Comfort −1 °C",
+      "raised": "Comfort +1 °C",
+      "setback": "Setback",
+      "hotWater": "Heating the water"
     }
   }
 }

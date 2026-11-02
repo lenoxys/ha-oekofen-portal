@@ -85,6 +85,16 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 .hist .grid{stroke:var(--line);stroke-width:1}
 .hist .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .hist .cross{stroke:var(--mut);stroke-width:1}
+.progs h2{font-size:inherit;font-weight:600;margin:14px 0 6px}.progs h2:first-of-type{margin-top:4px}
+.progs h3{font-size:inherit;font-weight:400;color:var(--mut);margin:8px 0 4px}.progs h3 b{color:var(--fg);font-weight:500}
+.week{display:grid;grid-template-columns:3.5em 1fr;gap:3px 8px;align-items:center}
+.week .d{color:var(--mut)}.week .today{color:var(--fg);font-weight:600}
+.bar{position:relative;height:16px;border-radius:4px;background:var(--line)}
+.bar i{position:absolute;top:0;bottom:0;border-radius:4px;box-shadow:0 0 0 1px var(--card)}
+.bar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg)}
+.hours{position:relative;height:1.4em;color:var(--mut);font-size:12px}.hours span{position:absolute;transform:translateX(-50%)}
+.lv-1{background:var(--cold)}.lv0{background:var(--warm)}.lv1{background:var(--hot)}.lvw{background:var(--solar)}
+.progs .legend i{height:10px}
 .replay{display:flex;align-items:center;gap:12px;margin:6px -8px -8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg);border-radius:0 0 12px 12px}
 .replay button{font:inherit;border:1px solid var(--line);border-radius:8px;padding:4px 10px;background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap}
 .replay button:disabled,.rpTrack input:disabled{opacity:.4;cursor:default}
@@ -271,6 +281,7 @@ const diff = (a, b) => (a == null || b == null ? '–' : (a - b >= 0 ? '+' : '')
 // useful energy above 40 °C: 1000 L x 1.163 Wh/(L.K), mean of the 3 tank probes
 // ponytail: plain mean of the 3 probes, weight by height if the figure looks wrong
 const kwh = (s) => (s.top == null || s.mid == null || s.bot == null ? null : Math.max(0, 1.163 * ((s.top + s.mid + s.bot) / 3 - 40)));
+const TABS = ['scheme', 'solar', 'history', 'programs'];
 const esc = (x) => String(x).replace(/[&<>]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'})[c]);
 
 // sky: day or night from the OpenWeatherMap icon (01d / 01n), clouds from the coverage and the condition code
@@ -377,7 +388,7 @@ class OkofenDashboard extends HTMLElement {
 <main>
 <h1>${t.title}</h1>
 <p class="sub">${t.sub} <span id="src" class="badge"></span></p>
-<nav role="tablist">${['scheme', 'solar', 'history'].map((k) => `<button role="tab" data-tab="${k}" aria-selected="${this._tab === k}">${t.solar.tabs[k]}</button>`).join('')}</nav>
+<nav role="tablist">${TABS.map((k) => `<button role="tab" data-tab="${k}" aria-selected="${this._tab === k}">${t.solar.tabs[k]}</button>`).join('')}</nav>
 <div class="card" id="scheme" ${this._tab === 'scheme' ? '' : 'hidden'}>${svgFor(t)}
 <div class="replay" id="replay" hidden><span class="rpCtl"><button id="rpPrev" aria-label="${t.replay.prev}">${PREV_ICON}</button><button id="rpPlay" aria-label="${t.replay.play}">${PLAY_ICON}</button><button id="rpNext" aria-label="${t.replay.next}">${NEXT_ICON}</button></span>
 <div class="rpTrack" id="rpTrack"><svg id="rpStrip" viewBox="0 0 1000 58" preserveAspectRatio="none" aria-hidden="true"></svg>
@@ -385,6 +396,7 @@ class OkofenDashboard extends HTMLElement {
 <button id="rpNow" aria-label="${t.replay.now}"><span class="t" id="rpTime"></span><span class="n">${t.replay.now}</span><span class="z" id="rpSize"></span><span class="z" id="rpSize2"></span><span class="z">${t.replay.live}</span></button></div></div>
 <div class="card pad solar" id="solar" ${this._tab === 'solar' ? '' : 'hidden'}></div>
 <div class="card pad hist" id="history" ${this._tab === 'history' ? '' : 'hidden'}></div>
+<div class="card pad progs" id="programs" ${this._tab === 'programs' ? '' : 'hidden'}></div>
 <div id="tip" hidden role="tooltip"></div>
 </main>`;
     this.shadowRoot.querySelectorAll('path.flow').forEach((p) => {
@@ -398,9 +410,10 @@ class OkofenDashboard extends HTMLElement {
       if (!b) return;
       this._tab = b.dataset.tab;
       this.shadowRoot.querySelectorAll('nav button').forEach((x) => x.setAttribute('aria-selected', x === b));
-      ['scheme', 'solar', 'history'].forEach((k) => this._hide(k, this._tab !== k));
+      TABS.forEach((k) => this._hide(k, this._tab !== k));
       this._hideTip();
       if (this._tab === 'history') this._loadHistory();
+      if (this._tab === 'programs') this._loadSchedules();
     });
     this._q('solar').addEventListener('click', (e) => {
       const b = e.target.closest('[data-switch]');
@@ -448,7 +461,7 @@ class OkofenDashboard extends HTMLElement {
   async _poll() {
     try {
       const res = await this._hass.callWS({type: 'okofen_portal/dashboard', language: this._userLang});
-      if (!this._t || res.language !== this._lang) { this._t = res.strings; this._lang = res.language; this._build(); this._renderHistory(); this._renderReplay(); }
+      if (!this._t || res.language !== this._lang) { this._t = res.strings; this._lang = res.language; this._build(); this._renderHistory(); this._renderReplay(); if (this._tab === 'programs') this._loadSchedules(); }
       this._boost = res.boost;
       this._w = res.weather || {};
       this._live = toCur(res.values || {}, this._w, Date.now() / 1000);
@@ -853,6 +866,35 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const tip = this._q('tip'), w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = Math.min(x + 14, innerWidth - w - 8) + 'px';
     tip.style.top = (y + 14 + h > innerHeight ? y - h - 10 : y + 14) + 'px';
+  }
+
+  async _loadSchedules() {
+    try { this._sched = await this._hass.callWS({type: 'okofen_portal/schedules', language: this._userLang}); } catch (e) { this._sched = null; }
+    this._renderSchedules();
+  }
+
+  // ===== programs tab: each circuit's two week programs, one bar per day from 0 to 24 h, read only =====
+  _renderSchedules() {
+    const el = this._q('programs'), t = this._t?.programs;
+    if (!el || !t) return;
+    if (!this._sched) { el.innerHTML = `<p class="mut">${esc(this._t.error)}</p>`; return; }
+    const now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes(), hm = (m) => `${String(m / 60 | 0).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+    const dayName = (d) => new Date(2024, 0, 7 + d).toLocaleDateString(this._lang, {weekday: 'short'});  // 7 Jan 2024 is a Sunday, tag[0]
+    const order = [1, 2, 3, 4, 5, 6, 0];  // Monday first
+    const hours = `<span></span><div class="hours">${[0, 6, 12, 18, 24].map((h) => `<span style="left:${h / 24 * 100}%">${h}h</span>`).join('')}</div>`;
+    const key = (c) => (c.group.startsWith('ww') ? [['w', t.hotWater]] : [[-1, t.reduced], [0, t.comfort], [1, t.raised]]);
+    el.innerHTML = this._sched.circuits.map((c) => {
+      const ww = c.group.startsWith('ww');
+      const legend = `<div class="legend">${key(c).map(([l, label]) => `<span><i class="lv${l}"></i> ${esc(label)}</span>`).join('')}${ww ? '' : `<span><i style="background:var(--line)"></i> ${esc(t.setback)}</span>`}</div>`;
+      return `<h2>${esc(c.title)}</h2>${legend}` + c.programs.map((week, p) => `<h3>${esc(t.program)} ${p + 1}${p === c.active ? ` <b>· ${esc(t.active)}</b>` : ''}</h3><div class="week">${hours}${order.map((d) => {
+        const today = p === c.active && d === now.getDay();
+        const slots = week[d].map(([s, e, l]) => {
+          const label = `${hm(s)}–${hm(e)} ${ww ? t.hotWater : l < 0 ? t.reduced : l > 0 ? t.raised : t.comfort}`;
+          return `<i class="lv${ww ? 'w' : l}" style="left:${s / 14.4}%;width:${(e - s) / 14.4}%" title="${esc(label)}" aria-label="${esc(label)}"></i>`;
+        }).join('');
+        return `<span class="d${today ? ' today' : ''}">${esc(dayName(d))}</span><div class="bar">${slots}${today ? `<b style="left:${nowMin / 14.4}%"></b>` : ''}</div>`;
+      }).join('')}</div>`).join('');
+    }).join('');
   }
 
   _hideTip() { const tip = this._q('tip'); if (tip) tip.hidden = true; this._tipKey = null; }

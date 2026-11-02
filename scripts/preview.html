@@ -30,12 +30,20 @@
     sunrise: summer ? '06:12' : season === 'winter' ? '08:58' : '07:45', sunset: summer ? '22:01' : season === 'winter' ? '17:41' : '17:53',
     forecast_temp: summer ? 29 : season === 'winter' ? 4 : 16, forecast_clouds: 10};
   const lang = params.get('lang') || 'en';
-  const strings = (await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json()).panel;
+  const i18n = await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json(), strings = i18n.panel;
+  // week programs, Sunday first: [start minute, end minute, level -1 / 0 / +1]
+  const every = (slots) => Array(7).fill(slots), weekend = (week, slots) => week.map((s, d) => (d === 0 || d === 6 ? slots : s));
+  const schedules = {circuits: [
+    {group: 'hk0', title: `${i18n.groups.hk.label} 1`, active: 1, programs: [
+      weekend(every([[0, 420, -1], [420, 1080, 0], [1080, 1440, 1]]), [[0, 540, -1], [540, 1080, 0], [1080, 1440, 1]]),
+      every([[0, 330, -1], [330, 1260, 0], [1260, 1440, -1]])]},
+    {group: 'ww0', title: `${i18n.groups.ww.label} 1`, active: 0, programs: [
+      weekend(every([[1110, 1260, 0]]).map((s, d) => (d === 2 ? [[480, 540, 0], ...s] : s)), [[1080, 1260, 0]]), every([])]}]};
   // &dark: the variables Home Assistant's default dark theme gives the panel
   if (params.has('dark')) document.documentElement.style.cssText = '--primary-background-color:#111111;--card-background-color:#1c1c1c;'
     + '--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--divider-color:rgba(225,225,225,0.12);background:#111111';
   const panel = document.createElement('okofen-dashboard');
-  panel._tab = params.get('tab') || 'scheme';  // &tab=solar or &tab=history
+  panel._tab = params.get('tab') || 'scheme';  // &tab=solar, &tab=history or &tab=programs
   document.body.append(panel);
   // solar boost: waiting for the buffer (add &boost=active for a running one, &presence=home|near|far)
   const active = params.get('boost') === 'active';
@@ -96,7 +104,8 @@
   if (params.has('seek')) setTimeout(() => panel._seek(+params.get('seek')), 1500);  // &seek=<minute index> to open on a past moment
   panel.hass = {language: lang, themes: {darkMode: params.has('dark')}, states: {'climate.salon_salon': {attributes: {friendly_name: 'Salon'}}},
     callService: async (domain, service) => { boost.enabled = service === 'turn_on'; boost.state = boost.enabled ? 'waiting' : 'inactive'; boost.reason = boost.enabled ? 'tank_cold' : 'disabled'; },
-    callWS: async (msg) => (msg.type === 'okofen_portal/history' ? day(msg) : {language: lang, strings, values: sample, weather, boost})};
+    callWS: async (msg) => (msg.type === 'okofen_portal/history' ? day(msg) : msg.type === 'okofen_portal/schedules' ? schedules
+      : {language: lang, strings, values: sample, weather, boost})};
   // the window the panel asks for; with the sample, older days replay its two days again, as far as a recorder keeping 10 days
   // (with &gap nothing is older than the sample, so the panel greys ‹); with &fake, the made-up days as they are
   function day({start, end}) {
