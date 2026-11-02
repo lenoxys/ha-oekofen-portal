@@ -55,7 +55,7 @@ async def main() -> None:
                 print(f"  {s.key}: ABSENT")
                 continue
             inside = (
-                settings.check_number(s, float(r.value)) is None
+                s.minimum <= float(r.value) <= s.maximum
                 if not s.options
                 else int(r.value) in s.options
             )

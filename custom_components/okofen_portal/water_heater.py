@@ -56,10 +56,6 @@ class OekofenWaterHeater(OekofenEntity, WaterHeaterEntity):
         super().__init__(coordinator, f"LOCAL.ww[{n}].betriebsart[1]")
         self._n = n
 
-    def _value(self, name: str):
-        reading = self.data.reading(f"LOCAL.{name.format(n=self._n)}")
-        return None if reading is None else reading.value
-
     @property
     def current_operation(self) -> str | None:
         value = self._value("ww[{n}].betriebsart[1]")

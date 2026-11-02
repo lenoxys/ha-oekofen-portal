@@ -1,6 +1,6 @@
 """ÖkoFEN's own labels and help texts, read from the portal's public files at start-up.
 
-Nothing from them is stored in this repository: the status-word decoding, the titles and the help
+Nothing from them is stored in this repository: the status-word decoding and the help
 texts are downloaded (and cached by Home Assistant) in the language of Home Assistant.
 Does not import Home Assistant.
 """
@@ -29,7 +29,6 @@ class Docs:
     """What the portal says about the variables."""
 
     status: dict[str, dict[int, str]] = field(default_factory=dict)  # variable -> bit -> text
-    titles: dict[str, str] = field(default_factory=dict)  # setting -> title
     help: dict[str, str] = field(default_factory=dict)  # setting -> help text
 
     def decode(self, key: str, raw: int) -> str | None:
@@ -43,7 +42,6 @@ class Docs:
     def to_dict(self) -> dict[str, Any]:
         return {
             "status": {k: {str(i): t for i, t in v.items()} for k, v in self.status.items()},
-            "titles": self.titles,
             "help": self.help,
         }
 
@@ -51,7 +49,6 @@ class Docs:
     def from_dict(cls, data: dict[str, Any]) -> Docs:
         return cls(
             {k: {int(i): t for i, t in v.items()} for k, v in data.get("status", {}).items()},
-            data.get("titles", {}),
             data.get("help", {}),
         )
 
@@ -89,7 +86,7 @@ def _plain(text: str) -> str:
 async def async_fetch_docs(
     session: aiohttp.ClientSession, lang: str, wanted: set[str]
 ) -> Docs:
-    """Download the portal's description files; ``wanted`` are the settings to keep titles/help for."""
+    """Download the portal's description files; ``wanted`` are the settings to keep help for."""
     config = await _get_json(session, CONFIG_URL)
     texts: dict[str, str] = {}
     help_json: dict[str, Any] = {}
@@ -113,8 +110,6 @@ async def async_fetch_docs(
                 docs.status[variable] = bits
         variable = str(node.get("variable", "")).removeprefix(_PREFIX)
         if variable in wanted:
-            if node.get("title") and "." + str(node["title"]) in texts:
-                docs.titles[variable] = texts["." + str(node["title"])]
             entry = help_json.get(str(node.get("help"))) if node.get("help") else None
             if isinstance(entry, dict) and entry.get("text"):
                 docs.help[variable] = _plain(entry["text"])

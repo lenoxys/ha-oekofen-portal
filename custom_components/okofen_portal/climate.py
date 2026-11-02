@@ -63,10 +63,6 @@ class OekofenClimate(OekofenEntity, ClimateEntity):
         super().__init__(coordinator, f"LOCAL.hk[{n}].betriebsart[1]")
         self._n = n
 
-    def _value(self, name: str):
-        reading = self.data.reading(f"LOCAL.{name.format(n=self._n)}")
-        return None if reading is None else reading.value
-
     @property
     def _index(self) -> int | None:
         value = self._value("hk[{n}].betriebsart[1]")

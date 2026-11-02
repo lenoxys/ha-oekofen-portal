@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .api import OekofenError, OekofenPortalClient, Reading
-from .settings import SETTING_BY_KEY, check_number
+from .settings import SETTING_BY_KEY
 
 
 def prepare(key: str, value: float, reading: Reading) -> tuple[int, float | int]:
@@ -16,7 +16,8 @@ def prepare(key: str, value: float, reading: Reading) -> tuple[int, float | int]
         if index not in setting.options:
             raise ValueError(f"{key}: {index} is not one of {sorted(setting.options)}")
         return index, index
-    check_number(setting, float(value))
+    if not setting.minimum <= float(value) <= setting.maximum:
+        raise ValueError(f"{key}: {value} is outside {setting.minimum}..{setting.maximum}")
     return round(float(value) * reading.divisor), float(value)
 
 

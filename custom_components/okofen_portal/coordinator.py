@@ -88,9 +88,9 @@ class OekofenCoordinator(DataUpdateCoordinator[dict[str, Reading]]):
                 translation_placeholders={"error": self.portal_error},
             )
 
-    async def _read(self) -> dict[str, Reading]:
+    async def _read(self, names: list[str] | None = None) -> dict[str, Reading]:
         try:
-            data = await self.client.async_read(self.names)
+            data = await self.client.async_read(self.names if names is None else names)
         except OekofenAuthError as err:
             raise ConfigEntryAuthFailed from err
         except OekofenConnectionError as err:
@@ -125,15 +125,10 @@ class HybridCoordinator(OekofenCoordinator):
             return await super()._read()
         if self._cloud_at is None or now - self._cloud_at >= self._cloud_interval:
             try:
-                self._cloud = await self.client.async_read(self._cloud_names)
-            except OekofenAuthError as err:
-                raise ConfigEntryAuthFailed from err
-            except OekofenConnectionError as err:
-                self._portal(err)
+                self._cloud = await super()._read(self._cloud_names)
+            except UpdateFailed as err:
                 if self._portal_failures >= 3:  # a blip keeps the last values, an outage does not
                     self._cloud = {}
-                _LOGGER.debug("Portal unreachable, local values only: %s", err)
-            else:
-                self._portal(None)
+                _LOGGER.debug("Local values only: %s", err)
             self._cloud_at = now  # next try of the portal in cloud_interval, answer or not
         return {**self._cloud, **local}

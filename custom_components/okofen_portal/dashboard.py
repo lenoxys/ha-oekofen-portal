@@ -35,17 +35,24 @@ async def _panel_texts(hass: HomeAssistant, language: str | None, default: Texts
     return cache[language]
 
 
+def _entry(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict):
+    """The loaded config entry, or None after answering the panel that there is none."""
+    entries = hass.config_entries.async_loaded_entries(DOMAIN)
+    if not entries:
+        connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
+        return None
+    return entries[0]
+
+
 @websocket_api.websocket_command(
     {vol.Required("type"): f"{DOMAIN}/dashboard", vol.Optional("language"): str}
 )
 @websocket_api.async_response
 async def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
     """The values the panel draws, from the data the integration already holds."""
-    entries = hass.config_entries.async_loaded_entries(DOMAIN)
-    if not entries:
-        connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
+    if not (entry := _entry(hass, connection, msg)):
         return
-    data = entries[0].runtime_data
+    data = entry.runtime_data
     texts = await _panel_texts(hass, msg.get("language"), data.texts)
     readings = {**data.slow.data, **data.fast.data}
     connection.send_result(
@@ -59,7 +66,7 @@ async def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConn
             "weather": panel_weather(readings),
             "boost": {
                 **data.boost.panel(),
-                "switch": er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entries[0].entry_id}_solar_boost"),
+                "switch": er.async_get(hass).async_get_entity_id("switch", DOMAIN, f"{entry.entry_id}_solar_boost"),
             },
         },
     )
@@ -71,11 +78,9 @@ async def ws_dashboard(hass: HomeAssistant, connection: websocket_api.ActiveConn
 @websocket_api.async_response
 async def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
     """The panel's values between start and end (default the last 48 h), from the recorder, for the replay bar and the history tab."""
-    entries = hass.config_entries.async_loaded_entries(DOMAIN)
-    if not entries:
-        connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
+    if not (entry := _entry(hass, connection, msg)):
         return
-    connection.send_result(msg["id"], await async_points(hass, entries[0].entry_id, msg.get("start"), msg.get("end")))
+    connection.send_result(msg["id"], await async_points(hass, entry.entry_id, msg.get("start"), msg.get("end")))
 
 
 @websocket_api.websocket_command(
@@ -84,11 +89,9 @@ async def ws_history(hass: HomeAssistant, connection: websocket_api.ActiveConnec
 @websocket_api.async_response
 async def ws_schedules(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:
     """The week programs of the heating circuits and hot water, read from the portal when the tab opens."""
-    entries = hass.config_entries.async_loaded_entries(DOMAIN)
-    if not entries:
-        connection.send_error(msg["id"], "not_loaded", "ÖkoFEN Portal is not loaded")
+    if not (entry := _entry(hass, connection, msg)):
         return
-    data = entries[0].runtime_data
+    data = entry.runtime_data
     texts = await _panel_texts(hass, msg.get("language"), data.texts)
     groups = sorted({g for g in map(group_of, data.names) if g[:2] in ("hk", "ww")})
     try:

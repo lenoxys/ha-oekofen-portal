@@ -71,9 +71,3 @@ SETTINGS += tuple(
 )
 SETTING_KEYS = [s.key for s in SETTINGS]
 SETTING_BY_KEY = {s.key: s for s in SETTINGS}
-
-
-def check_number(setting: Setting, value: float) -> None:
-    """Raise ValueError if the value is outside the bounds of the setting."""
-    if not setting.minimum <= value <= setting.maximum:
-        raise ValueError(f"{setting.key}: {value} is outside {setting.minimum}..{setting.maximum}")

@@ -51,6 +51,17 @@ def main_device_info(entry_id: str, texts: Texts) -> DeviceInfo:
     )
 
 
+def group_device_info(entry_id: str, group_id: str, data) -> DeviceInfo:
+    """One device per circuit / function, under the main ÖkoFEN device."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, f"{entry_id}_{group_id}")},
+        manufacturer="ÖkoFEN",
+        name=f"ÖkoFEN {data.texts.group_title(group_id)}",
+        model=data.texts.group_description(group_id),
+        via_device_id=data.main_device_id,
+    )
+
+
 class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
     """An entity backed by one portal variable."""
 
@@ -63,16 +74,9 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
         entry_id = coordinator.config_entry.entry_id
         self._attr_unique_id = f"{entry_id}_{key}"
         group_id = group_of(key)
-        if group_id == "system":
-            self._attr_device_info = main_device_info(entry_id, data.texts)
-        else:  # one device per circuit / function, under the main ÖkoFEN device
-            self._attr_device_info = DeviceInfo(
-                identifiers={(DOMAIN, f"{entry_id}_{group_id}")},
-                manufacturer="ÖkoFEN",
-                name=f"ÖkoFEN {data.texts.group_title(group_id)}",
-                model=data.texts.group_description(group_id),
-                via_device_id=data.main_device_id,
-            )
+        self._attr_device_info = (
+            main_device_info(entry_id, data.texts) if group_id == "system" else group_device_info(entry_id, group_id, data)
+        )
         # ÖkoFEN's own help text when the portal has one, otherwise our explanation
         self._attr_extra_state_attributes = {
             "description": data.docs.help.get(key) or data.texts.entity_description(key),
@@ -92,6 +96,11 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
     def data(self):
         """Everything the integration holds (both coordinators, names, docs)."""
         return self.coordinator.config_entry.runtime_data
+
+    def _value(self, name: str):
+        """Value of ``LOCAL.<name>``, ``{n}`` replaced by the circuit index (climate, water heater)."""
+        reading = self.data.reading(f"LOCAL.{name.format(n=self._n)}")
+        return None if reading is None else reading.value
 
     async def async_added_to_hass(self) -> None:
         """Also follow the other coordinator: climate and water heater mix fast and slow values."""

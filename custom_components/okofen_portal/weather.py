@@ -9,14 +9,13 @@ from homeassistant.components.weather import (
 )
 from homeassistant.const import UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
 
 from . import OekofenConfigEntry
-from .const import DOMAIN
 from .coordinator import OekofenCoordinator
+from .entity import group_device_info
 from .weather_parse import WEATHER_KEYS, parse_forecast
 
 TEMP_KEY = "LOCAL.L_weather_temp"
@@ -48,15 +47,8 @@ class OekofenWeather(CoordinatorEntity[OekofenCoordinator], WeatherEntity):
     def __init__(self, coordinator: OekofenCoordinator) -> None:
         super().__init__(coordinator)
         entry = coordinator.config_entry
-        texts = entry.runtime_data.texts
         self._attr_unique_id = f"{entry.entry_id}_weather"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{entry.entry_id}_weather")},
-            manufacturer="ÖkoFEN",
-            name=f"ÖkoFEN {texts.group_title('weather')}",
-            model=texts.group_description("weather"),
-            via_device_id=entry.runtime_data.main_device_id,
-        )
+        self._attr_device_info = group_device_info(entry.entry_id, "weather", entry.runtime_data)
 
     @property
     def _forecast(self) -> list[dict]:
