@@ -539,7 +539,7 @@
         "cooling": "Abkühlung ohne Heizung",
         "gap": "Raum − außen",
         "perHour": "pro Stunde",
-        "none": "Noch nicht berechnet (braucht den Recorder und die Sensoren Raum, Sollwert, außen und Vorlauf)."
+        "none": "Noch nicht berechnet: die erste Berechnung erfolgt 2 Minuten nach dem Start von Home Assistant (aus den Statistiken Raum, Sollwert, außen und Vorlauf)."
       }
     }
   }

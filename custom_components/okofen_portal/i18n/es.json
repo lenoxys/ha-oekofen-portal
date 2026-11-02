@@ -539,7 +539,7 @@
         "cooling": "Enfriamiento sin calefacción",
         "gap": "salón − exterior",
         "perHour": "por hora",
-        "none": "Aún no calculado (necesita el historial y los sensores de sala, consigna, exterior e impulsión)."
+        "none": "Aún no calculado: el primer cálculo es 2 minutos después de arrancar Home Assistant (con las estadísticas de sala, consigna, exterior e impulsión)."
       }
     }
   }

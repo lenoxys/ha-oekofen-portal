@@ -539,7 +539,7 @@
         "cooling": "Arrefecimento sem aquecimento",
         "gap": "sala − exterior",
         "perHour": "por hora",
-        "none": "Ainda não calculado (precisa do histórico e dos sensores de sala, consigna, exterior e ida)."
+        "none": "Ainda não calculado: o primeiro cálculo é 2 minutos após o arranque do Home Assistant (com as estatísticas de sala, consigna, exterior e ida)."
       }
     }
   }

@@ -539,7 +539,7 @@
         "cooling": "Refroidissement chauffage arrêté",
         "gap": "salon − dehors",
         "perHour": "par heure",
-        "none": "Pas encore calculé (il faut l'historique et les capteurs salon, consigne, extérieur et départ)."
+        "none": "Pas encore calculé : premier calcul 2 minutes après le démarrage de Home Assistant (à partir des statistiques salon, consigne, extérieur et départ)."
       }
     }
   }

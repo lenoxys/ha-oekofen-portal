@@ -539,7 +539,7 @@
         "cooling": "Cooling with the heating off",
         "gap": "room − outdoor",
         "perHour": "per hour",
-        "none": "Not computed yet (needs the recorder and the room, setpoint, outdoor and flow sensors)."
+        "none": "Not computed yet: the first run is 2 minutes after Home Assistant starts (it reads the recorder's room, setpoint, outdoor and flow statistics)."
       }
     }
   }
