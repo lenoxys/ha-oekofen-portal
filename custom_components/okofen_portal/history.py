@@ -43,7 +43,11 @@ async def async_points(hass: HomeAssistant, entry_id: str, start: float | None =
 
     def find(domain: str, unique_id: str) -> str | None:
         entity_id = registry.async_get_entity_id(domain, DOMAIN, unique_id)
-        return entity_id if entity_id and not registry.async_get(entity_id).disabled else None
+        if not entity_id or registry.async_get(entity_id).disabled:
+            return None
+        state = hass.states.get(entity_id)
+        # an orphan left by an older version (same unique id, other domain) is "restored": skip it
+        return None if state and state.attributes.get("restored") else entity_id
 
     ids = {name: find("sensor", f"{entry_id}_{key}") or find("binary_sensor", f"{entry_id}_{key}") for name, key in DASHBOARD.items()}
     ids["boost"] = find("sensor", f"{entry_id}_solar_boost_state")
