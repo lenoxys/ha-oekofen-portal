@@ -28,20 +28,8 @@ svg .big{font-weight:600}
 .flow.on{opacity:1;animation:dash var(--d,2s) linear infinite}
 .hot{stroke:var(--hot)}.solar{stroke:var(--solar)}.cold{stroke:var(--cold)}.warm{stroke:var(--warm)}
 @keyframes dash{to{stroke-dashoffset:-16}}
-#sun,#moon,#cloud,#horizon{transition:opacity 1.5s ease,transform 1.5s ease}
-#sky .gone{opacity:0}
-#sun circle{fill:#f59f00;transition:fill 1.5s ease}#sun .rays{stroke:#f59f00;transition:stroke 1.5s ease,opacity 1.5s ease}
-#sun.low,#moon.low{transform:translateY(26px)}#sun.low circle{fill:#f76707}#sun.low .rays{opacity:0}
-#sun.down,#moon.down{transform:translateY(48px);opacity:0}
-#horizon{stroke:#f76707;stroke-width:2;stroke-linecap:round;transition:opacity 1.5s ease,stroke 1.5s ease}#horizon.night{stroke:#9aa5b1}
-#cloud{fill:#aeb8c3;transition:opacity 1.5s ease,fill 1.5s ease}#cloud.rain{fill:#7b8794}#cloud.snow{fill:#c5ced8}
-#rain,#snow,#bolt,#fog{transition:opacity 1.5s ease}
-#rain{stroke:#4a90d9}#snow{fill:#9fb3c8}#bolt{fill:#f59f00}#fog{stroke:#aeb8c3}
-#rain.fall:not(.gone){animation:fall .9s linear infinite}#snow.fall:not(.gone){animation:fall 2.4s linear infinite}
-#bolt:not(.gone){animation:flash 3s steps(1) infinite}
-@keyframes fall{from{transform:translateY(-4px);opacity:.3}50%{opacity:1}to{transform:translateY(5px);opacity:.3}}
-@keyframes flash{0%,8%,14%{opacity:1}5%,11%,20%,100%{opacity:.15}}svg [hidden]{display:none}
-#boilIcon{fill:var(--red)}#whyEcs{fill:var(--red)}#boilOff,#heatIcon{fill:var(--mut)}#heatIcon.on{fill:var(--red)}
+svg [hidden]{display:none}
+#skyIcon{transition:fill 1.5s ease}#boilIcon{fill:var(--red)}#whyEcs{fill:var(--red)}#boilOff,#heatIcon{fill:var(--mut)}#heatIcon.on{fill:var(--red)}
 #motor.on{stroke:var(--ok);stroke-width:3.5}
 .ctl{fill:none;stroke:var(--mut);stroke-width:2;stroke-dasharray:3 5}
 .ctl.on{stroke:var(--ok);stroke-width:3;animation:dash .8s linear infinite}
@@ -52,7 +40,6 @@ svg .big{font-weight:600}
 .xch{fill:var(--card);stroke:var(--fg);stroke-width:2.5}
 .xch.on{stroke:var(--hot);filter:drop-shadow(0 0 5px var(--hot))}
 .rays{transform-box:fill-box;transform-origin:center}
-.sun.on .rays{animation:spin 12s linear infinite}
 [data-tip]{cursor:help}
 [data-tip]:focus{outline:none}
 #tip{position:fixed;z-index:9;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 6px 20px #0003;min-width:190px}
@@ -119,7 +106,7 @@ nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weigh
 #rpNow>span{grid-area:1/1;text-align:center}#rpNow>.n,#rpNow>.z{visibility:hidden}
 #rpNow.past:not(:disabled):hover>.t{visibility:hidden}#rpNow.past:not(:disabled):hover>.n{visibility:visible}
 .badge{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;color:var(--mut)}
-@media (prefers-reduced-motion:reduce){.flow.on,.pump.on path,.sun.on .rays,.ctl.on,#rain,#snow,#bolt{animation:none}.flow{stroke-dasharray:none}}`;
+@media (prefers-reduced-motion:reduce){.flow.on,.pump.on path,.ctl.on{animation:none}.flow{stroke-dasharray:none}}`;
 const svgFor = (t) => `<svg viewBox="0 -45 1000 505" role="img" aria-label="${t.aria}">
 <defs>
   <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
@@ -203,20 +190,7 @@ const svgFor = (t) => `<svg viewBox="0 -45 1000 505" role="img" aria-label="${t.
 <text x="830" y="0" text-anchor="middle" class="big">${t.collectors}</text>
 <text x="830" y="24" text-anchor="middle" id="tColl">–</text>
 <g id="sky" data-tip="sky" tabindex="0" transform="translate(675 5)">
-  <clipPath id="skyClip"><rect x="-40" y="-40" width="80" height="70"/></clipPath>
-  <g clip-path="url(#skyClip)"><g class="sun" id="sun">
-    <circle r="14"/>
-    <g class="rays" stroke-width="3" stroke-linecap="round">
-      <path d="M0-24V-19M0 19V24M-24 0H-19M19 0H24M-17-17l3 3M14 14l3 3M-17 17l3-3M14-14l3-3"/>
-    </g>
-  </g>
-  <g id="moon"><circle r="14" fill="#d5dbe3"/><circle cx="7" cy="-5" r="12" style="fill:var(--card)"/></g></g>
-  <line id="horizon" class="gone" x1="-30" x2="30" y1="30" y2="30"/>
-  <g id="rain" class="gone fall" stroke-width="2" stroke-linecap="round"><path d="M-6 16l-2 6M3 16l-2 6M12 16l-2 6M-1 25l-2 6M8 25l-2 6"/></g>
-  <g id="snow" class="gone fall slow"><circle cx="-6" cy="18" r="2"/><circle cx="4" cy="16" r="2"/><circle cx="13" cy="19" r="2"/><circle cx="-1" cy="26" r="2"/><circle cx="9" cy="27" r="2"/></g>
-  <path id="bolt" class="gone" d="M4 12l-6 10h5l-3 9 9-12h-5l3-7z"/>
-  <g id="fog" class="gone" stroke-width="3" stroke-linecap="round"><path d="M-22 4H22M-26 12H18M-18 20H26"/></g>
-  <g id="cloud" transform="translate(-10 -8)"><circle cx="0" cy="12" r="8"/><circle cx="10" cy="6" r="11"/><circle cx="21" cy="13" r="7"/><rect x="-6" y="12" width="32" height="8" rx="4"/></g>
+  <path id="skyIcon" transform="translate(-24 -24) scale(.05) translate(0 960)"/>
 </g>
 </g>
 
@@ -290,6 +264,18 @@ const esc = (x) => String(x).replace(/[&<>]/g, (c) => ({'&': '&amp;', '<': '&lt;
 // sky: day or night from the OpenWeatherMap icon (01d / 01n), clouds from the coverage and the condition code
 // dawn / dusk: within 40 min of sunrise / sunset, from the time shown (live or replayed)
 const minutes = (hhmm) => { const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || ''); return m ? +m[1] * 60 + +m[2] : null; };
+const SKY = {
+  sun: 'M450-770v-150h60v150h-60Zm256 106-42-42 106-107 42 43-106 106Zm64 214v-60h150v60H770ZM450-40v-150h60v150h-60ZM253-665 148-770l42-42 106 106-43 41Zm518 517L664-254l41-41 108 104-42 43ZM40-450v-60h150v60H40Zm151 302-43-42 105-105 22 20 22 21-106 106Zm289-92q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170t-170 70Zm0-60q75 0 127.5-52.5T660-480q0-75-52.5-127.5T480-660q-75 0-127.5 52.5T300-480q0 75 52.5 127.5T480-300Zm0-180Z',
+  moon: 'M484-80q-84 0-157.5-32t-128-86.5Q144-253 112-326.5T80-484q0-146 93-257.5T410-880q-18 98 11 192.63 29 94.64 100 165.74 71 71.1 165.5 100.14Q781-392.45 880-410.47q-26 144.2-138 237.34Q630-80 484-80Zm0-60q100 0 182-57t132-145q-90-8-173-41.5T478.5-480Q415-543 382-625.5T341-797q-88 48-144.5 130.5T140-484q0 143.33 100.33 243.67Q340.67-140 484-140Zm-6-340Z',
+  partDay: 'M450-770v-150h60v150h-60Zm256 106-42-43 106-106 42 43-106 106Zm64 214v-60h150v60H770Zm1 302L665-254l43-43 106 106-43 43ZM254-664 148-770l42-42 106 106-42 42Zm-14 484h180q33.33 0 56.67-23.26Q500-226.53 500-259.76 500-293 477.24-317q-22.77-24-56.24-24h-44l-18-41q-15.15-35.75-47.6-56.88Q278.95-460 240-460q-58.33 0-99.17 40.76-40.83 40.77-40.83 99Q100-262 140.83-221q40.84 41 99.17 41Zm0 60q-83 0-141.5-58.5T40-320q0-83 58.5-141.5T240-520q57.74 0 105.37 32.5T416-401q60.12 0 101.06 43.59Q558-313.82 558-253q-5 56-44.03 94.5Q474.93-120 420-120H240Zm318-133q-3-15.38-6-30t-6-30q52-20 83-65.54 31-45.54 31-101.32 0-75.14-52.5-127.64T480-660q-67.22 0-117.63 42.67Q311.96-574.65 303-509q-16-3-31.5-5.5T240-520q14-88 82.5-144T480-720q100 0 170 70t70 170.34Q720-402 675.5-340T558-253Zm-77-227Z',
+  partNight: 'M518-440Zm6 400H408l12-9.5Q432-59 446.5-70T473-90.5l12-9.5h41q97 0 180.5-58T838-302q-90-8-173-41.5T518.5-440Q455-503 422-585.5T381-757q-88 48-144.5 130.5T180-444v11.5q0 6.5 1 11.5l-9.04 3.72q-9.04 3.72-19.96 7.78-10.92 4.06-19.96 7.78L123-398q-2-13-2.5-24t-.5-22q0-146 93-257.5T450-840q-18 98 11 192.63 29 94.64 100 165.74 71 71.1 165.5 100.14Q821-352.45 920-370.47q-26 144.2-138 237.34Q670-40 524-40Zm-284-60h180q33.33 0 56.67-23.26Q500-146.53 500-179.76q0-33.24-22.86-56.74T422-260h-39l-15-35q-17-39-51.69-62-34.68-23-76.31-23-57 0-98.5 41T100-240q0 58.33 40.83 99.17Q181.67-100 240-100Zm0 60q-83 0-141.5-58.5T40-240q0-83 58.5-141.5T240-440q60 0 109.5 32.5T423-320q57 2 97 42.5t40 97.5q0 58-41 99t-99 41H240Z',
+  cloud: 'M251-160q-88 0-149.5-61.5T40-371q0-78 50-137t127-71q20-97 94-158.5T482-799q112 0 189 81.5T748-522v24q72-2 122 46.5T920-329q0 69-50 119t-119 50H251Zm0-60h500q45 0 77-32t32-77q0-45-32-77t-77-32h-63v-84q0-91-61-154t-149-63q-88 0-149.5 63T267-522h-19q-62 0-105 43.5T100-371q0 63 44 107t107 44Zm229-260Z',
+  rain: 'M558-83q-11 5-23.5 1T517-97l-69-138q-5-11-1.5-23.5T461-276q11-5 23.5-1t17.5 15l69 138q5 11 1.5 23.5T558-83Zm240-1q-11 5-23.5 1T757-98l-69-138q-5-11-1.5-23.5T701-277q11-5 23.5-1t17.5 15l69 138q5 11 1.5 23.5T798-84Zm-480 0q-11 5-23.5 1.5T277-97l-69-138q-5-11-1-23.5t15-17.5q11-5 23.5-1.5T263-263l69 139q5 11 1 23t-15 17Zm-28-256q-87 0-148.5-61.5T80-550q0-79 56.5-141T277-759q32-56 84.5-88.5T480-880q91 0 152.5 57.5T708-680q79 4 125.5 53.5T880-510q0 70-49.5 120T710-340H290Zm0-60h420q46 0 78-32.5t32-77.5q0-46-32-78t-78-32h-60v-30q0-71-49.5-120.5T480-820q-51 0-93.5 27.5T324-718l-8 18h-28q-62 2-105 45.5T140-550q0 62 44 106t106 44Zm190-210Z',
+  snow: 'M259.86-210q-16.86 0-28.36-11.64t-11.5-28.5q0-16.86 11.64-28.36t28.5-11.5q16.86 0 28.36 11.64t11.5 28.5q0 16.86-11.64 28.36t-28.5 11.5Zm120 130Q363-80 351.5-91.64t-11.5-28.5q0-16.86 11.64-28.36t28.5-11.5q16.86 0 28.36 11.64t11.5 28.5q0 16.86-11.64 28.36T379.86-80Zm120-130q-16.86 0-28.36-11.64t-11.5-28.5q0-16.86 11.64-28.36t28.5-11.5q16.86 0 28.36 11.64t11.5 28.5q0 16.86-11.64 28.36t-28.5 11.5Zm240 0q-16.86 0-28.36-11.64t-11.5-28.5q0-16.86 11.64-28.36t28.5-11.5q16.86 0 28.36 11.64t11.5 28.5q0 16.86-11.64 28.36t-28.5 11.5Zm-120 130Q603-80 591.5-91.64t-11.5-28.5q0-16.86 11.64-28.36t28.5-11.5q16.86 0 28.36 11.64t11.5 28.5q0 16.86-11.64 28.36T619.86-80ZM290-380q-86.86 0-148.43-61.52Q80-503.04 80-589.83 80-669 136.5-731 193-793 277-799q32-56 84.5-88.5T480.42-920q90.58 0 152.08 57.5Q694-805 708-720q79 4 125.5 53.5T880-550.38Q880-480 830.42-430 780.83-380 710-380H290Zm0-60h420q46.2 0 78.1-32.5 31.9-32.5 31.9-78T788.1-628q-31.9-32-78.1-32h-60v-30q0-71-49.5-120.5T480.21-860q-51.48 0-93.84 27.5Q344-805 324-758l-8 18h-28q-62 2-105 45.39-43 43.4-43 104.47Q140-528 183.93-484T290-440Zm190-110Z',
+  storm: 'm300-40 36-100h-76l50-140h100l-43 100h83L340-40h-40Zm270-40 28-80h-78l43-120h100l-35 80h82L610-80h-40ZM290-340q-86.86 0-148.43-61.52Q80-463.04 80-549.83 80-629 136.5-691 193-753 277-759q32-56 84.5-88.5T480.42-880q90.58 0 152.08 57.5Q694-765 708-680q79 4 125.5 53.5T880-510.38Q880-440 830.42-390 780.83-340 710-340H290Zm0-60h420q46.2 0 78.1-32.5 31.9-32.5 31.9-78T788.1-588q-31.9-32-78.1-32h-60v-30q0-71-49.5-120.5T480.21-820q-51.48 0-93.84 27.5Q344-765 324-718l-8 18h-28q-62 2-105 45.39-43 43.4-43 104.47Q140-488 183.93-444T290-400Zm190-210Z',
+  fog: 'M720-205q-14 0-24.5-10.5T685-240q0-14 10.5-24.5T720-275q14 0 24.5 10.5T755-240q0 14-10.5 24.5T720-205ZM280-80q-14 0-24.5-10.5T245-115q0-14 10.5-24.5T280-150q14 0 24.5 10.5T315-115q0 14-10.5 24.5T280-80Zm-40-125q-14 0-24.5-10.5T205-240q0-14 10.5-24.5T240-275h360q14 0 24.5 10.5T635-240q0 14-10.5 24.5T600-205H240ZM400-80q-14 0-24.5-10.5T365-115q0-14 10.5-24.5T400-150h280q14 0 24.5 10.5T715-115q0 14-10.5 24.5T680-80H400ZM290-340q-86.86 0-148.43-61.52Q80-463.04 80-549.83 80-629 136.5-691 193-753 277-759q32-56 84.5-88.5T480.42-880q90.58 0 152.08 57.5Q694-765 708-680q79 4 125.5 53.5T880-510.38Q880-440 830.42-390 780.83-340 710-340H290Zm0-60h420q46.2 0 78.1-32.5 31.9-32.5 31.9-78T788.1-588q-31.9-32-78.1-32h-60v-30q0-71-49.5-120.5T480.21-820q-51.48 0-93.84 27.5Q344-765 324-718l-8 18h-28q-62 2-105 45.39-43 43.4-43 104.47Q140-488 183.93-444T290-400Zm190-210Z',
+  twilight: 'm727-563-42-44 86-84 42 42-86 86ZM80-170v-60h800v60H80Zm370-510v-120h60v120h-60ZM233-564l-85-87 42-42 87 87-44 42Zm35 184h424q-19-71-77-115.5T480-540q-77 0-135 44.5T268-380Zm-68 60q0-117 81.5-198.5T480-600q117 0 198.5 81.5T760-320H200Zm280-60Z',
+};
 function skyOf(s, tp) {
   const at = new Date((s.ts ?? Date.now() / 1000) * 1000), now = at.getHours() * 60 + at.getMinutes();
   const rise = minutes(s.sunrise), set = minutes(s.sunset);
@@ -577,20 +563,10 @@ class OkofenDashboard extends HTMLElement {
     this._on('xPool', s.poolPump > 0); this._on('xEcs', draw); this._on('ctl', draw);
     this._on('sun', s.coll > 40); this._on('motor', s.mixer > 0);
     const sky = skyOf(s, t.tip);
-    const fade = (id, gone) => this._q(id).classList.toggle('gone', !!gone);  // fades instead of hiding
-    // the sun and the moon slide under the horizon and out of it; an overcast sky hides both
-    for (const body of ['sun', 'moon']) {
-      const el = this._q(body);
-      el.classList.toggle('low', sky[body] === 'low');
-      el.classList.toggle('down', sky[body] === 'down');
-      fade(body, sky.overcast);
-    }
-    fade('cloud', !sky.cloudy);
-    fade('horizon', !sky.twilight || sky.overcast);
-    this._q('horizon').classList.toggle('night', sky.night);
-    this._q('cloud').classList.toggle('rain', sky.rain);
-    this._q('cloud').classList.toggle('snow', sky.snow);
-    fade('rain', !sky.rain); fade('snow', !sky.snow); fade('bolt', !sky.storm); fade('fog', !sky.fog);
+    // one Material Symbols icon for the sky (Apache 2.0), the one of the weather, the moon at night, partly cloudy with both
+    const key = sky.storm ? 'storm' : sky.rain ? 'rain' : sky.snow ? 'snow' : sky.fog ? 'fog' : sky.overcast ? 'cloud'
+      : sky.cloudy ? (sky.night ? 'partNight' : 'partDay') : sky.twilight ? 'twilight' : sky.night ? 'moon' : 'sun';
+    const icon = this._q('skyIcon'); icon.setAttribute('d', SKY[key]); icon.style.fill = key === 'sun' ? '#f59f00' : 'var(--fg)';
     const mag = this._q('mag'); if (mag) mag.setAttribute('x', draw ? 221 : 209);
     if (this._tipKey) this._showTip(this._tipKey);
     this._renderSolar();

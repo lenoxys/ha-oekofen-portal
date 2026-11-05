@@ -32,7 +32,7 @@
       both: {burner: 1, flow_set: 45.1, tank_set: 65, tank_top: 49, ecs_probe: 50.6},
       off: {burner: 0}}[params.get('why')])};
   const weather = {icon: params.get('night') ? '01n' : '01d', code: +(params.get('code') || 800), clouds: +(params.get('clouds') || 5), wind: '9 km/h',
-    sunrise: summer ? '06:12' : season === 'winter' ? '08:58' : '07:45', sunset: summer ? '22:01' : season === 'winter' ? '17:41' : '17:53',
+    sunrise: params.has('night') ? '23:50' : params.has('day') ? '03:00' : summer ? '06:12' : season === 'winter' ? '08:58' : '07:45', sunset: params.has('night') ? '23:55' : params.has('day') ? '23:50' : summer ? '22:01' : season === 'winter' ? '17:41' : '17:53',
     forecast_temp: summer ? 29 : season === 'winter' ? 4 : 16, forecast_clouds: 10};
   const lang = params.get('lang') || 'en';
   const i18n = await (await fetch(`../custom_components/okofen_portal/i18n/${lang}.json`)).json(), strings = i18n.panel;
