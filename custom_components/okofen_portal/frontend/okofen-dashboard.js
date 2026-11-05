@@ -41,7 +41,7 @@ svg .big{font-weight:600}
 #bolt:not(.gone){animation:flash 3s steps(1) infinite}
 @keyframes fall{from{transform:translateY(-4px);opacity:.3}50%{opacity:1}to{transform:translateY(5px);opacity:.3}}
 @keyframes flash{0%,8%,14%{opacity:1}5%,11%,20%,100%{opacity:.15}}svg [hidden]{display:none}
-#boilIcon{fill:var(--red)}#boilOff,#heatIcon{fill:var(--mut)}#heatIcon.on{fill:var(--red)}
+#boilIcon{fill:var(--red)}#whyEcs{fill:var(--red)}#boilOff,#heatIcon{fill:var(--mut)}#heatIcon.on{fill:var(--red)}
 #motor.on{stroke:var(--ok);stroke-width:3.5}
 .ctl{fill:none;stroke:var(--mut);stroke-width:2;stroke-dasharray:3 5}
 .ctl.on{stroke:var(--ok);stroke-width:3;animation:dash .8s linear infinite}
@@ -58,7 +58,7 @@ svg .big{font-weight:600}
 #tip{position:fixed;z-index:9;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;box-shadow:0 6px 20px #0003;min-width:190px}
 #tip[hidden]{display:none}
 #tip b{display:block;margin-bottom:4px}
-#tip div{display:flex;justify-content:space-between;gap:14px}#tip span{color:var(--mut)}
+#tip .ok,#tip .ok span{color:var(--ok)}#tip div{display:flex;justify-content:space-between;gap:14px}#tip span{color:var(--mut)}
 nav{display:flex;gap:6px;margin:0 0 10px}
 nav button{font:inherit;color:var(--mut);background:none;border:1px solid var(--line);border-radius:8px;padding:4px 12px;cursor:pointer}
 nav button[aria-selected=true]{color:var(--fg);background:var(--card);font-weight:500}
@@ -226,6 +226,7 @@ const svgFor = (t) => `<svg viewBox="0 -45 1000 505" role="img" aria-label="${t.
 <text x="780" y="124" text-anchor="middle" class="big">${t.boiler}</text>
 <path id="boilIcon" transform="translate(762 134) scale(1.5)" d="M6,14q0,1.3 0.53,2.46t1.5,2.04Q8,18.38 8,18.27q0-0.1 0-0.22q0-0.8 0.3-1.5t0.88-1.28L12,12.5l2.83,2.78q0.57,0.57 0.88,1.28t0.3,1.5q0,0.13 0,0.22q0,0.1-0.02,0.23q0.97-0.88 1.5-2.04T18,14q0-1.25-0.46-2.36T16.2,9.65q-0.5,0.33-1.05,0.49T14.03,10.3q-1.55,0-2.69-1.03T10.03,6.75Q9.05,7.57 8.3,8.46t-1.26,1.8T6.26,12.13T6,14Zm6,1.3l-1.42,1.4q-0.28,0.28-0.43,0.63Q10,17.68 10,18.05q0,0.8 0.59,1.38T12,20t1.41-0.57T14,18.05q0-0.4-0.15-0.74T13.43,16.7L12,15.3ZM12,3V6.3q0,0.85 0.59,1.42T14.03,8.3q0.45,0 0.84-0.19q0.39-0.19 0.69-0.56L16,7q1.85,1.05 2.93,2.92T20,14q0,3.35-2.32,5.68T12,22T6.33,19.68T4,14q0-3.23 2.16-6.13Q8.33,4.97 12,3Z"/>
 <path id="boilOff" transform="translate(762 134) scale(1.5)" d="M12,12Zm0,0Zm0,0Zm0,0Zm7.78,10.63L1.38,4.22L2.8,2.8L12,12l9.2,9.2l-1.43,1.43Zm-0.53-6.25l-1.52-1.53q0.13-0.45 0.2-0.91T18,13q0-1.25-0.46-2.36T16.2,8.65q-0.5,0.33-1.05,0.49T14.03,9.3q-1.55,0-2.69-1.03T10.03,5.75Q9.83,5.9 9.65,6.06Q9.48,6.22 9.28,6.4L7.85,4.97Q8.73,4.13 9.76,3.39T12,2V5.3q0,0.85 0.59,1.42T14.03,7.3q0.45,0 0.84-0.2t0.69-0.55L16,6q1.85,1.05 2.93,2.92T20,13q0,0.9-0.19,1.75t-0.56,1.63ZM12,21q-3.35,0-5.68-2.32T4,13q0-1.73 0.64-3.36T6.48,6.5L7.9,7.93Q6.95,9.17 6.48,10.45T6,13q0,1.3 0.53,2.46t1.5,2.04Q8,17.38 8,17.27q0-0.1 0-0.22q0-0.8 0.3-1.5t0.88-1.28l2.57-2.5l1.43,1.43l-2.6,2.5q-0.28,0.28-0.43,0.63Q10,16.68 10,17.05q0,0.8 0.59,1.38T12,19t1.41-0.57T14,17.05q0-0.4-0.16-0.73t-0.44-0.6l1.15-1.15l3.57,3.57Q17,19.48 15.44,20.24T12,21Z"/>
+<path id="whyEcs" hidden transform="translate(0 134) scale(1.5)" d="M9.3,10.77q0,0.48 0.16,0.93t0.46,0.82q0.05-0.3 0.2-0.59q0.15-0.29 0.38-0.49L12,10l1.48,1.47q0.22,0.2 0.38,0.47t0.2,0.57q0.28-0.38 0.49-0.8t0.21-0.9T14.6,9.91T14.15,9.1q-0.28,0.13-0.56,0.2Q13.3,9.38 13,9.38q-0.75,0-1.38-0.43T10.68,7.82q-0.3,0.3-0.55,0.64T9.69,9.17T9.4,9.95T9.3,10.77ZM12,12.1l-0.42,0.42q-0.1,0.1-0.14,0.2T11.4,12.95q0,0.25 0.18,0.4T12,13.5t0.43-0.15t0.18-0.4q0-0.13-0.04-0.22q-0.04-0.1-0.14-0.2L12,12.1ZM12,5V6.9q0,0.43 0.3,0.71T13.03,7.9q0.28,0 0.5-0.16q0.22-0.16 0.4-0.39L14.1,7.1q1.02,0.58 1.59,1.56t0.56,2.16q0,1.75-1.25,2.96T12,15T9.03,13.77T7.8,10.8q0-1.92 1.22-3.42T12,5ZM6,22q-0.82,0-1.41-0.59T4,20V6Q4,4.35 5.18,3.17T8,2h8q1.65,0 2.82,1.17T20,6V20q0,0.82-0.59,1.41T18,22H6Zm0-4v2H18V18q-0.75,0-1.2,0.5T15,19t-1.76-0.5T12,18t-1.24,0.5T9,19T7.24,18.5T6,18Zm3-1q0.83,0 1.24-0.5T12,16t1.8,0.5T15,17t1.2-0.5T18,16V6q0-0.82-0.59-1.41T16,4H8Q7.18,4 6.59,4.59Q6,5.18 6,6V16q1.35,0 1.76,0.5T9,17Z"><title>${t.hotWater}</title></path>
 <text x="780" y="191" text-anchor="middle" class="mut" id="tBoilSub">–</text>
 </g>
 
@@ -536,6 +537,7 @@ class OkofenDashboard extends HTMLElement {
   }
 
   _on(id, on) { const el = this._q(id); if (el) el.classList.toggle('on', !!on); }
+  _why(s) { const heat = s.flowSet > 8; return [heat, !heat || s.tankSet > s.flowSet + 3.5]; } // what asks the burner: [house heating, hot water]
   _hide(id, hidden) { const el = this._q(id); if (el) el.toggleAttribute('hidden', !!hidden); } // .hidden does not exist on SVG elements
   _set(id, text) { const el = this._q(id); if (el) el.textContent = text; }
   _stop(id, color) { const el = this._q(id); if (el) el.setAttribute('stop-color', color); }
@@ -552,7 +554,14 @@ class OkofenDashboard extends HTMLElement {
     this._set('tBot', `${t.bot} ${deg(s.bot)}`);
     this._set('tColl', deg(s.coll));
     const burner = s.contact > 0;
-    this._hide('boilIcon', !burner); this._hide('boilOff', burner);
+    // why it runs: the flame is the house heating (it asks for a flow above 8 °C, the idle setpoint), the water heater is the hot water
+    // (no heating ask, or a tank setpoint above flow + 3 K); both can show, the row of 36 px icons, 8 px apart, centred at x = 780
+    const [heatAsk, ecsOn] = this._why(s);
+    const shown = burner ? [heatAsk && 'boilIcon', ecsOn && 'whyEcs'].filter(Boolean) : ['boilOff'];
+    ['boilIcon', 'boilOff', 'whyEcs'].forEach((id) => {
+      this._hide(id, !shown.includes(id));
+      if (shown.includes(id)) this._q(id).setAttribute('transform', `translate(${780 - (44 * shown.length - 8) / 2 + 44 * shown.indexOf(id)} 134) scale(1.5)`);
+    });
     this._set('tBoilSub', deg(s.boilT));
     this._set('tHeat', `${t.room} ${deg(s.room)}`);
     this._set('tPool', deg(s.pool));
@@ -833,6 +842,10 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
     const pump = (p) => state(p > 0, p);
     const set = (x) => (x == null || x <= 8 ? tp.inactive : deg(x)); // 8 °C: the idle setpoint
     const burner = s.contact > 0 ? tp.burnerOn : t.off;
+    // both consumers of the burner, always, with their setpoint; green when it is the one asking for it right now
+    const asks = this._why(s), run = s.contact > 0;
+    const whyRows = [[t.heating, s.flowSet], [t.hotWater, s.ecsSet]].map(([name, sp], i) =>
+      [`\u2003↳ ${name}`, sp > 8 ? `≥ ${deg(sp)}` : tp.inactive, run && asks[i] ? 'ok' : '']);
     const sky = skyOf(s, tp);
     const energy = kwh(s);
     return {
@@ -842,8 +855,8 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
       pSolar: [tp.solarPump, [tp.state, pump(s.solarPump)], [tp.collToTank, diff(s.coll, s.bot)]],
       tank: [t.tank, [tp.ecsProbe, deg(s.ecsP)], [t.top, deg(s.top)], [t.mid, deg(s.mid)], [t.bot, deg(s.bot)], [tp.stratification, diff(s.top, s.bot)],
         [tp.usefulEnergy, energy == null ? '–' : '≈ ' + fmt(energy) + ' kWh'], [tp.setpoint, set(s.tankSet)]],
-      boiler: [t.boiler, [tp.burner, burner], [tp.temperature, s.boilT == null ? tp.notRead : deg(s.boilT)], [tp.vsTankTop, diff(s.boilT, s.top)], [tp.boilerPump, pump(s.bPump)]],
-      pBoil: [tp.boilerPump, [tp.state, pump(s.bPump)], [tp.burner, burner]],
+      boiler: [t.boiler, [tp.burner, burner], ...whyRows, [tp.temperature, s.boilT == null ? tp.notRead : deg(s.boilT)], [tp.vsTankTop, diff(s.boilT, s.top)], [tp.boilerPump, pump(s.bPump)]],
+      pBoil: [tp.boilerPump, [tp.state, pump(s.bPump)], [tp.burner, burner], ...whyRows],
       heat: [t.heating, [tp.flow, s.heat ? deg(s.flow) : t.off], [tp.flowSet, set(s.flowSet)], [tp.flowDiff, s.flowSet > 8 ? diff(s.flow, s.flowSet) : '–'],
         [tp.roomTemp, deg(s.room)], [tp.roomSet, set(s.roomSet)], [t.outdoor, deg(s.out)],
         this._boost && this._boost.state !== 'inactive' && [tp.boost, tp.boostStates[this._boost.state] || this._boost.state]],
@@ -859,7 +872,7 @@ ${ses ? `<h2>${esc(t.current)}</h2><p>${esc(t.since)} ${new Date(ses.since * 100
   _showTip(key) {
     const [title, ...rows] = this._tip(key);
     const tip = this._q('tip');
-    tip.innerHTML = `<b>${esc(title)}</b>` + rows.filter(Boolean).map(([k, v]) => `<div><span>${esc(k)}</span>${esc(v)}</div>`).join('');
+    tip.innerHTML = `<b>${esc(title)}</b>` + rows.filter(Boolean).map(([k, v, c]) => `<div${c ? ` class="${c}"` : ''}><span>${esc(k)}</span>${esc(v)}</div>`).join('');
     tip.hidden = false;
     this._tipKey = key;
   }

@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Opens the sidebar panel outside Home Assistant, with sample values.
      Serve the repository (python3 -m http.server) and open /scripts/preview.html?lang=fr (add &night=1 for the moon, &dark for the dark theme, &boost=active for a running solar boost, &code=601 for an OpenWeatherMap weather code: 211 storm, 501 rain, 601 snow, 741 fog,
-     &season=summer|winter to move the clock to mid-July or mid-January, same time of day) -->
+     &why=heat|ecs|both|off for the burner reason, &season=summer|winter to move the clock to mid-July or mid-January, same time of day) -->
 <meta charset="utf-8">
 <body style="margin:0">
 <script src="../custom_components/okofen_portal/frontend/okofen-dashboard.js"></script>
@@ -25,7 +25,12 @@
     ...(summer && {coll: 88.6, tank_top: 71.2, tank_mid: 69.8, tank_bottom: 66.1, ecs_probe: 70.4, solar_pump: 100, heating_pump: 0, flow: 24.1,
       room: 23.4, outdoor: 27.5, pool: 25.8, pool_pump: 1, boiler_temp: 31.2, mixer: 0, tank_set: 8, room_set: 8, flow_set: 8}),
     ...(season === 'winter' && {coll: 31.5, tank_top: 52.4, tank_mid: 46.8, tank_bottom: 33.9, ecs_probe: 54.1, solar_pump: 0, flow: 51.3,
-      room: 20.6, outdoor: 2.4, pool: 6.8, boiler_temp: 62.5})};
+      room: 20.6, outdoor: 2.4, pool: 6.8, boiler_temp: 62.5}),
+    // &why=heat|ecs|both|off: the burner on, and what asks for it (flow setpoint above 8 °C = heating; tank setpoint 65 = hot water)
+    ...({heat: {burner: 1, flow_set: 49.1, tank_set: 52.1, tank_top: 50.9, ecs_probe: 52.7},
+      ecs: {burner: 1, flow_set: 8, tank_set: 65, tank_top: 45.7, ecs_probe: 49.9, heating_pump: 0},
+      both: {burner: 1, flow_set: 45.1, tank_set: 65, tank_top: 49, ecs_probe: 50.6},
+      off: {burner: 0}}[params.get('why')])};
   const weather = {icon: params.get('night') ? '01n' : '01d', code: +(params.get('code') || 800), clouds: +(params.get('clouds') || 5), wind: '9 km/h',
     sunrise: summer ? '06:12' : season === 'winter' ? '08:58' : '07:45', sunset: summer ? '22:01' : season === 'winter' ? '17:41' : '17:53',
     forecast_temp: summer ? 29 : season === 'winter' ? 4 : 16, forecast_clouds: 10};
@@ -105,6 +110,7 @@
     const keep = new Set(['boost', 'clouds', 'code', 'icon'].map((k) => history.series.indexOf(k) + 1));
     for (const p of history.points) if (p[0] < until / 1000 - 86400) p.forEach((v, i) => { if (i && !keep.has(i)) p[i] = null; });
   }
+  if (params.has('tip')) setTimeout(() => panel.shadowRoot.querySelector(`[data-tip="${params.get('tip')}"]`).focus(), 1500);  // &tip=boiler to open a tooltip
   if (params.has('seek')) setTimeout(() => panel._seek(+params.get('seek')), 1500);  // &seek=<minute index> to open on a past moment
   panel.hass = {language: lang, themes: {darkMode: params.has('dark')}, states: {'climate.salon_salon': {attributes: {friendly_name: 'Salon'}}},
     callService: async (domain, service) => { boost.enabled = service === 'turn_on'; boost.state = boost.enabled ? 'waiting' : 'inactive'; boost.reason = boost.enabled ? 'tank_cold' : 'disabled'; },
