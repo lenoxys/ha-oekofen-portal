@@ -28,6 +28,7 @@ from .const import (
     FAST_VARIABLES,
     LOCAL_INTERVAL,
     SLOW_INTERVAL,
+    SLOW_INTERVAL_LOCAL,
 )
 from .dashboard import async_setup_dashboard
 from .coordinator import HybridCoordinator, OekofenCoordinator
@@ -122,7 +123,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OekofenConfigEntry) -> b
         entry,
         client,
         [n for n in dict.fromkeys([*catalog, *SETTING_KEYS, *WEATHER_KEYS, *BOOST_KEYS.values()]) if n not in FAST_VARIABLES],
-        SLOW_INTERVAL,
+        SLOW_INTERVAL_LOCAL if local else SLOW_INTERVAL,
         "slow",
     )
     await fast.async_config_entry_first_refresh()

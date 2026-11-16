@@ -5,6 +5,9 @@ from datetime import timedelta
 DOMAIN = "okofen_portal"
 FAST_INTERVAL = timedelta(seconds=30)
 SLOW_INTERVAL = timedelta(minutes=5)
+# with the local interface the slow list only holds settings and configuration flags: measured 434 of 443 answers
+# unchanged over 90 s, the 9 that moved are read locally or fast. An hour keeps the portal quiet.
+SLOW_INTERVAL_LOCAL = timedelta(hours=1)
 LOCAL_INTERVAL = timedelta(seconds=10)  # local interface: one request per cycle, the controller wants 2.5 s
 # portal unreachable: retry after 10, 20, 30, 60 s, then every 5 min for about an hour, then every 15 min
 RETRY_DELAYS = (10, 20, 30, 60, *[300] * 11)

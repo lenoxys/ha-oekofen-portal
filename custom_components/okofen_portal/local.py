@@ -43,6 +43,7 @@ MAP: dict[str, tuple[str, str, int, str]] = {
     # what the solar boost needs to run without the portal (same values, matched on a Touch V4.00b)
     "LOCAL.L_pu[0].einschaltfuehler_soll": ("pu1", "L_tpo_set", 10, "°C"),
     "LOCAL.L_pu[0].status": ("pu1", "L_state", 1, ""),  # status bits, 0x100: asks the boiler
+    "LOCAL.L_hk[0].status": ("hk1", "L_state", 1, ""),  # why the circuit runs or waits: room reached, anticipation, eco...
     "LOCAL.L_ww[0].temp_soll": ("ww1", "L_temp_set", 10, "°C"),
     "LOCAL.L_ww[0].status": ("ww1", "L_state", 1, ""),  # 0x4000: asks the boiler
     "LOCAL.weather_limit": ("weather", "cloud_limit", 1, "%"),

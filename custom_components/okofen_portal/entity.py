@@ -89,8 +89,14 @@ class OekofenEntity(CoordinatorEntity[OekofenCoordinator]):
 
     @property
     def available(self) -> bool:
-        """Available when the last poll worked and returned this variable."""
-        return super().available and self._reading is not None
+        """Available when the last poll worked and returned this variable.
+
+        The slow list (settings, configuration) hardly ever changes: when the portal does not answer it keeps
+        its last values instead of going unavailable. The fast list does not, a stale temperature misleads.
+        """
+        # ponytail: no "stale" marker on the entity, add one if a setting changed on the Touch during an outage matters
+        slow = self.coordinator is self.data.slow
+        return (slow or super().available) and self._reading is not None
 
     @property
     def data(self):
