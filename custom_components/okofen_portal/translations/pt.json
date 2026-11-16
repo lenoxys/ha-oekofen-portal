@@ -107,6 +107,9 @@
       "heating_overshoot": {
         "name": "Sobreelevação do depósito de inércia acima do valor nominal de ida"
       },
+      "remote_offset": {
+        "name": "Desvio da consigna (comando remoto)"
+      },
       "flow_temperature_max": {
         "name": "Temperatura de ida do aquecimento máx."
       },

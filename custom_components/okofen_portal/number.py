@@ -25,12 +25,12 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: OekofenConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """One number per allow-listed setting the controller has."""
-    coordinator = entry.runtime_data.slow
+    data = entry.runtime_data
     async_add_entities(
-        OekofenNumber(coordinator, setting)
+        OekofenNumber(data.fast if setting.key in data.fast.names else data.slow, setting)
         for setting in SETTINGS
         if setting.platform == "number"
-        and setting.key in coordinator.data
+        and setting.key in (data.fast.data | data.slow.data)
         and visible(entry.runtime_data, setting.key)
     )
 

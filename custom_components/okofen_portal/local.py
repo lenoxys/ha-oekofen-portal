@@ -67,6 +67,7 @@ LOCAL_SETTINGS: dict[str, tuple[str, str, int, str]] = {
             (f"LOCAL.hk[{n}].betriebsart[1]", (f"hk{n + 1}", "mode_auto", 1, "")),
             (f"LOCAL.hk[{n}].raumtemp_heizen", (f"hk{n + 1}", "temp_heat", 10, "°C")),
             (f"LOCAL.hk[{n}].oekomode", (f"hk{n + 1}", "oekomode", 1, "")),
+            (f"LOCAL.hk[{n}].raumtempabweichung_fernb", (f"hk{n + 1}", "remote_override", 10, "K")),
         )
     },
     **{

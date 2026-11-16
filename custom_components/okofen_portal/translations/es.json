@@ -107,6 +107,9 @@
       "heating_overshoot": {
         "name": "Sobreelevación del depósito sobre la consigna de ida"
       },
+      "remote_offset": {
+        "name": "Desviación de la consigna (mando a distancia)"
+      },
       "flow_temperature_max": {
         "name": "Temperatura de ida de calefacción máx."
       },

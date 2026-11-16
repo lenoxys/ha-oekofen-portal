@@ -107,6 +107,9 @@
       "heating_overshoot": {
         "name": "Buffer overshoot above flow setpoint"
       },
+      "remote_offset": {
+        "name": "Room setpoint offset (remote control)"
+      },
       "flow_temperature_max": {
         "name": "Heating flow temperature max"
       },

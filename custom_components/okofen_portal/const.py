@@ -58,6 +58,7 @@ CLIMATE_FAST = [
     "LOCAL.L_hk[0].status",
     "LOCAL.hk[0].betriebsart[1]",
     "LOCAL.hk[0].raumtemp_heizen",
+    "LOCAL.hk[0].raumtempabweichung_fernb",  # the remote offset the stove automations write
     "LOCAL.ww[0].betriebsart[1]",
     "LOCAL.ww[0].temp_heizen",
     "LOCAL.L_pu[0].status",  # the buffer and hot water ask the boiler: the solar boost stops at once

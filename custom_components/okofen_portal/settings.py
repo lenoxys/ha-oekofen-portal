@@ -33,6 +33,8 @@ SETTINGS: tuple[Setting, ...] = (
     Setting("LOCAL.ww[0].solarheiz_temp_aus", "number", "solar_discharge_hot_water_stop", 30, 90, 1, "°C"),
     # heating circuit 1: how hot the buffer must be before the boiler is asked
     Setting("LOCAL.hk[0].ueberhoehung", "number", "heating_overshoot", 0, 15, 0.5, "K"),
+    # the controller's own remote-control offset of the room setpoint (the stove automations use it: -2 K while it burns)
+    Setting("LOCAL.hk[0].raumtempabweichung_fernb", "number", "remote_offset", -5, 5, 0.5, "K"),
     Setting("LOCAL.hk[0].vorlauftemp_max", "number", "flow_temperature_max", 30, 75, 1, "°C"),
     Setting("LOCAL.hk[0].vorlauftemp_min", "number", "flow_temperature_min", 15, 40, 1, "°C"),
     Setting("LOCAL.hk[0].heizkurve_fusspunkt", "number", "curve_base_point", 20, 60, 1, "°C"),

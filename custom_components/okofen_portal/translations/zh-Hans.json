@@ -107,6 +107,9 @@
       "heating_overshoot": {
         "name": "缓冲水箱高于供水设定值的超调量"
       },
+      "remote_offset": {
+        "name": "室温设定值偏移(遥控)"
+      },
       "flow_temperature_max": {
         "name": "采暖供水温度上限"
       },

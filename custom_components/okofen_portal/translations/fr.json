@@ -107,6 +107,9 @@
       "heating_overshoot": {
         "name": "Surélévation du ballon au-dessus de la consigne de départ"
       },
+      "remote_offset": {
+        "name": "Décalage de la consigne (télécommande)"
+      },
       "flow_temperature_max": {
         "name": "Départ chauffage maximum"
       },
