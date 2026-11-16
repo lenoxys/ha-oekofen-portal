@@ -523,7 +523,9 @@ class OkofenDashboard extends HTMLElement {
   }
 
   _on(id, on) { const el = this._q(id); if (el) el.classList.toggle('on', !!on); }
-  _why(s) { const heat = s.flowSet > 8; return [heat, !heat || s.tankSet > s.flowSet + 3.5]; } // what asks the burner: [house heating, hot water]
+  // what asks the burner: [house heating, hot water]. The heating asks for a flow above 8 °C (the idle setpoint) and the buffer follows it
+  // (flow + 3 K); a higher buffer setpoint is the hot water (it asks ~10 K above its own), so only one shows
+  _why(s) { const heat = s.flowSet > 8 && (s.tankSet == null || s.tankSet <= s.flowSet + 3.5); return [heat, !heat]; }
   _hide(id, hidden) { const el = this._q(id); if (el) el.toggleAttribute('hidden', !!hidden); } // .hidden does not exist on SVG elements
   _set(id, text) { const el = this._q(id); if (el) el.textContent = text; }
   _stop(id, color) { const el = this._q(id); if (el) el.setAttribute('stop-color', color); }
@@ -540,8 +542,7 @@ class OkofenDashboard extends HTMLElement {
     this._set('tBot', `${t.bot} ${deg(s.bot)}`);
     this._set('tColl', deg(s.coll));
     const burner = s.contact > 0;
-    // why it runs: the flame is the house heating (it asks for a flow above 8 °C, the idle setpoint), the water heater is the hot water
-    // (no heating ask, or a tank setpoint above flow + 3 K); both can show, the row of 36 px icons, 8 px apart, centred at x = 780
+    // why it runs: the flame is the house heating, the water heater is the hot water (see _why); the row of 36 px icons, 8 px apart, centred at x = 780
     const [heatAsk, ecsOn] = this._why(s);
     const shown = burner ? [heatAsk && 'boilIcon', ecsOn && 'whyEcs'].filter(Boolean) : ['boilOff'];
     ['boilIcon', 'boilOff', 'whyEcs'].forEach((id) => {
